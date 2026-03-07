@@ -1,6 +1,6 @@
 {
 	"name": "@elyos/sdk",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "ElyOS SDK — runtime and development SDK for ElyOS plugin development",
 	"type": "module",
 	"main": "./dist/index.js",
