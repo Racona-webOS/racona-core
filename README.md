@@ -13,6 +13,7 @@
   <a href="https://hub.docker.com/r/elyos/core"><img src="https://img.shields.io/docker/pulls/elyos/core" alt="Docker pulls" /></a>
   <a href="https://github.com/elyos/core/actions"><img src="https://img.shields.io/github/actions/workflow/status/elyos/core/ci.yml?branch=main&label=CI" alt="CI status" /></a>-->
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
+  <a href="https://github.com/ElyOS-webOS/elyos-core/releases"><img src="https://img.shields.io/github/package-json/v/ElyOS-webOS/elyos-core" alt="Version" /></a>
 </p>
 
 <p align="center">
