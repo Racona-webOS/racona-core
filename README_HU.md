@@ -43,6 +43,7 @@
 - [Plugin fejlesztés](#plugin-fejlesztés)
 - [Dokumentáció](#dokumentáció)
 - [Közreműködés](#közreműködés)
+- [Felelősség kizárása](#felelősség-kizárása)
 - [Licenc](#licenc)
 
 ## Mi az ElyOS?
@@ -282,12 +283,32 @@ docker build -f docker/Dockerfile -t elyos/core:latest .
 - [Közreműködési útmutató](./docs/hu/CONTRIBUTING.md) — fejlesztői beállítás, kódstílus, PR folyamat
 - [Hibaelhárítás](./docs/hu/TROUBLESHOOTING.md) — gyakori telepítési problémák és megoldásaik
 - [Felhasználói dokumentáció](https://docs.elyos.hu) — felhasználói leírás
+- [Felelősség kizárása](./docs/hu/DISCLAIMER.md) — felelősségkizárás és garancia
 
 ## Közreműködés
 
 Minden típusú hozzájárulást szívesen fogadunk — hibajavítások, új funkciók, dokumentációs fejlesztések és plugin példák egyaránt.
 
 Kérjük, olvasd el a [Közreműködési útmutatót](./docs/hu/CONTRIBUTING.md) a pull request beküldése előtt.
+
+## Felelősség kizárása
+
+Az ElyOS szoftvert **"ahogy van" (as-is)** alapon bocsátjuk rendelkezésre, mindenféle kifejezett vagy hallgatólagos garancia nélkül — beleértve, de nem kizárólagosan az eladhatóságra, adott célra való alkalmasságra vagy jogsértésmentességre vonatkozó garanciákat.
+
+A szoftver készítői és közreműködői **semmilyen felelősséget nem vállalnak** semmilyen közvetlen, közvetett, véletlenszerű, különleges, következményes vagy büntető jellegű kárért, amely a szoftver használatából, helytelen konfigurálásából, üzemeltetéséből vagy az arra való képtelenségből ered — még akkor sem, ha a kár lehetőségéről előzetesen tájékoztatást kaptak.
+
+Ez magában foglalja, de nem korlátozódik az alábbiakra:
+
+- adatvesztés vagy adatsérülés
+- üzleti bevételkiesés vagy elmaradt haszon
+- rendszerleállás vagy szolgáltatáskiesés
+- biztonsági incidensek, jogosulatlan hozzáférés
+- harmadik fél rendszereivel való inkompatibilitás
+- bármilyen egyéb vagyoni vagy nem vagyoni kár
+
+A szoftver használata teljes mértékben a felhasználó saját felelősségére és kockázatára történik. Éles (production) környezetben való üzemeltetés előtt a felhasználó felelőssége a megfelelő biztonsági audit, konfiguráció és tesztelés elvégzése.
+
+Részletekért lásd a [teljes felelősségkizárót](./docs/hu/DISCLAIMER.md) és a [LICENSE](./LICENSE) fájlt.
 
 ## Licenc
 

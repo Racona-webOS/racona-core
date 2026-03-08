@@ -45,6 +45,7 @@
 - [Plugin Development](#plugin-development)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
+- [Disclaimer](#disclaimer)
 - [License](#license)
 
 ## What is ElyOS?
@@ -284,12 +285,25 @@ ElyOS comes with a complete plugin ecosystem. Create plugins with the CLI, devel
 - [Contributing Guide](./docs/CONTRIBUTING.md) — development setup, code style, PR process
 - [Troubleshooting](./docs/TROUBLESHOOTING.md) — common setup issues and how to fix them
 - [User Documentation](https://docs.elyos.hu/en/) — user docs
+- [Disclaimer](./docs/hu/DISCLAIMER.md) — liability and warranty information
 
 ## Contributing
 
 We welcome contributions of all kinds — bug fixes, new features, documentation improvements, and plugin examples.
 
 Please read the [Contributing Guide](./docs/CONTRIBUTING.md) before submitting a pull request.
+
+## Disclaimer
+
+ElyOS is provided **"as is"**, without warranty of any kind, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+The authors and contributors of this software **accept no liability** for any direct, indirect, incidental, special, consequential, or punitive damages arising from the use, misconfiguration, operation of, or inability to use the software — even if advised of the possibility of such damages.
+
+This includes but is not limited to: data loss or corruption, loss of business revenue or profits, system downtime or service interruption, security incidents or unauthorized access, incompatibility with third-party systems, or any other damages of any kind.
+
+Use of this software is entirely at your own risk. Before deploying in a production environment, it is your responsibility to perform appropriate security audits, configuration reviews, and testing.
+
+See the [full disclaimer](./docs/DISCLAIMER.md) and [LICENSE](./LICENSE) for details.
 
 ## License
 
