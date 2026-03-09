@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://elyos.hu">Website</a> · <a href="https://docs.elyos.hu/en/">Documentation (user)</a> ·<!-- <a href="./docs/PLUGIN_DEVELOPMENT.md">Plugin Development</a> ·--> <a href="./docs/CONTRIBUTING.md">Contributing</a> · <a href="./docs/TROUBLESHOOTING.md">Troubleshooting</a> · <a href="./README_HU.md">🇭🇺 Magyar</a>
+  <a href="https://elyos.hu/en">Website</a> · <a href="https://docs.elyos.hu/en/">Documentation (user)</a> ·<!-- <a href="./docs/PLUGIN_DEVELOPMENT.md">Plugin Development</a> ·--> <a href="./docs/CONTRIBUTING.md">Contributing</a> · <a href="./docs/TROUBLESHOOTING.md">Troubleshooting</a> · <a href="./README_HU.md">🇭🇺 Magyar</a>
 </p>
 
 ---
