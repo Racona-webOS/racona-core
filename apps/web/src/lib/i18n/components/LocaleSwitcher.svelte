@@ -96,6 +96,9 @@
 				// Frissítjük a kliens oldali store-t
 				await i18nService.setLocale(locale, false);
 
+				// Értesítjük a pluginokat a locale váltásról
+				window.dispatchEvent(new CustomEvent('elyos:locale-change', { detail: { locale } }));
+
 				// Töröljük az app registry cache-t, hogy a start menü az új nyelven töltse be az appokat
 				appRegistry.clearCache();
 

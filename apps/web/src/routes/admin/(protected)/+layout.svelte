@@ -16,7 +16,14 @@
 	import { getTranslationStore } from '$lib/i18n/store.svelte';
 	import { getNotificationStore } from '$lib/stores/notificationStore.svelte';
 	import { getChatStore } from '$apps/chat/stores/chatStore.svelte';
+	import PluginDialog from '$lib/components/core/PluginDialog.svelte';
+	import { setGlobalDialogHandler } from '$lib/stores/windowStore.svelte';
+	import type { DialogOptions, DialogResult } from '@elyos/sdk';
 	import '@fontsource-variable/quicksand';
+
+	// PluginDialog referencia a dialog handler regisztrálásához
+	let pluginDialog: { showDialog: (options: DialogOptions) => Promise<DialogResult> } | undefined =
+		$state();
 
 	let { children, data } = $props();
 
@@ -68,7 +75,9 @@
 
 		// Támogatott nyelvek beállítása a szerverről jövő konfigurációval
 		// eslint-disable-next-line svelte/valid-compile -- initial setup, not reactive
-		const supportedLocales = getSupportedLocales(data.supportedLocales);
+		const supportedLocales = getSupportedLocales(
+			Array.isArray(data.supportedLocales) ? data.supportedLocales : [data.supportedLocales]
+		);
 		store.setSupportedLocales(supportedLocales);
 
 		// eslint-disable-next-line svelte/valid-compile -- initial setup, not reactive
@@ -84,6 +93,11 @@
 	// ThemeManager inicializálása mount-kor
 	onMount(async () => {
 		themeManager = createThemeManager(settings.theme);
+
+		// Dialog handler regisztrálása az SDK-hoz
+		if (pluginDialog) {
+			setGlobalDialogHandler((options) => pluginDialog!.showDialog(options));
+		}
 
 		// Jogosultságok betöltése
 		await loadPermissions();
@@ -130,22 +144,6 @@
 		});
 	});
 
-	// Locale változás kezelése - csak amikor a data.locale változik
-	$effect(() => {
-		const locale = data.locale;
-
-		untrack(() => {
-			if (!browser) return;
-
-			const i18nService = getI18nService();
-			const currentLocale = i18nService.getLocale();
-
-			if (locale && locale !== currentLocale) {
-				i18nService.setLocale(locale);
-			}
-		});
-	});
-
 	// Update browser tab title with unread notification count
 	$effect(() => {
 		if (!browser) return;
@@ -164,6 +162,7 @@
 
 {#if browser}
 	<Toaster richColors position="top-right" expand={true} closeButton />
+	<PluginDialog bind:this={pluginDialog} />
 {/if}
 <I18nProvider namespaces={['desktop', 'notifications']}>
 	<Desktop>

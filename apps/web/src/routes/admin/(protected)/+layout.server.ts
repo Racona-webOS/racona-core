@@ -4,8 +4,15 @@ import { env } from '$lib/env';
 export const load: LayoutServerLoad = async ({ locals, depends }) => {
 	depends('app:settings');
 
-	// Támogatott nyelvek kódjai az ENV-ből
-	const supportedLocaleCodes = env.SUPPORTED_LOCALES || ['hu', 'en'];
+	// Támogatott nyelvek kódjai az ENV-ből (string lehet vesszővel elválasztva)
+	const rawLocales = env.SUPPORTED_LOCALES || 'hu,en';
+	const supportedLocaleCodes =
+		typeof rawLocales === 'string'
+			? rawLocales
+					.split(',')
+					.map((l: string) => l.trim())
+					.filter(Boolean)
+			: rawLocales;
 
 	return {
 		settings: locals.settings,

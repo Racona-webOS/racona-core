@@ -14,6 +14,7 @@ export interface MockI18nConfig {
 export class MockI18nService implements I18nService {
 	private _locale: string;
 	private translations: Record<string, Record<string, string>>;
+	private _onLocaleChange: (() => void) | null = null;
 
 	constructor(config?: MockI18nConfig) {
 		this._locale = config?.locale ?? 'en';
@@ -44,9 +45,14 @@ export class MockI18nService implements I18nService {
 	async setLocale(locale: string): Promise<void> {
 		this._locale = locale;
 		console.log(`[Mock I18n] Locale changed to: ${locale}`);
+		this._onLocaleChange?.();
 	}
 
 	async ready(): Promise<void> {
 		// Mock — azonnal kész
+	}
+
+	onLocaleChange(callback: () => void): void {
+		this._onLocaleChange = callback;
 	}
 }

@@ -1,0 +1,45 @@
+{
+	"id": "sample-01",
+	"name": {
+		"hu": "Minta alkalmazás 01",
+		"en": "Minta alkalmazás 01"
+	},
+	"description": {
+		"hu": "",
+		"en": ""
+	},
+	"version": "1.0.0",
+	"author": "ElyOS <hello@elyos.hu>",
+	"entry": "dist/index.iife.js",
+	"icon": "PictureInPicture2",
+	"iconStyle": "cover",
+	"category": "utilities",
+	"permissions": [
+		"notifications"
+	],
+	"multiInstance": false,
+	"defaultSize": {
+		"width": 800,
+		"height": 600
+	},
+	"minSize": {
+		"width": 400,
+		"height": 300
+	},
+	"maxSize": {
+		"width": 1920,
+		"height": 1080
+	},
+	"keywords": [],
+	"isPublic": true,
+	"sortOrder": 100,
+	"dependencies": {
+		"svelte": "^5.0.0",
+		"@lucide/svelte": "^0.561.0"
+	},
+	"minWebOSVersion": "2.0.0",
+	"locales": [
+		"hu",
+		"en"
+	]
+}

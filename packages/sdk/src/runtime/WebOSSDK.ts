@@ -30,12 +30,13 @@ export class WebOSSDK implements WebOSSDKInterface {
 		params: Record<string, unknown>,
 		permissions: string[],
 		windowElement?: Window,
-		components?: WebOSComponents
+		components?: WebOSComponents,
+		devMode = false
 	) {
 		this.ui = new UIService();
 		this.remote = new RemoteService(pluginId);
 		this.data = new DataService(pluginId);
-		this.i18n = new I18nService(pluginId);
+		this.i18n = new I18nService(pluginId, devMode);
 		this.notifications = new NotificationService(pluginId, permissions);
 		this.context = new ContextService(pluginId, user, params, permissions, windowElement);
 		this.assets = new AssetService(pluginId);
@@ -51,9 +52,18 @@ export class WebOSSDK implements WebOSSDKInterface {
 		params: Record<string, unknown> = {},
 		permissions: string[] = [],
 		windowElement?: Window,
-		components?: WebOSComponents
+		components?: WebOSComponents,
+		devMode = false
 	): WebOSSDK {
-		const sdk = new WebOSSDK(pluginId, user, params, permissions, windowElement, components);
+		const sdk = new WebOSSDK(
+			pluginId,
+			user,
+			params,
+			permissions,
+			windowElement,
+			components,
+			devMode
+		);
 
 		if (typeof window !== 'undefined') {
 			if (!window.__webOS_instances) {

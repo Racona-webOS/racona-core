@@ -182,6 +182,18 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
     ('hu', 'plugin-manager', 'store.features.install', 'Egyszerű telepítés'),
     ('en', 'plugin-manager', 'store.features.install', 'Easy installation'),
 
+    -- Dev Plugins menu item
+    ('hu', 'plugin-manager', 'menu.devPlugins', 'Fejlesztői pluginok'),
+    ('en', 'plugin-manager', 'menu.devPlugins', 'Dev Plugins'),
+
+    -- Dev Plugins page
+    ('hu', 'plugin-manager', 'devPlugins.title', 'Fejlesztői plugin betöltő'),
+    ('en', 'plugin-manager', 'devPlugins.title', 'Dev Plugin Loader'),
+    ('hu', 'plugin-manager', 'devPlugins.description', 'Tölts be és tesztelj pluginokat a helyi fejlesztői szerverről'),
+    ('en', 'plugin-manager', 'devPlugins.description', 'Load and test plugins from your local dev server'),
+    ('hu', 'plugin-manager', 'devPlugins.loaded', 'Betöltött fejlesztői pluginok'),
+    ('en', 'plugin-manager', 'devPlugins.loaded', 'Loaded Dev Plugins'),
+
     -- Validation errors
     ('hu', 'plugin-manager', 'validation.errors.INVALID_ZIP', 'Érvénytelen ZIP fájl'),
     ('en', 'plugin-manager', 'validation.errors.INVALID_ZIP', 'Invalid ZIP file'),

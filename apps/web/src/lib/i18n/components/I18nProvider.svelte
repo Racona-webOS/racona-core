@@ -57,6 +57,11 @@
 	let allLoaded = $derived(namespaces.every((ns) => store.loadedNamespaces.has(ns)));
 	let hasError = $derived(store.error !== null);
 	let errorMessage = $derived(store.error ?? '');
+	// Egyszer már betöltöttük-e (locale váltáskor ne unmountolja a gyerekeket)
+	let everLoaded = $state(false);
+	$effect(() => {
+		if (allLoaded) everLoaded = true;
+	});
 
 	// Context létrehozása a gyermek komponensek számára
 	const context: I18nContext = {
@@ -89,13 +94,13 @@
 	export { I18N_CONTEXT_KEY };
 </script>
 
-{#if hasError && error}
+{#if hasError && error && !everLoaded}
 	{@render error(errorMessage)}
-{:else if hasError}
+{:else if hasError && !everLoaded}
 	<p class="i18n-error">Hiba a fordítások betöltésekor: {errorMessage}</p>
-{:else if !allLoaded && loading}
+{:else if !allLoaded && !everLoaded && loading}
 	{@render loading()}
-{:else if !allLoaded}
+{:else if !allLoaded && !everLoaded}
 	<!--<p class="i18n-loading">Betöltés...</p>-->
 {:else}
 	{@render children()}

@@ -46,7 +46,10 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 		try {
 			execSync('bun install', { cwd: targetDir, stdio: 'pipe' });
 		} catch {
-			console.log(pc.yellow('  ⚠ bun install sikertelen, próbáld manuálisan'));
+			console.log(pc.yellow('  ⚠ bun install sikertelen'));
+			console.log(pc.dim('    Az @elyos/sdk nincs npm-en. Állítsd be a package.json-ban:'));
+			console.log(pc.dim('    "@elyos/sdk": "file:<útvonal>/elyos-core/packages/sdk"'));
+			console.log(pc.dim('    Majd futtasd: bun install'));
 		}
 	}
 
@@ -98,18 +101,24 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 		type: 'module',
 		scripts: {
 			dev: 'vite',
+			'dev:server': 'bun dev-server.ts',
 			build: 'vite build',
-			preview: 'vite preview'
+			'build:watch': 'vite build --watch',
+			preview: 'vite preview',
+			package: 'bun build-package.js'
 		},
 		dependencies: {
-			'@elyos/sdk': '^1.0.0',
+			// TODO: @elyos/sdk nincs npm-en — ha publikálva lesz, cseréld vissza: '^1.0.0'
+			// Az útvonalat igazítsd a saját könyvtárstruktúrádhoz!
+			'@elyos/sdk': 'file:../../elyos-core/packages/sdk',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^0.561.0'
 		},
 		devDependencies: {
 			'@sveltejs/vite-plugin-svelte': '^5.0.0',
 			vite: '^6.0.0',
-			typescript: '^5.7.0'
+			typescript: '^5.7.0',
+			'vite-plugin-css-injected-by-js': '^4.0.0'
 		}
 	};
 

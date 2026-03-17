@@ -1,7 +1,8 @@
 /**
  * Mock UI Service
  *
- * Console-based toast, egyszerű dialógusok, mock téma.
+ * Standalone fejlesztői módhoz: böngésző natív dialógusok (confirm/prompt/alert),
+ * console-based toast és mock téma.
  */
 
 import type {
@@ -19,14 +20,22 @@ export class MockUIService implements UIService {
 	}
 
 	async dialog(options: DialogOptions): Promise<DialogResult> {
-		console.log('[Mock Dialog]', options);
+		const title = options.title ? `${options.title}\n\n` : '';
+		const text = `${title}${options.message ?? ''}`;
 
 		if (options.type === 'confirm') {
-			return { action: 'confirm' };
+			const confirmed = window.confirm(text);
+			return { action: confirmed ? 'confirm' : 'cancel' };
 		}
+
 		if (options.type === 'prompt') {
-			return { action: 'submit', value: 'mock-value' };
+			const value = window.prompt(text, options.defaultValue ?? '');
+			if (value === null) return { action: 'cancel' };
+			return { action: 'submit', value };
 		}
+
+		// info / alert
+		window.alert(text);
 		return { action: 'ok' };
 	}
 

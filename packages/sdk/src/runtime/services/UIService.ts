@@ -16,12 +16,20 @@ import type {
 
 export class UIService implements IUIService {
 	private toastFn: ((message: string, type: ToastType, duration: number) => void) | null = null;
+	private dialogFn: ((options: DialogOptions) => Promise<DialogResult>) | null = null;
 
 	/**
 	 * Toast callback regisztrálása (az ElyOS core hívja meg)
 	 */
 	_setToastHandler(fn: (message: string, type: ToastType, duration: number) => void): void {
 		this.toastFn = fn;
+	}
+
+	/**
+	 * Dialog callback regisztrálása (az ElyOS core hívja meg)
+	 */
+	_setDialogHandler(fn: (options: DialogOptions) => Promise<DialogResult>): void {
+		this.dialogFn = fn;
 	}
 
 	/**
@@ -40,21 +48,20 @@ export class UIService implements IUIService {
 	 * Dialógus megjelenítése
 	 */
 	async dialog(options: DialogOptions): Promise<DialogResult> {
-		const { title, message, type = 'info' } = options;
+		if (this.dialogFn) {
+			return this.dialogFn(options);
+		}
 
+		// Fallback ha nincs regisztrált handler
+		const { title, message, type = 'info' } = options;
 		if (type === 'confirm') {
 			const confirmed = window.confirm(`${title}\n\n${message}`);
 			return { action: confirmed ? 'confirm' : 'cancel' };
 		}
-
 		if (type === 'prompt') {
 			const value = window.prompt(`${title}\n\n${message}`);
-			return {
-				action: value !== null ? 'submit' : 'cancel',
-				value: value ?? undefined
-			};
+			return { action: value !== null ? 'submit' : 'cancel', value: value ?? undefined };
 		}
-
 		window.alert(`${title}\n\n${message}`);
 		return { action: 'ok' };
 	}

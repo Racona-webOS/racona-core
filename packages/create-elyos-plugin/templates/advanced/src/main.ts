@@ -4,6 +4,7 @@
  * Standalone módban a Mock SDK-t használja,
  * ElyOS módban a runtime SDK-t kapja.
  */
+import { mount } from 'svelte';
 import App from './App.svelte';
 
 // Standalone fejlesztéshez: Mock SDK inicializálás
@@ -22,15 +23,15 @@ async function initDevSDK() {
 	}
 }
 
-async function mount() {
+async function init() {
 	await initDevSDK();
 
 	const target = document.getElementById('app');
 	if (target) {
-		new App({ target });
+		mount(App, { target });
 	}
 }
 
-mount();
+init();
 
 export default App;

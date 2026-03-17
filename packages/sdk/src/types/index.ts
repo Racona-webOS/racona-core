@@ -12,6 +12,7 @@ export interface DialogOptions {
 	title: string;
 	message: string;
 	type?: 'info' | 'confirm' | 'prompt';
+	defaultValue?: string;
 	buttons?: DialogButton[];
 }
 
@@ -97,6 +98,8 @@ export interface I18nService {
 	setLocale(locale: string): Promise<void>;
 	/** Várja meg a fordítások betöltését */
 	ready(): Promise<void>;
+	/** Callback regisztrálása locale váltás után (fordítások betöltése után hívódik) */
+	onLocaleChange(callback: () => void): void;
 }
 
 export interface NotificationOptions {

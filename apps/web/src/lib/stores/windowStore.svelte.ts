@@ -190,6 +190,13 @@ export class WindowManager {
 
 	private async loadComponent(id: string, componentName: string) {
 		try {
+			// Dev plugin kezelése (dev: prefix)
+			const window_obj = this.windows.find((w) => w.id === id);
+			if (componentName.startsWith('dev:') && window_obj?.parameters?.devUrl) {
+				await this.loadDevPluginComponent(id, componentName, window_obj);
+				return;
+			}
+
 			// Ellenőrizzük, hogy plugin-e
 			const isPlugin = await this.isPluginApp(componentName);
 
@@ -306,7 +313,9 @@ export class WindowManager {
 			const user = {
 				id: 'current-user',
 				name: 'Current User',
-				email: 'user@example.com'
+				email: 'user@example.com',
+				roles: [],
+				groups: []
 			};
 
 			const sdk = WebOSSDK.initialize(
@@ -344,6 +353,10 @@ export class WindowManager {
 				toastFn(message, { duration });
 			});
 
+			// Dialog handler regisztrálása
+			const dialogHandler = getGlobalDialogHandler();
+			if (dialogHandler) sdk.ui._setDialogHandler(dialogHandler);
+
 			console.log('[Plugin Loader] WebOS SDK initialized for plugin with layout:', pluginId);
 
 			// Store the menu data and wrapper component
@@ -357,6 +370,182 @@ export class WindowManager {
 			console.log('[Plugin Loader] Plugin with layout loaded successfully');
 		} catch (error) {
 			console.error(`Failed to load plugin with layout ${pluginId}:`, error);
+			throw error;
+		}
+	}
+	private async loadDevPluginComponent(id: string, componentName: string, window_obj: WindowState) {
+		try {
+			const devUrl = (window_obj.parameters?.devUrl as string).replace(/\/$/, '');
+			const pluginId = componentName.replace('dev:', '');
+
+			// Manifest lekérése a dev szerverről
+			const manifestResponse = await fetch(`${devUrl}/manifest.json`, {
+				mode: 'cors',
+				credentials: 'omit'
+			});
+			if (!manifestResponse.ok) {
+				throw new Error(`Manifest nem található: ${devUrl}/manifest.json`);
+			}
+			const manifest = await manifestResponse.json();
+
+			// WebOS SDK inicializálása a dev plugin számára
+			const { WebOSSDK } = await import('@elyos/sdk');
+			const { AppLayout } = await import('$lib/components/shared');
+			const { createAppShell } = await import('$lib/apps/appShell.svelte');
+			const {
+				DataTable,
+				DataTableColumnHeader,
+				DataTableFacetedFilter,
+				renderComponent,
+				renderSnippet,
+				createActionsColumn
+			} = await import('$lib/components/ui/data-table');
+			const { Input } = await import('$lib/components/ui/input');
+			const { Button } = await import('$lib/components/ui/button');
+			const ContentSection = await import('$lib/components/shared/ContentSection.svelte');
+
+			const user = {
+				id: 'current-user',
+				name: 'Current User',
+				email: 'user@example.com',
+				roles: [],
+				groups: []
+			};
+
+			const sdk = WebOSSDK.initialize(
+				pluginId,
+				user,
+				window_obj.parameters || {},
+				manifest.permissions || [],
+				undefined,
+				{
+					AppLayout,
+					createAppShell,
+					DataTable,
+					DataTableColumnHeader,
+					DataTableFacetedFilter,
+					renderComponent,
+					renderSnippet,
+					createActionsColumn,
+					Input,
+					Button,
+					ContentSection: ContentSection.default
+				},
+				true // devMode — ne indítson API hívást a fordításokhoz
+			);
+
+			// Toast handler regisztrálása
+			const { toast: showToast } = await import('svelte-sonner');
+			sdk.ui._setToastHandler((message, type, duration) => {
+				const toastFn =
+					type === 'success'
+						? showToast.success
+						: type === 'error'
+							? showToast.error
+							: type === 'warning'
+								? showToast.warning
+								: showToast.info;
+				toastFn(message, { duration });
+			});
+
+			// Dialog handler regisztrálása
+			const dialogHandler = getGlobalDialogHandler();
+			if (dialogHandler) sdk.ui._setDialogHandler(dialogHandler);
+
+			// Notification handler regisztrálása (dev módban nincs DB plugin bejegyzés)
+			const { toast: devNotifToast } = await import('svelte-sonner');
+			(
+				sdk.notifications as unknown as {
+					setDevNotificationHandler: (
+						fn: (opts: { title: string; message: string; type?: string }) => Promise<void>
+					) => void;
+				}
+			).setDevNotificationHandler(async (opts) => {
+				devNotifToast.info(`${opts.title}: ${opts.message}`);
+			});
+
+			console.log('[DevPlugin] WebOS SDK inicializálva:', pluginId);
+
+			// Fordítások betöltése a dev szerverről és injektálása az SDK-ba
+			const locale = localStorage.getItem('locale') ?? navigator.language.split('-')[0] ?? 'en';
+			try {
+				const localeResponse = await fetch(`${devUrl}/locales/${locale}.json`, {
+					mode: 'cors',
+					credentials: 'omit'
+				});
+				type I18nWithLoader = { loadTranslationsFromObject: (t: Record<string, string>) => void };
+				if (localeResponse.ok) {
+					const translations = (await localeResponse.json()) as Record<string, string>;
+					(sdk.i18n as unknown as I18nWithLoader).loadTranslationsFromObject(translations);
+					console.log(
+						`[DevPlugin] Fordítások betöltve: ${locale} (${Object.keys(translations).length} kulcs)`
+					);
+				} else {
+					// Fallback: en.json
+					const fallbackResponse = await fetch(`${devUrl}/locales/en.json`, {
+						mode: 'cors',
+						credentials: 'omit'
+					});
+					if (fallbackResponse.ok) {
+						const translations = (await fallbackResponse.json()) as Record<string, string>;
+						(sdk.i18n as unknown as I18nWithLoader).loadTranslationsFromObject(translations);
+					}
+				}
+			} catch {
+				console.warn(`[DevPlugin] Fordítások nem tölthetők be: ${devUrl}/locales/${locale}.json`);
+			}
+
+			// IIFE bundle lekérése a dev szerverről
+			const entry = manifest.entry || 'dist/index.iife.js';
+			const bundleResponse = await fetch(`${devUrl}/${entry}`, {
+				mode: 'cors',
+				credentials: 'omit'
+			});
+			if (!bundleResponse.ok) {
+				throw new Error(`Bundle nem található: ${devUrl}/${entry}`);
+			}
+			const code = await bundleResponse.text();
+
+			// Factory függvény neve a plugin ID alapján
+			const factoryName = `${pluginId.replace(/-/g, '_')}_Plugin`;
+			const expectedTagName = `${pluginId}-plugin`;
+			const isAlreadyRegistered = customElements.get(expectedTagName) !== undefined;
+
+			if (!isAlreadyRegistered) {
+				// Bundle futtatása — regisztrálja a custom element-et
+				const script = document.createElement('script');
+				script.textContent = code;
+				document.head.appendChild(script);
+			}
+
+			// Factory mindig meghívandó, hogy a tagName-t visszaadja
+			// (az SDK már be van állítva window.webOS-ra a fenti initialize hívásban)
+			const pluginFactory = (window as any)[factoryName];
+			if (!pluginFactory || typeof pluginFactory !== 'function') {
+				throw new Error(`Plugin factory '${factoryName}' nem található`);
+			}
+
+			const pluginInfo = pluginFactory();
+			const tagName = pluginInfo.tagName;
+
+			(window_obj as any).customElementTag = tagName;
+			(window_obj as any).pluginProps = {
+				windowId: id,
+				pluginId,
+				parameters: window_obj.parameters
+			};
+			window_obj.component = null as any;
+			window_obj.isLoading = false;
+			this.windows = [...this.windows];
+
+			console.log(`[DevPlugin] Betöltve: ${pluginId} → <${tagName}> (${devUrl})`);
+		} catch (error) {
+			console.error(`[DevPlugin] Nem sikerült betölteni: ${componentName}`, error);
+			const w = this.windows.find((w) => w.id === id);
+			if (w) {
+				w.isLoading = false;
+				this.windows = [...this.windows];
+			}
 			throw error;
 		}
 	}
@@ -393,7 +582,9 @@ export class WindowManager {
 			const user = {
 				id: 'current-user',
 				name: 'Current User',
-				email: 'user@example.com'
+				email: 'user@example.com',
+				roles: [],
+				groups: []
 			};
 
 			const sdk = WebOSSDK.initialize(
@@ -431,6 +622,10 @@ export class WindowManager {
 				toastFn(message, { duration });
 			});
 
+			// Dialog handler regisztrálása
+			const dialogHandler = getGlobalDialogHandler();
+			if (dialogHandler) sdk.ui._setDialogHandler(dialogHandler);
+
 			console.log('[Plugin Loader] WebOS SDK initialized for plugin:', pluginId);
 			console.log('[Plugin Loader] SDK instances:', (window as any).__webOS_instances);
 
@@ -447,7 +642,6 @@ export class WindowManager {
 			// A plugin factory function dinamikus névvel lesz elérhető
 			const factoryName = `${pluginId.replace(/-/g, '_')}_Plugin`;
 			let pluginFactory = (window as any)[factoryName];
-			let tagName: string;
 
 			// Ellenőrizzük, hogy a custom element már regisztrálva van-e
 			const expectedTagName = `${pluginId}-plugin`;
@@ -471,7 +665,7 @@ export class WindowManager {
 			}
 			// Hívjuk meg a factory-t a tag name lekéréséhez
 			const pluginInfo = pluginFactory();
-			tagName = pluginInfo.tagName;
+			const tagName = pluginInfo.tagName;
 
 			console.log('[Plugin Loader] Plugin registered as custom element:', tagName);
 
@@ -800,4 +994,29 @@ export function getWindowManager(): WindowManager {
 		}
 		return globalWindowManager;
 	}
+}
+
+// ─── Globális dialog handler ─────────────────────────────────────────────────
+
+import type { DialogOptions, DialogResult } from '@elyos/sdk';
+
+/** Globális dialog handler — a +layout.svelte regisztrálja, a plugin betöltők használják */
+let globalDialogHandler: ((options: DialogOptions) => Promise<DialogResult>) | null = null;
+
+/**
+ * Dialog handler regisztrálása (a +layout.svelte hívja meg mountkor)
+ */
+export function setGlobalDialogHandler(
+	fn: (options: DialogOptions) => Promise<DialogResult>
+): void {
+	globalDialogHandler = fn;
+}
+
+/**
+ * Globális dialog handler lekérése (plugin betöltők használják)
+ */
+export function getGlobalDialogHandler():
+	| ((options: DialogOptions) => Promise<DialogResult>)
+	| null {
+	return globalDialogHandler;
 }

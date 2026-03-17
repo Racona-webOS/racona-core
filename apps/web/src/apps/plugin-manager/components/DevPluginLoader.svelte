@@ -89,9 +89,12 @@
 		</div>
 
 		<!-- Használati útmutató -->
-		<div class="text-muted-foreground text-xs">
-			<p>Make sure your plugin dev server is running:</p>
-			<code class="bg-muted mt-1 block rounded p-2">bun dev</code>
+		<div class="text-muted-foreground space-y-1 text-xs">
+			<p>1. Buildeld a plugint: <code class="bg-muted rounded px-1">bun run build</code></p>
+			<p>
+				2. Indítsd el a dev szervert: <code class="bg-muted rounded px-1">bun dev-server.ts</code>
+			</p>
+			<p>3. Add meg a szerver URL-jét és kattints a Load gombra.</p>
 		</div>
 	</Card.Content>
 </Card.Root>

@@ -14,10 +14,18 @@ import { PluginErrorCode } from '../../types/index.js';
 export class NotificationService implements INotificationService {
 	private readonly pluginId: string;
 	private readonly hasPermission: boolean;
+	private notificationFn: ((options: NotificationOptions) => Promise<void>) | null = null;
 
 	constructor(pluginId: string, permissions: string[]) {
 		this.pluginId = pluginId;
 		this.hasPermission = permissions.includes('notifications');
+	}
+
+	/**
+	 * Notification callback regisztrálása (az ElyOS core hívja meg dev módban)
+	 */
+	setDevNotificationHandler(fn: (options: NotificationOptions) => Promise<void>): void {
+		this.notificationFn = fn;
 	}
 
 	/** Értesítés küldése */
@@ -26,6 +34,11 @@ export class NotificationService implements INotificationService {
 			throw new Error(
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have 'notifications' permission`
 			);
+		}
+
+		// Ha van regisztrált handler (dev mód), azt használjuk
+		if (this.notificationFn) {
+			return this.notificationFn(options);
 		}
 
 		try {

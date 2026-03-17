@@ -6,6 +6,7 @@ import { getContext, setContext } from 'svelte';
 import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 import type { TranslationState, LocaleConfig } from './types.js';
 import { ALL_AVAILABLE_LOCALES, getSupportedLocales } from './config.js';
+import { invalidateTranslationCache } from './loader.js';
 
 const TRANSLATION_STORE_KEY = Symbol('translationStore');
 
@@ -41,6 +42,8 @@ export class TranslationStore {
 	// Reaktív számláló a DevTools frissítéséhez
 	private _issueCounter = $state(0);
 	private _pendingLoads = new SvelteSet<string>();
+	// Locale váltás közben ne logoljunk hiányzó kulcsokat (race condition elkerülése)
+	private _isSwitchingLocale = false;
 
 	// Placeholder érték konstans
 	private static readonly PLACEHOLDER_VALUE = '*****';
@@ -114,9 +117,12 @@ export class TranslationStore {
 		this._error = null;
 
 		try {
+			this._isSwitchingLocale = true;
 			this._locale = locale;
 			this._translations = new SvelteMap();
 			this._loadedNamespaces = new SvelteSet();
+			// Loader cache invalidálása az új locale-ra, hogy friss adatot kapjunk
+			invalidateTranslationCache(undefined, locale);
 
 			if (locale !== this._fallbackLocale) {
 				await this.loadFallbackTranslations(namespacesToReload);
@@ -129,6 +135,8 @@ export class TranslationStore {
 			this._locale = previousLocale;
 			this._error = error instanceof Error ? error.message : 'Failed to change locale';
 			console.error('[I18n] Failed to change locale:', error);
+		} finally {
+			this._isSwitchingLocale = false;
 		}
 	}
 
@@ -251,6 +259,9 @@ export class TranslationStore {
 	}
 
 	private logMissingKey(key: string): void {
+		// Locale váltás közben ne logoljunk — a fordítások még töltődnek
+		if (this._isSwitchingLocale) return;
+
 		if (typeof window !== 'undefined' && import.meta.env?.DEV) {
 			console.warn(`[I18n] Missing key: "${key}" for locale "${this._locale}"`);
 		}

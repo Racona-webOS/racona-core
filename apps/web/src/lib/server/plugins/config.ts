@@ -33,12 +33,12 @@ export const PLUGIN_MAX_SIZE_MB = PLUGIN_MAX_SIZE / (1024 * 1024);
 /**
  * Plugin tárolási könyvtár
  */
-export const PLUGIN_STORAGE_DIR = env.PLUGIN_STORAGE_DIR;
+export const PLUGIN_STORAGE_DIR = env.PLUGIN_STORAGE_DIR ?? '/var/webos/plugins';
 
 /**
  * Ideiglenes feltöltési könyvtár
  */
-export const PLUGIN_TEMP_DIR = env.PLUGIN_TEMP_DIR;
+export const PLUGIN_TEMP_DIR = env.PLUGIN_TEMP_DIR ?? '/tmp/webos-plugins';
 
 /**
  * Engedélyezett MIME típusok plugin csomagokhoz
