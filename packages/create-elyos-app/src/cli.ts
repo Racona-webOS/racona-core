@@ -2,9 +2,9 @@
 /**
  * create-elyos-app CLI
  *
- * Interaktív wizard ElyOS app projektek létrehozásához.
+ * Interactive wizard for scaffolding ElyOS app projects.
  *
- * Használat:
+ * Usage:
  *   bunx @elyos-dev/create-app
  *   bunx @elyos-dev/create-app my-app
  *   bunx @elyos-dev/create-app my-app --template basic --no-install
@@ -18,26 +18,26 @@ import pc from 'picocolors';
 const program = new Command();
 
 program
-	.name('create-elyos-plugin')
-	.description('Create a new ElyOS plugin project')
+	.name('create-elyos-app')
+	.description('Create a new ElyOS app project')
 	.version('1.0.0')
-	.argument('[plugin-name]', 'Plugin name (kebab-case)')
-	.option('-t, --template <template>', 'Template: basic, advanced, datatable')
+	.argument('[app-name]', 'App name (kebab-case)')
+	.option('-t, --template <template>', 'Template: basic, advanced, datatable, sidebar')
 	.option('--no-install', 'Skip dependency installation')
-	.action(async (pluginName?: string, options?: { template?: string; install?: boolean }) => {
+	.action(async (appName?: string, options?: { template?: string; install?: boolean }) => {
 		console.log();
-		console.log(pc.bold(pc.cyan('  🚀 create-elyos-plugin')));
+		console.log(pc.bold(pc.cyan('  🚀 create-elyos-app')));
 		console.log();
 
 		try {
-			const config = await runInteractiveWizard(pluginName, options);
+			const config = await runInteractiveWizard(appName, options);
 			await generateProject(config);
 		} catch (error) {
 			if ((error as Error).message?.includes('cancelled')) {
-				console.log(pc.yellow('\n  Megszakítva.\n'));
+				console.log(pc.yellow('\n  Cancelled.\n'));
 				process.exit(0);
 			}
-			console.error(pc.red(`\n  Hiba: ${(error as Error).message}\n`));
+			console.error(pc.red(`\n  Error: ${(error as Error).message}\n`));
 			process.exit(1);
 		}
 	});

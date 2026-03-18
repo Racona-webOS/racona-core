@@ -1,7 +1,7 @@
 /**
- * Projekt generátor
+ * Project generator
  *
- * Template másolás, manifest/package.json/README generálás.
+ * Template copying, manifest/package.json/README generation.
  */
 
 import {
@@ -25,62 +25,62 @@ const __dirname = dirname(__filename);
 export async function generateProject(config: PluginConfig): Promise<void> {
 	const targetDir = join(process.cwd(), config.pluginId);
 
-	// 1. Ellenőrzés
+	// 1. Check
 	if (existsSync(targetDir)) {
-		throw new Error(`A "${config.pluginId}" könyvtár már létezik`);
+		throw new Error(`Directory "${config.pluginId}" already exists`);
 	}
 
-	console.log(pc.dim(`  Projekt létrehozása: ${config.pluginId}`));
+	console.log(pc.dim(`  Creating project: ${config.pluginId}`));
 
-	// 2. Template másolás
+	// 2. Copy template
 	const templatesRoot = join(__dirname, '..', 'templates');
 	const templateDir = join(templatesRoot, config.template);
 
 	if (!existsSync(templateDir)) {
-		throw new Error(`Template nem található: ${config.template}`);
+		throw new Error(`Template not found: ${config.template}`);
 	}
 
 	mkdirSync(targetDir, { recursive: true });
 	cpSync(templateDir, targetDir, { recursive: true });
 
-	// 3. Placeholder csere (sidebar template)
+	// 3. Replace placeholders (sidebar template)
 	if (config.template === 'sidebar') {
 		replaceTemplatePlaceholders(targetDir, config);
 		writeMenuJson(targetDir, config);
 	}
 
-	// 4. Generált fájlok
+	// 4. Generated files
 	writeManifest(targetDir, config);
 	writePackageJson(targetDir, config);
 	writeReadme(targetDir, config);
 
-	// 4. Dependencies telepítése
+	// 4. Install dependencies
 	if (config.install) {
-		console.log(pc.dim('  Függőségek telepítése...'));
+		console.log(pc.dim('  Installing dependencies...'));
 		try {
 			execSync('bun install', { cwd: targetDir, stdio: 'pipe' });
 		} catch {
-			console.log(pc.yellow('  ⚠ bun install sikertelen'));
-			console.log(pc.dim('    Az @elyos/sdk nincs npm-en. Állítsd be a package.json-ban:'));
-			console.log(pc.dim('    "@elyos/sdk": "file:<útvonal>/elyos-core/packages/sdk"'));
-			console.log(pc.dim('    Majd futtasd: bun install'));
+			console.log(pc.yellow('  ⚠ bun install failed'));
+			console.log(pc.dim('    Set the correct path in package.json:'));
+			console.log(pc.dim('    "@elyos-dev/sdk": "^0.1.0"'));
+			console.log(pc.dim('    Then run: bun install'));
 		}
 	}
 
-	// 5. Siker
+	// 5. Success
 	console.log();
-	console.log(pc.green('  ✅ Plugin sikeresen létrehozva!'));
+	console.log(pc.green('  ✅ App created successfully!'));
 	console.log();
-	console.log(`  ${pc.bold('Következő lépések:')}`);
+	console.log(`  ${pc.bold('Next steps:')}`);
 	console.log(`  ${pc.cyan(`cd ${config.pluginId}`)}`);
 	console.log(`  ${pc.cyan('bun dev')}`);
 	console.log();
 }
 
 /**
- * Sidebar template placeholder-ek cseréje a generált fájlokban.
+ * Replaces sidebar template placeholders in generated files.
  * __PLUGIN_ID__ → config.pluginId
- * __PLUGIN_ID_UNDERSCORE__ → config.pluginId kötőjelek nélkül (underscore)
+ * __PLUGIN_ID_UNDERSCORE__ → config.pluginId with hyphens replaced by underscores
  */
 function replaceTemplatePlaceholders(targetDir: string, config: PluginConfig): void {
 	const pluginIdUnderscore = config.pluginId.replace(/-/g, '_');
@@ -110,7 +110,7 @@ function replaceTemplatePlaceholders(targetDir: string, config: PluginConfig): v
 }
 
 /**
- * menu.json generálás sidebar template-hez.
+ * Generates menu.json for sidebar template.
  */
 function writeMenuJson(dir: string, config: PluginConfig): void {
 	// A labelKey csak a namespace utáni rész — a localization.ts maga fűzi elé a namespace-t
@@ -180,9 +180,7 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 			...(isSidebar ? { 'build:all': 'bun build-all.js' } : {})
 		},
 		dependencies: {
-			// TODO: @elyos/sdk nincs npm-en — ha publikálva lesz, cseréld vissza: '^1.0.0'
-			// Az útvonalat igazítsd a saját könyvtárstruktúrádhoz!
-			'@elyos/sdk': 'file:../../elyos-core/packages/sdk',
+			'@elyos-dev/sdk': '^0.1.0',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^0.561.0'
 		},
@@ -204,14 +202,14 @@ function writeReadme(dir: string, config: PluginConfig): void {
 
 ${config.description}
 
-## Fejlesztés
+## Development
 
 \`\`\`bash
-# Standalone mód (Mock SDK)
+# Standalone mode (Mock SDK)
 bun dev
 
-# ElyOS módban
-# 1. Indítsd el az ElyOS-t Docker-rel
+# Inside ElyOS
+# 1. Start ElyOS with Docker
 # 2. Plugin Manager → Load Dev Plugin → http://localhost:5174
 \`\`\`
 
@@ -223,17 +221,17 @@ bun run build
 ${
 	isSidebar
 		? `
-> A \`build\` parancs a \`build-all.js\` scriptet futtatja, ami a fő plugint és az összes sidebar komponenst is build-eli.
+> The \`build\` command runs \`build-all.js\`, which builds the main app and all sidebar components.
 `
 		: ''
 }
-## Struktúra
+## Structure
 
-- \`src/\` — Plugin forráskód (Svelte 5)
-${isSidebar ? '- `src/components/` — Sidebar menüpontok komponensei\n' : ''}- \`locales/\` — Fordítások (hu, en)
-- \`assets/\` — Ikonok, képek
-${config.template !== 'basic' ? '- `server/` — Szerver oldali függvények\n' : ''}${isSidebar ? '- `menu.json` — Sidebar menü definíció\n' : ''}- \`manifest.json\` — Plugin metaadatok
-- \`vite.config.ts\` — Build konfiguráció
+- \`src/\` — App source code (Svelte 5)
+${isSidebar ? '- `src/components/` — Sidebar menu components\n' : ''}- \`locales/\` — Translations (hu, en)
+- \`assets/\` — Icons, images
+${config.template !== 'basic' ? '- `server/` — Server-side functions\n' : ''}${isSidebar ? '- `menu.json` — Sidebar menu definition\n' : ''}- \`manifest.json\` — App metadata
+- \`vite.config.ts\` — Build configuration
 
 ## License
 

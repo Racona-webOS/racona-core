@@ -1,17 +1,17 @@
 /**
- * Interaktív kérdések a plugin létrehozásához.
+ * Interactive prompts for app scaffolding.
  */
 
 import prompts from 'prompts';
 import type { PluginConfig } from './types.js';
 
-function validatePluginId(value: string): boolean | string {
-	if (!value) return 'Plugin ID megadása kötelező';
+function validateAppId(value: string): boolean | string {
+	if (!value) return 'App ID is required';
 	if (!/^[a-z][a-z0-9-]*$/.test(value)) {
-		return 'Csak kisbetűk, számok és kötőjel (kebab-case)';
+		return 'Only lowercase letters, numbers and hyphens (kebab-case)';
 	}
-	if (value.length < 2) return 'Minimum 2 karakter';
-	if (value.length > 50) return 'Maximum 50 karakter';
+	if (value.length < 2) return 'Minimum 2 characters';
+	if (value.length > 50) return 'Maximum 50 characters';
 	return true;
 }
 
@@ -32,11 +32,11 @@ export async function runInteractiveWizard(
 		questions.push({
 			type: 'text',
 			name: 'pluginId',
-			message: 'Plugin ID (kebab-case):',
-			validate: validatePluginId
+			message: 'App ID (kebab-case):',
+			validate: validateAppId
 		});
 	} else {
-		const valid = validatePluginId(initialName);
+		const valid = validateAppId(initialName);
 		if (valid !== true) {
 			throw new Error(valid as string);
 		}
@@ -46,18 +46,18 @@ export async function runInteractiveWizard(
 		{
 			type: 'text',
 			name: 'displayName',
-			message: 'Megjelenítési név:',
+			message: 'Display name:',
 			initial: toTitleCase(initialName ?? '')
 		},
 		{
 			type: 'text',
 			name: 'description',
-			message: 'Leírás:'
+			message: 'Description:'
 		},
 		{
 			type: 'text',
 			name: 'author',
-			message: 'Szerző (Név <email>):'
+			message: 'Author (Name <email>):'
 		}
 	);
 
@@ -67,10 +67,10 @@ export async function runInteractiveWizard(
 			name: 'template',
 			message: 'Template:',
 			choices: [
-				{ title: 'Basic', value: 'basic', description: 'Egyszerű plugin UI-val' },
-				{ title: 'Advanced', value: 'advanced', description: 'Szerver függvényekkel' },
-				{ title: 'Sidebar', value: 'sidebar', description: 'Sidebar menüvel (layout mód)' },
-				{ title: 'DataTable', value: 'datatable', description: 'CRUD DataTable-lel' }
+				{ title: 'Basic', value: 'basic', description: 'Simple app with UI' },
+				{ title: 'Advanced', value: 'advanced', description: 'With server functions' },
+				{ title: 'Sidebar', value: 'sidebar', description: 'With sidebar menu (layout mode)' },
+				{ title: 'DataTable', value: 'datatable', description: 'CRUD with DataTable' }
 			],
 			initial: 0
 		});
@@ -79,7 +79,7 @@ export async function runInteractiveWizard(
 	questions.push({
 		type: 'multiselect',
 		name: 'permissions',
-		message: 'Jogosultságok:',
+		message: 'Permissions:',
 		choices: [
 			{ title: 'Database', value: 'database', selected: true },
 			{ title: 'Notifications', value: 'notifications' },

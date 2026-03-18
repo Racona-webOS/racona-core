@@ -1,5 +1,5 @@
 /**
- * CLI típusdefiníciók
+ * CLI type definitions
  */
 
 export interface PluginConfig {
