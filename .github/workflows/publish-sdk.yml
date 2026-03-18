@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,6 +39,10 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to JSR
+        working-directory: packages/sdk
+        run: bunx jsr publish --allow-dirty
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
