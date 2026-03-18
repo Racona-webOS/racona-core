@@ -49,7 +49,7 @@ jobs:
 
       - name: Publish to JSR
         working-directory: packages/sdk
-        run: bunx jsr publish --allow-dirty --allow-slow-types
+        run: npx jsr publish --allow-dirty --allow-slow-types
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
