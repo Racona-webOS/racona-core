@@ -35,7 +35,14 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/create-elyos-app
-        run: npm publish --access public
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @elyos-dev/create-app version 2>/dev/null || echo "none")
+          if [ "$CURRENT" != "$PUBLISHED" ]; then
+            npm publish --access public
+          else
+            echo "Version $CURRENT already published on npm, skipping."
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
