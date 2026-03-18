@@ -45,8 +45,10 @@ export class PluginInstaller {
 				await this.importTranslations(pluginId, manifest.locales);
 			}
 
-			// 4. Plugin séma létrehozása
-			await this.createPluginSchema(pluginId);
+			// 4. Plugin séma létrehozása (csak ha a plugin igényli az adatbázist)
+			if (manifest.permissions?.includes('database')) {
+				await this.createPluginSchema(pluginId);
+			}
 
 			// 5. Esemény naplózása
 			await this.logEvent(pluginId, 'install', {
@@ -299,19 +301,18 @@ export class PluginInstaller {
 	}
 
 	/**
-	 * Plugin adatbázis séma létrehozása
+	 * Plugin adatbázis séma létrehozása és migrációk futtatása
 	 *
 	 * Task 3.4: Plugin Installer - Séma Létrehozás
 	 */
 	async createPluginSchema(pluginId: string): Promise<void> {
 		try {
-			// Séma név validálás (SQL injection védelem)
 			const schemaName = this.sanitizeSchemaName(pluginId);
 
 			// Séma létrehozása
 			await db.execute(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
 
-			// Alapértelmezett kv_store tábla létrehozása
+			// Alapértelmezett kv_store tábla
 			await db.execute(`
 				CREATE TABLE IF NOT EXISTS ${schemaName}.kv_store (
 					key VARCHAR(255) PRIMARY KEY,
@@ -321,12 +322,120 @@ export class PluginInstaller {
 				)
 			`);
 
+			// Migrációk nyilvántartó táblája
+			await db.execute(`
+				CREATE TABLE IF NOT EXISTS ${schemaName}.migrations (
+					id SERIAL PRIMARY KEY,
+					filename VARCHAR(255) NOT NULL UNIQUE,
+					applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+				)
+			`);
+
+			// Plugin migrations/ mappájának futtatása
+			await this.runMigrations(pluginId, schemaName);
+
 			console.log(`[PluginInstaller] Created plugin schema: ${schemaName}`);
 		} catch (error) {
 			throw new Error(
 				`Failed to create plugin schema: ${error instanceof Error ? error.message : 'Unknown error'}`
 			);
 		}
+	}
+
+	/**
+	 * Plugin migrációs SQL fájlok futtatása sorrendben.
+	 * Csak azokat futtatja, amelyek még nem szerepelnek a migrations táblában.
+	 */
+	private async runMigrations(pluginId: string, schemaName: string): Promise<void> {
+		const pluginDir = getPluginDir(pluginId);
+		const migrationsDir = path.join(pluginDir, 'migrations');
+
+		try {
+			await fs.access(migrationsDir);
+		} catch {
+			// Nincs migrations/ mappa — nem kötelező
+			return;
+		}
+
+		// SQL fájlok beolvasása, névsorrendben (001_, 002_, ...)
+		const files = (await fs.readdir(migrationsDir)).filter((f) => f.endsWith('.sql')).sort();
+
+		if (files.length === 0) return;
+
+		// Már lefutott migrációk lekérése
+		const applied = await db.execute(`SELECT filename FROM ${schemaName}.migrations`);
+		const appliedSet = new Set(
+			(applied.rows as Array<{ filename: string }>).map((r) => r.filename)
+		);
+
+		for (const file of files) {
+			if (appliedSet.has(file)) {
+				console.log(`[PluginInstaller] Migration already applied, skipping: ${file}`);
+				continue;
+			}
+
+			const sqlPath = path.join(migrationsDir, file);
+
+			// Fájl beolvasása — ha nem olvasható, telepítés sikertelen
+			let sqlContent: string;
+			try {
+				sqlContent = await fs.readFile(sqlPath, 'utf-8');
+			} catch (err) {
+				throw new Error(
+					`Migration fájl nem olvasható: ${file} — ${err instanceof Error ? err.message : 'Ismeretlen hiba'}`
+				);
+			}
+
+			// Üres fájl ellenőrzés
+			if (!sqlContent.trim()) {
+				throw new Error(`Migration fájl üres: ${file}`);
+			}
+
+			// Táblaneveket automatikusan prefixeljük a plugin sémával,
+			// ha még nincs séma prefix a lekérdezésben
+			const prefixedSql = this.prefixMigrationSchema(sqlContent, schemaName);
+
+			console.log(`[PluginInstaller] Running migration: ${file}`);
+
+			// SQL végrehajtása — szintaktikai vagy egyéb DB hiba esetén telepítés sikertelen
+			try {
+				await db.execute(prefixedSql);
+			} catch (err) {
+				throw new Error(
+					`Migration sikertelen: ${file} — ${err instanceof Error ? err.message : 'Ismeretlen adatbázis hiba'}`
+				);
+			}
+
+			// Migrációt feljegyezzük
+			await db.execute(`INSERT INTO ${schemaName}.migrations (filename) VALUES ('${file}')`);
+
+			console.log(`[PluginInstaller] Migration applied: ${file}`);
+		}
+	}
+
+	/**
+	 * Migrációs SQL-ben a táblaneveket a plugin sémával prefixeli,
+	 * ha még nincs séma megadva (pl. CREATE TABLE notes → CREATE TABLE plugin_x.notes).
+	 */
+	private prefixMigrationSchema(sql: string, schemaName: string): string {
+		// Ha már tartalmaz séma prefixet, nem módosítjuk
+		if (sql.toLowerCase().includes(schemaName.toLowerCase() + '.')) {
+			return sql;
+		}
+		return sql
+			.replace(
+				/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+([a-z_][a-z0-9_]*)/gi,
+				`CREATE TABLE IF NOT EXISTS ${schemaName}.$1`
+			)
+			.replace(/CREATE\s+TABLE\s+([a-z_][a-z0-9_]*)/gi, `CREATE TABLE ${schemaName}.$1`)
+			.replace(
+				/CREATE\s+INDEX\s+([a-z_][a-z0-9_]*)\s+ON\s+([a-z_][a-z0-9_]*)/gi,
+				`CREATE INDEX $1 ON ${schemaName}.$2`
+			)
+			.replace(
+				/CREATE\s+UNIQUE\s+INDEX\s+([a-z_][a-z0-9_]*)\s+ON\s+([a-z_][a-z0-9_]*)/gi,
+				`CREATE UNIQUE INDEX $1 ON ${schemaName}.$2`
+			);
 	}
 
 	/**

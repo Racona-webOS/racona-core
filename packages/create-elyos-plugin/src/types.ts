@@ -7,7 +7,7 @@ export interface PluginConfig {
 	displayName: string;
 	description: string;
 	author: string;
-	template: 'basic' | 'advanced' | 'datatable';
+	template: 'basic' | 'advanced' | 'datatable' | 'sidebar';
 	permissions: string[];
 	install: boolean;
 }

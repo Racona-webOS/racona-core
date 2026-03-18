@@ -4,8 +4,16 @@
  * Template másolás, manifest/package.json/README generálás.
  */
 
-import { existsSync, mkdirSync, cpSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import {
+	existsSync,
+	mkdirSync,
+	cpSync,
+	writeFileSync,
+	readdirSync,
+	readFileSync,
+	statSync
+} from 'node:fs';
+import { join, dirname, extname } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import pc from 'picocolors';
@@ -35,7 +43,13 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 	mkdirSync(targetDir, { recursive: true });
 	cpSync(templateDir, targetDir, { recursive: true });
 
-	// 3. Generált fájlok
+	// 3. Placeholder csere (sidebar template)
+	if (config.template === 'sidebar') {
+		replaceTemplatePlaceholders(targetDir, config);
+		writeMenuJson(targetDir, config);
+	}
+
+	// 4. Generált fájlok
 	writeManifest(targetDir, config);
 	writePackageJson(targetDir, config);
 	writeReadme(targetDir, config);
@@ -61,6 +75,61 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 	console.log(`  ${pc.cyan(`cd ${config.pluginId}`)}`);
 	console.log(`  ${pc.cyan('bun dev')}`);
 	console.log();
+}
+
+/**
+ * Sidebar template placeholder-ek cseréje a generált fájlokban.
+ * __PLUGIN_ID__ → config.pluginId
+ * __PLUGIN_ID_UNDERSCORE__ → config.pluginId kötőjelek nélkül (underscore)
+ */
+function replaceTemplatePlaceholders(targetDir: string, config: PluginConfig): void {
+	const pluginIdUnderscore = config.pluginId.replace(/-/g, '_');
+	const replaceable = new Set(['.svelte', '.ts', '.js', '.json']);
+
+	function walkAndReplace(dir: string): void {
+		for (const entry of readdirSync(dir)) {
+			const fullPath = join(dir, entry);
+			const stat = statSync(fullPath);
+
+			if (stat.isDirectory()) {
+				if (entry === 'node_modules') continue;
+				walkAndReplace(fullPath);
+			} else if (replaceable.has(extname(entry))) {
+				let content = readFileSync(fullPath, 'utf-8');
+				const original = content;
+				content = content.replaceAll('__PLUGIN_ID_UNDERSCORE__', pluginIdUnderscore);
+				content = content.replaceAll('__PLUGIN_ID__', config.pluginId);
+				if (content !== original) {
+					writeFileSync(fullPath, content);
+				}
+			}
+		}
+	}
+
+	walkAndReplace(targetDir);
+}
+
+/**
+ * menu.json generálás sidebar template-hez.
+ */
+function writeMenuJson(dir: string, config: PluginConfig): void {
+	// A labelKey csak a namespace utáni rész — a localization.ts maga fűzi elé a namespace-t
+	const menu = [
+		{
+			labelKey: 'menu.overview',
+			href: '#overview',
+			icon: 'Info',
+			component: 'Overview'
+		},
+		{
+			labelKey: 'menu.settings',
+			href: '#settings',
+			icon: 'Settings',
+			component: 'Settings'
+		}
+	];
+
+	writeFileSync(join(dir, 'menu.json'), JSON.stringify(menu, null, '\t') + '\n');
 }
 
 function writeManifest(dir: string, config: PluginConfig): void {
@@ -94,6 +163,8 @@ function writeManifest(dir: string, config: PluginConfig): void {
 }
 
 function writePackageJson(dir: string, config: PluginConfig): void {
+	const isSidebar = config.template === 'sidebar';
+
 	const pkg = {
 		name: `${config.pluginId}-plugin`,
 		version: '1.0.0',
@@ -102,10 +173,11 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 		scripts: {
 			dev: 'vite',
 			'dev:server': 'bun dev-server.ts',
-			build: 'vite build',
+			build: isSidebar ? 'bun build-all.js' : 'vite build',
 			'build:watch': 'vite build --watch',
 			preview: 'vite preview',
-			package: 'bun build-package.js'
+			package: 'bun build-package.js',
+			...(isSidebar ? { 'build:all': 'bun build-all.js' } : {})
 		},
 		dependencies: {
 			// TODO: @elyos/sdk nincs npm-en — ha publikálva lesz, cseréld vissza: '^1.0.0'
@@ -126,6 +198,8 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 }
 
 function writeReadme(dir: string, config: PluginConfig): void {
+	const isSidebar = config.template === 'sidebar';
+
 	const readme = `# ${config.displayName}
 
 ${config.description}
@@ -144,15 +218,21 @@ bun dev
 ## Build
 
 \`\`\`bash
-bun build
+bun run build
 \`\`\`
-
+${
+	isSidebar
+		? `
+> A \`build\` parancs a \`build-all.js\` scriptet futtatja, ami a fő plugint és az összes sidebar komponenst is build-eli.
+`
+		: ''
+}
 ## Struktúra
 
 - \`src/\` — Plugin forráskód (Svelte 5)
-- \`locales/\` — Fordítások (hu, en)
+${isSidebar ? '- `src/components/` — Sidebar menüpontok komponensei\n' : ''}- \`locales/\` — Fordítások (hu, en)
 - \`assets/\` — Ikonok, képek
-${config.template !== 'basic' ? '- `server/` — Szerver oldali függvények\n' : ''}- \`manifest.json\` — Plugin metaadatok
+${config.template !== 'basic' ? '- `server/` — Szerver oldali függvények\n' : ''}${isSidebar ? '- `menu.json` — Sidebar menü definíció\n' : ''}- \`manifest.json\` — Plugin metaadatok
 - \`vite.config.ts\` — Build konfiguráció
 
 ## License

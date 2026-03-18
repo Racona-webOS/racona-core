@@ -27,7 +27,11 @@ export const POST: RequestHandler = async ({ params, request }) => {
 
 		// Plugin ellenőrzés
 		const pluginResult = await db
-			.select({ pluginStatus: apps.pluginStatus, appType: apps.appType })
+			.select({
+				pluginStatus: apps.pluginStatus,
+				appType: apps.appType,
+				permissions: apps.permissions
+			})
 			.from(apps)
 			.where(eq(apps.appId, pluginId))
 			.limit(1);
@@ -42,6 +46,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 
 		if (pluginResult[0].pluginStatus !== 'active') {
 			throw error(403, `${PluginErrorCode.PLUGIN_INACTIVE}: Plugin is not active`);
+		}
+
+		const permissions = (pluginResult[0].permissions as string[]) ?? [];
+		if (!permissions.includes('database')) {
+			throw error(
+				403,
+				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have database permission`
+			);
 		}
 
 		// SQL injection védelem

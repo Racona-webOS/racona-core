@@ -94,22 +94,25 @@
 
 	async function loadPluginComponent(componentName: string) {
 		try {
-			console.log('[AppContentArea] Fetching plugin component:', componentName);
-			// Plugin komponens betöltése az API-n keresztül
-			const response = await fetch(`/api/plugins/${appName}/components/${componentName}`);
-			if (!response.ok) {
-				throw new Error(`Failed to load plugin component: ${response.statusText}`);
-			}
-
-			const code = await response.text();
-			console.log('[AppContentArea] Plugin component code received, length:', code.length);
-
 			// Egyedi factory function név a komponenshez
 			const factoryName = `${appName.replace(/-/g, '_')}_Component_${componentName}`;
 			let componentFactory = (window as any)[factoryName];
 
-			if (!componentFactory || typeof componentFactory !== 'function') {
-				console.log('[AppContentArea] Executing plugin component script');
+			// Ha a factory már elérhető a window-on (pl. dev módban már betöltötte a windowStore),
+			// akkor közvetlenül használjuk, nem kell API fetch
+			if (componentFactory && typeof componentFactory === 'function') {
+				console.log('[AppContentArea] Factory already on window, using directly:', factoryName);
+			} else {
+				// Plugin komponens betöltése az API-n keresztül (production mód)
+				console.log('[AppContentArea] Fetching plugin component from API:', componentName);
+				const response = await fetch(`/api/plugins/${appName}/components/${componentName}`);
+				if (!response.ok) {
+					throw new Error(`Failed to load plugin component: ${response.statusText}`);
+				}
+
+				const code = await response.text();
+				console.log('[AppContentArea] Plugin component code received, length:', code.length);
+
 				// Komponens kód futtatása
 				const script = document.createElement('script');
 				script.textContent = code;

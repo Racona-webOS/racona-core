@@ -1,0 +1,11 @@
+{
+	"title": "Plugin",
+	"welcome": "Üdvözöljük!",
+	"menu.overview": "Áttekintés",
+	"menu.settings": "Beállítások",
+	"overview.title": "Áttekintés",
+	"overview.description": "Ez a plugin az ElyOS sidebar layout rendszerét használja.",
+	"settings.title": "Beállítások",
+	"settings.name": "Neved",
+	"settings.save": "Mentés"
+}

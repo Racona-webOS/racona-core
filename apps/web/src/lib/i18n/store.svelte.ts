@@ -252,6 +252,17 @@ export class TranslationStore {
 		this._error = null;
 	}
 
+	/**
+	 * Fordítások közvetlen hozzáadása egy namespace-hez (pl. dev plugin fordítások).
+	 * A namespace betöltöttnek lesz jelölve, így az I18nProvider nem próbálja újra betölteni.
+	 */
+	addTranslations(namespace: string, translations: Record<string, string>): void {
+		for (const [key, value] of Object.entries(translations)) {
+			this._translations.set(`${namespace}.${key}`, value);
+		}
+		this._loadedNamespaces.add(namespace);
+	}
+
 	getMissingKeys(): Array<{ key: string; locale: string; timestamp: number }> {
 		// Számláló olvasása a reaktivitás érdekében
 		void this._issueCounter;

@@ -69,6 +69,7 @@ export async function runInteractiveWizard(
 			choices: [
 				{ title: 'Basic', value: 'basic', description: 'Egyszerű plugin UI-val' },
 				{ title: 'Advanced', value: 'advanced', description: 'Szerver függvényekkel' },
+				{ title: 'Sidebar', value: 'sidebar', description: 'Sidebar menüvel (layout mód)' },
 				{ title: 'DataTable', value: 'datatable', description: 'CRUD DataTable-lel' }
 			],
 			initial: 0

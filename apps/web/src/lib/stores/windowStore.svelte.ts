@@ -7,6 +7,7 @@ import {
 	saveWindowState,
 	type StoredWindowState
 } from '$lib/services/client/windowStateStorage';
+import { getTranslationStore } from '$lib/i18n/store.svelte';
 
 // Vite glob import az alkalmazás komponensekhez
 const appModules = import.meta.glob('/src/apps/*/index.svelte') as Record<
@@ -434,6 +435,47 @@ export class WindowManager {
 				true // devMode — ne indítson API hívást a fordításokhoz
 			);
 
+			// Dev módban a DataService localStorage-t használ (nincs DB bejegyzés)
+			const devDataPrefix = `devplugin:${pluginId}:`;
+			const devDataService = {
+				async set(key: string, value: unknown): Promise<void> {
+					localStorage.setItem(`${devDataPrefix}${key}`, JSON.stringify(value));
+				},
+				async get<T = unknown>(key: string): Promise<T | null> {
+					try {
+						const raw = localStorage.getItem(`${devDataPrefix}${key}`);
+						return raw ? (JSON.parse(raw) as T) : null;
+					} catch {
+						return null;
+					}
+				},
+				async delete(key: string): Promise<void> {
+					localStorage.removeItem(`${devDataPrefix}${key}`);
+				},
+				async query<T = unknown>(..._args: unknown[]): Promise<T[]> {
+					console.warn('[DevPlugin] SQL query nem támogatott dev módban');
+					return [] as T[];
+				},
+				async transaction<T>(
+					callback: (tx: {
+						query: (...args: unknown[]) => Promise<unknown[]>;
+						commit: () => Promise<void>;
+						rollback: () => Promise<void>;
+					}) => Promise<T>
+				): Promise<T> {
+					return callback({
+						query: async () => [],
+						commit: async () => {},
+						rollback: async () => {}
+					});
+				}
+			};
+			Object.defineProperty(sdk, 'data', {
+				value: devDataService,
+				writable: false,
+				configurable: true
+			});
+
 			// Toast handler regisztrálása
 			const { toast: showToast } = await import('svelte-sonner');
 			sdk.ui._setToastHandler((message, type, duration) => {
@@ -466,6 +508,24 @@ export class WindowManager {
 
 			console.log('[DevPlugin] WebOS SDK inicializálva:', pluginId);
 
+			// Ellenőrizzük, hogy van-e menu.json a dev szerveren
+			let devMenuData: any[] | null = null;
+			try {
+				const menuResponse = await fetch(`${devUrl}/menu.json`, {
+					mode: 'cors',
+					credentials: 'omit'
+				});
+				if (menuResponse.ok) {
+					const menuJson = await menuResponse.json();
+					if (Array.isArray(menuJson) && menuJson.length > 0) {
+						devMenuData = menuJson;
+						console.log('[DevPlugin] menu.json found, loading with layout mode');
+					}
+				}
+			} catch {
+				console.log('[DevPlugin] No menu.json found, loading as Web Component');
+			}
+
 			// Fordítások betöltése a dev szerverről és injektálása az SDK-ba
 			const locale = localStorage.getItem('locale') ?? navigator.language.split('-')[0] ?? 'en';
 			try {
@@ -477,6 +537,17 @@ export class WindowManager {
 				if (localeResponse.ok) {
 					const translations = (await localeResponse.json()) as Record<string, string>;
 					(sdk.i18n as unknown as I18nWithLoader).loadTranslationsFromObject(translations);
+
+					// Core TranslationStore-ba is betöltjük a fordításokat,
+					// hogy a sidebar menü lokalizáció is működjön dev módban
+					try {
+						const translationStore = getTranslationStore();
+						translationStore.addTranslations(`plugin:${pluginId}`, translations);
+						console.log(`[DevPlugin] Fordítások betöltve core store-ba: plugin:${pluginId}`);
+					} catch {
+						console.warn('[DevPlugin] Core TranslationStore nem elérhető');
+					}
+
 					console.log(
 						`[DevPlugin] Fordítások betöltve: ${locale} (${Object.keys(translations).length} kulcs)`
 					);
@@ -489,10 +560,77 @@ export class WindowManager {
 					if (fallbackResponse.ok) {
 						const translations = (await fallbackResponse.json()) as Record<string, string>;
 						(sdk.i18n as unknown as I18nWithLoader).loadTranslationsFromObject(translations);
+
+						// Core TranslationStore-ba is betöltjük
+						try {
+							const translationStore = getTranslationStore();
+							translationStore.addTranslations(`plugin:${pluginId}`, translations);
+						} catch {
+							// nem kritikus
+						}
 					}
 				}
 			} catch {
 				console.warn(`[DevPlugin] Fordítások nem tölthetők be: ${devUrl}/locales/${locale}.json`);
+			}
+
+			// Ha van menu.json, layout módban töltjük be (PluginLayoutWrapper)
+			if (devMenuData) {
+				const PluginLayoutWrapper =
+					await import('$lib/components/shared/PluginLayoutWrapper.svelte');
+
+				// IIFE bundle is kell — a komponensek factory function-jeit regisztrálja
+				const entry = manifest.entry || 'dist/index.iife.js';
+				const bundleResponse = await fetch(`${devUrl}/${entry}`, {
+					mode: 'cors',
+					credentials: 'omit'
+				});
+				if (bundleResponse.ok) {
+					const code = await bundleResponse.text();
+					const factoryName = `${pluginId.replace(/-/g, '_')}_Plugin`;
+					if (!(window as any)[factoryName]) {
+						const script = document.createElement('script');
+						script.textContent = code;
+						document.head.appendChild(script);
+					}
+					// Factory meghívása, hogy a custom element regisztrálódjon
+					const pluginFactory = (window as any)[factoryName];
+					if (pluginFactory) pluginFactory();
+				}
+
+				// Komponens bundle-ök betöltése a dev szerverről
+				for (const menuItem of devMenuData) {
+					const compName = menuItem.component;
+					if (!compName) continue;
+					const compFactoryName = `${pluginId.replace(/-/g, '_')}_Component_${compName}`;
+					if ((window as any)[compFactoryName]) continue; // Már betöltve
+
+					try {
+						const compResponse = await fetch(`${devUrl}/dist/components/${compName}.iife.js`, {
+							mode: 'cors',
+							credentials: 'omit'
+						});
+						if (compResponse.ok) {
+							const compCode = await compResponse.text();
+							const compScript = document.createElement('script');
+							compScript.textContent = compCode;
+							document.head.appendChild(compScript);
+							console.log(`[DevPlugin] Component loaded: ${compName}`);
+						}
+					} catch {
+						console.warn(`[DevPlugin] Failed to load component: ${compName}`);
+					}
+				}
+
+				(window_obj as any).pluginMenuData = devMenuData;
+				(window_obj as any).pluginId = pluginId;
+				(window_obj as any).isPluginWithLayout = true;
+				window_obj.component = PluginLayoutWrapper.default;
+				window_obj.isLoading = false;
+				this.windows = [...this.windows];
+
+				console.log(`[DevPlugin] Layout módban betöltve: ${pluginId} (${devUrl})`);
+				return;
 			}
 
 			// IIFE bundle lekérése a dev szerverről

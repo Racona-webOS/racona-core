@@ -1,0 +1,11 @@
+{
+	"title": "Plugin",
+	"welcome": "Welcome!",
+	"menu.overview": "Overview",
+	"menu.settings": "Settings",
+	"overview.title": "Overview",
+	"overview.description": "This plugin uses the ElyOS sidebar layout system.",
+	"settings.title": "Settings",
+	"settings.name": "Your name",
+	"settings.save": "Save"
+}
