@@ -16,19 +16,30 @@ export class NotificationService implements INotificationService {
 	private readonly hasPermission: boolean;
 	private notificationFn: ((options: NotificationOptions) => Promise<void>) | null = null;
 
+	/**
+	 * @param pluginId - Plugin egyedi azonosítója
+	 * @param permissions - Plugin jogosultságok listája (a `notifications` jogosultság szükséges)
+	 */
 	constructor(pluginId: string, permissions: string[]) {
 		this.pluginId = pluginId;
 		this.hasPermission = permissions.includes('notifications');
 	}
 
 	/**
-	 * Notification callback regisztrálása (az ElyOS core hívja meg dev módban)
+	 * Notification callback regisztrálása (az ElyOS core hívja meg dev módban).
+	 * @param fn - Értesítés küldő függvény
 	 */
 	setDevNotificationHandler(fn: (options: NotificationOptions) => Promise<void>): void {
 		this.notificationFn = fn;
 	}
 
-	/** Értesítés küldése */
+	/**
+	 * Értesítés küldése a notification center-be.
+	 * @param options - Értesítés adatai (userId, title, message, type)
+	 * @throws `PERMISSION_DENIED` ha a plugin nem rendelkezik `notifications` jogosultsággal
+	 * @throws `SERVER_ERROR` ha a szerver 5xx hibát ad vissza
+	 * @throws `NETWORK_ERROR` ha hálózati hiba történik
+	 */
 	async send(options: NotificationOptions): Promise<void> {
 		if (!this.hasPermission) {
 			throw new Error(

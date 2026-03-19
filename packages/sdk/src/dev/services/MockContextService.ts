@@ -14,12 +14,18 @@ export interface MockContextConfig {
 }
 
 export class MockContextService implements ContextService {
+	/** Plugin egyedi azonosítója */
 	readonly pluginId: string;
+	/** Bejelentkezett felhasználó adatai (mock) */
 	readonly user: UserInfo;
+	/** Plugin indításkor átadott paraméterek */
 	readonly params: Record<string, unknown>;
+	/** Plugin jogosultságok listája */
 	readonly permissions: string[];
+	/** Ablak vezérlők — console-ra logolnak */
 	readonly window: WindowControls;
 
+	/** @param config - Opcionális mock kontextus konfiguráció */
 	constructor(config?: MockContextConfig) {
 		this.pluginId = config?.pluginId ?? 'dev-plugin';
 		this.user = {

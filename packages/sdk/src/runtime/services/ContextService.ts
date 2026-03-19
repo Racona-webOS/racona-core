@@ -11,12 +11,24 @@ import type {
 } from '../../types/index.js';
 
 export class ContextService implements IContextService {
+	/** Plugin egyedi azonosítója */
 	readonly pluginId: string;
+	/** Bejelentkezett felhasználó adatai */
 	readonly user: UserInfo;
+	/** Plugin indításkor átadott paraméterek */
 	readonly params: Record<string, unknown>;
+	/** Plugin jogosultságok listája */
 	readonly permissions: string[];
+	/** Ablak vezérlők (close, setTitle) */
 	readonly window: WindowControls;
 
+	/**
+	 * @param pluginId - Plugin egyedi azonosítója
+	 * @param user - Bejelentkezett felhasználó adatai
+	 * @param params - Plugin indításkor átadott paraméterek
+	 * @param permissions - Plugin jogosultságok listája
+	 * @param windowElement - Opcionális Window referencia (iframe-hez)
+	 */
 	constructor(
 		pluginId: string,
 		user: UserInfo,

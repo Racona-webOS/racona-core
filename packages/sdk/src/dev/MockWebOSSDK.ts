@@ -32,15 +32,24 @@ import { MockContextService } from './services/MockContextService.js';
 import { MockAssetService } from './services/MockAssetService.js';
 
 export class MockWebOSSDK implements WebOSSDKInterface {
+	/** Mock UI service */
 	readonly ui: MockUIService;
+	/** Mock Remote service */
 	readonly remote: MockRemoteService;
+	/** Mock Data service */
 	readonly data: MockDataService;
+	/** Mock I18n service */
 	readonly i18n: MockI18nService;
+	/** Mock Notification service */
 	readonly notifications: MockNotificationService;
+	/** Mock Context service */
 	readonly context: MockContextService;
+	/** Mock Asset service */
 	readonly assets: MockAssetService;
+	/** Mock UI komponensek — üres objektum */
 	readonly components: WebOSSDKInterface['components'];
 
+	/** @param config - Opcionális mock SDK konfiguráció */
 	constructor(config?: MockSDKConfig) {
 		this.ui = new MockUIService();
 		this.remote = new MockRemoteService(config?.remote);
@@ -54,6 +63,21 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 		this.components = {};
 	}
 
+	/**
+	 * Mock SDK inicializálása és `window.webOS`-hoz csatolása.
+	 *
+	 * @param config - Opcionális mock SDK konfiguráció
+	 * @returns Az inicializált MockWebOSSDK példány
+	 *
+	 * @example
+	 * ```ts
+	 * if (!window.webOS) {
+	 *   MockWebOSSDK.initialize({
+	 *     context: { pluginId: 'my-app' }
+	 *   });
+	 * }
+	 * ```
+	 */
 	static initialize(config?: MockSDKConfig): MockWebOSSDK {
 		const sdk = new MockWebOSSDK(config);
 

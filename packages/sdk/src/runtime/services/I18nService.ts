@@ -15,6 +15,10 @@ export class I18nService implements II18nService {
 	private storageListener: ((e: StorageEvent) => void) | null = null;
 	private _onLocaleChangeCallbacks: Array<() => void> = [];
 
+	/**
+	 * @param pluginId - Plugin egyedi azonosítója
+	 * @param skipAutoLoad - Ha `true`, nem tölti be automatikusan a fordításokat (dev módhoz)
+	 */
 	constructor(pluginId: string, skipAutoLoad = false) {
 		this.pluginId = pluginId;
 		this.detectLocale();
@@ -24,8 +28,11 @@ export class I18nService implements II18nService {
 		this.listenForLocaleChanges();
 	}
 
-	/** Callback regisztrálása locale váltáskor (pl. Svelte $state frissítéshez).
-	 *  Több callback is regisztrálható — mindegyik meghívódik a fordítások betöltése után. */
+	/**
+	 * Callback regisztrálása locale váltáskor (pl. Svelte `$state` frissítéshez).
+	 * Több callback is regisztrálható — mindegyik meghívódik a fordítások betöltése után.
+	 * @param callback - Meghívandó függvény locale váltás után
+	 */
 	onLocaleChange(callback: () => void): void {
 		this._onLocaleChangeCallbacks.push(callback);
 	}
@@ -48,7 +55,7 @@ export class I18nService implements II18nService {
 		window.addEventListener('elyos:locale-change', this.storageListener as EventListener);
 	}
 
-	/** Listener eltávolítása (cleanup) */
+	/** Listener eltávolítása — hívd meg a plugin unmount-jakor. */
 	destroy(): void {
 		if (this.storageListener && typeof window !== 'undefined') {
 			window.removeEventListener('elyos:locale-change', this.storageListener as EventListener);
@@ -71,8 +78,9 @@ export class I18nService implements II18nService {
 	}
 
 	/**
-	 * Fordítások közvetlen betöltése objektumból (dev módhoz)
+	 * Fordítások közvetlen betöltése objektumból (dev módhoz).
 	 * Az ElyOS core hívja meg dev plugin betöltésekor.
+	 * @param translations - Fordítások kulcs-érték párokban
 	 */
 	loadTranslationsFromObject(translations: Record<string, string>): void {
 		this.translations.clear();
@@ -110,7 +118,7 @@ export class I18nService implements II18nService {
 		}
 	}
 
-	/** Várja meg a fordítások betöltését */
+	/** Várja meg a fordítások betöltését a szerverről. */
 	async ready(): Promise<void> {
 		if (this.loadingPromise) {
 			await this.loadingPromise;
@@ -141,12 +149,15 @@ export class I18nService implements II18nService {
 		return translation;
 	}
 
-	/** Aktuális nyelv */
+	/** Aktuális nyelv kódja (pl. `"hu"`, `"en"`). */
 	get locale(): string {
 		return this._locale;
 	}
 
-	/** Nyelv váltása és fordítások újratöltése */
+	/**
+	 * Nyelv váltása és fordítások újratöltése a szerverről.
+	 * @param newLocale - Az új nyelv kódja
+	 */
 	async setLocale(newLocale: string): Promise<void> {
 		this._locale = newLocale;
 		this.translations.clear();

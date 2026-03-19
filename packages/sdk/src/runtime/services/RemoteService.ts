@@ -11,12 +11,22 @@ import { PluginErrorCode } from '../../types/index.js';
 export class RemoteService implements IRemoteService {
 	private readonly pluginId: string;
 
+	/** @param pluginId - Plugin egyedi azonosítója */
 	constructor(pluginId: string) {
 		this.pluginId = pluginId;
 	}
 
 	/**
-	 * Szerver oldali függvény hívása retry logikával
+	 * Szerver oldali függvény hívása retry logikával (max 3 kísérlet, exponenciális backoff).
+	 *
+	 * @param functionName - A szerver oldali függvény neve
+	 * @param params - Átadandó paraméterek
+	 * @param options - Hívás beállítások (pl. timeout)
+	 * @returns A szerver által visszaadott eredmény
+	 * @throws `REMOTE_CALL_TIMEOUT` ha a kérés túllépi az időkorlátot
+	 * @throws `NETWORK_ERROR` ha hálózati hiba történik
+	 * @throws `SERVER_ERROR` ha a szerver 5xx hibát ad vissza
+	 * @throws `CLIENT_ERROR` ha a szerver 4xx hibát ad vissza
 	 */
 	async call<T = unknown>(
 		functionName: string,

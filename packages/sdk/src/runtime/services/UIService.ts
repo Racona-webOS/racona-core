@@ -19,21 +19,27 @@ export class UIService implements IUIService {
 	private dialogFn: ((options: DialogOptions) => Promise<DialogResult>) | null = null;
 
 	/**
-	 * Toast callback regisztrálása (az ElyOS core hívja meg)
+	 * Toast callback regisztrálása (az ElyOS core hívja meg).
+	 * @param fn - Toast megjelenítő függvény
 	 */
 	_setToastHandler(fn: (message: string, type: ToastType, duration: number) => void): void {
 		this.toastFn = fn;
 	}
 
 	/**
-	 * Dialog callback regisztrálása (az ElyOS core hívja meg)
+	 * Dialog callback regisztrálása (az ElyOS core hívja meg).
+	 * @param fn - Dialógus megjelenítő függvény
 	 */
 	_setDialogHandler(fn: (options: DialogOptions) => Promise<DialogResult>): void {
 		this.dialogFn = fn;
 	}
 
 	/**
-	 * Toast értesítés megjelenítése
+	 * Toast értesítés megjelenítése.
+	 *
+	 * @param message - Megjelenítendő szöveg
+	 * @param type - Toast típusa (`info` | `success` | `warning` | `error`)
+	 * @param duration - Megjelenítési idő milliszekundumban (alapértelmezett: 3000)
 	 */
 	toast(message: string, type: ToastType = 'info', duration: number = 3000): void {
 		if (this.toastFn) {
@@ -45,7 +51,10 @@ export class UIService implements IUIService {
 	}
 
 	/**
-	 * Dialógus megjelenítése
+	 * Dialógus megjelenítése.
+	 *
+	 * @param options - Dialógus beállítások (cím, szöveg, típus, gombok)
+	 * @returns A felhasználó által kiválasztott akció és opcionális érték
 	 */
 	async dialog(options: DialogOptions): Promise<DialogResult> {
 		if (this.dialogFn) {
@@ -67,14 +76,16 @@ export class UIService implements IUIService {
 	}
 
 	/**
-	 * Svelte komponensek elérése
+	 * ElyOS UI komponensek elérése.
+	 * A komponensek az ElyOS core által kerülnek regisztrálásra.
 	 */
 	get components(): WebOSComponents {
 		return {};
 	}
 
 	/**
-	 * Téma színek elérése CSS változókból
+	 * Aktuális téma színek CSS változókból olvasva.
+	 * Ha nem böngésző környezetben fut, üres értékeket ad vissza.
 	 */
 	get theme(): ThemeColors {
 		if (typeof document === 'undefined') {

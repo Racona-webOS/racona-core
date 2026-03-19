@@ -10,6 +10,7 @@ import type { AssetService as IAssetService } from '../../types/index.js';
 export class AssetService implements IAssetService {
 	private readonly pluginId: string;
 
+	/** @param pluginId - Plugin egyedi azonosítója */
 	constructor(pluginId: string) {
 		this.pluginId = pluginId;
 	}

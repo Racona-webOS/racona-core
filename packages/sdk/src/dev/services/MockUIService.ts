@@ -15,10 +15,21 @@ import type {
 } from '../../types/index.js';
 
 export class MockUIService implements UIService {
+	/**
+	 * Toast szimulálása — console-ra logol.
+	 * @param message - Megjelenítendő szöveg
+	 * @param type - Toast típusa
+	 * @param duration - Megjelenítési idő ms-ban
+	 */
 	toast(message: string, type: ToastType = 'info', duration: number = 3000): void {
 		console.log(`[Mock Toast ${type}] ${message} (${duration}ms)`);
 	}
 
+	/**
+	 * Dialógus szimulálása böngésző natív `confirm`/`prompt`/`alert` segítségével.
+	 * @param options - Dialógus beállítások
+	 * @returns A felhasználó által kiválasztott akció
+	 */
 	async dialog(options: DialogOptions): Promise<DialogResult> {
 		const title = options.title ? `${options.title}\n\n` : '';
 		const text = `${title}${options.message ?? ''}`;
@@ -39,10 +50,12 @@ export class MockUIService implements UIService {
 		return { action: 'ok' };
 	}
 
+	/** Mock UI komponensek — üres objektum fejlesztői módban. */
 	get components(): WebOSComponents {
 		return {};
 	}
 
+	/** Mock téma színek — alapértelmezett fejlesztői paletta. */
 	get theme(): ThemeColors {
 		return {
 			primary: '#667eea',
