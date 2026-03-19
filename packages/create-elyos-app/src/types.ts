@@ -7,9 +7,14 @@ export interface PluginConfig {
 	displayName: string;
 	description: string;
 	author: string;
-	template: 'basic' | 'advanced' | 'datatable' | 'sidebar';
+	template: 'basic' | 'advanced' | 'datatable' | 'sidebar' | 'starter';
 	permissions: string[];
 	install: boolean;
+	// starter template opciók
+	blankSidebar?: boolean;
+	blankRemote?: boolean;
+	blankI18n?: boolean;
+	blankMigrations?: boolean;
 }
 
 export interface PluginManifest {

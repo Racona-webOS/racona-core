@@ -67,6 +67,11 @@ export async function runInteractiveWizard(
 			name: 'template',
 			message: 'Template:',
 			choices: [
+				{
+					title: 'Starter',
+					value: 'starter',
+					description: 'Clean slate — only SDK, you choose what to add'
+				},
 				{ title: 'Basic', value: 'basic', description: 'Simple app with UI' },
 				{ title: 'Advanced', value: 'advanced', description: 'With server functions' },
 				{ title: 'Sidebar', value: 'sidebar', description: 'With sidebar menu (layout mode)' },
@@ -93,13 +98,80 @@ export async function runInteractiveWizard(
 		}
 	});
 
+	const selectedTemplate = (options?.template ??
+		answers.template ??
+		'starter') as PluginConfig['template'];
+
+	// starter template: follow-up kérdések
+	let blankSidebar = false;
+	let blankRemote = false;
+	let blankI18n = false;
+	let blankMigrations = false;
+
+	if (selectedTemplate === 'starter') {
+		const blankAnswers = await prompts(
+			[
+				{
+					type: 'toggle',
+					name: 'sidebar',
+					message: 'Add sidebar navigation? (menu.json + components/)',
+					initial: false,
+					active: 'yes',
+					inactive: 'no'
+				},
+				{
+					type: 'toggle',
+					name: 'remote',
+					message: 'Add server functions? (server/functions.ts)',
+					initial: false,
+					active: 'yes',
+					inactive: 'no'
+				},
+				{
+					type: 'toggle',
+					name: 'migrations',
+					message: 'Add database migrations? (migrations/001_init.sql)',
+					initial: false,
+					active: 'yes',
+					inactive: 'no'
+				},
+				{
+					type: 'toggle',
+					name: 'i18n',
+					message: 'Add i18n translations? (locales/)',
+					initial: true,
+					active: 'yes',
+					inactive: 'no'
+				}
+			],
+			{
+				onCancel: () => {
+					throw new Error('cancelled');
+				}
+			}
+		);
+		blankSidebar = blankAnswers.sidebar ?? false;
+		blankRemote = blankAnswers.remote ?? false;
+		blankI18n = blankAnswers.i18n ?? true;
+		blankMigrations = blankAnswers.migrations ?? false;
+
+		// Ha migrations kell, a database permission automatikusan bekerül
+		if (blankMigrations && !answers.permissions?.includes('database')) {
+			answers.permissions = [...(answers.permissions ?? []), 'database'];
+		}
+	}
+
 	return {
 		pluginId: initialName ?? answers.pluginId,
 		displayName: answers.displayName || toTitleCase(initialName ?? answers.pluginId ?? ''),
 		description: answers.description || '',
 		author: answers.author || '',
-		template: (options?.template ?? answers.template ?? 'basic') as PluginConfig['template'],
+		template: selectedTemplate,
 		permissions: answers.permissions ?? ['database', 'remote_functions'],
-		install: options?.install !== false
+		install: options?.install !== false,
+		blankSidebar,
+		blankRemote,
+		blankI18n,
+		blankMigrations
 	};
 }

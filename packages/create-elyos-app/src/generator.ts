@@ -36,23 +36,27 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 	const templatesRoot = join(__dirname, '..', 'templates');
 	const templateDir = join(templatesRoot, config.template);
 
-	if (!existsSync(templateDir)) {
-		throw new Error(`Template not found: ${config.template}`);
+	if (config.template === 'starter') {
+		await generateStarterProject(targetDir, config);
+	} else {
+		if (!existsSync(templateDir)) {
+			throw new Error(`Template not found: ${config.template}`);
+		}
+
+		mkdirSync(targetDir, { recursive: true });
+		cpSync(templateDir, targetDir, { recursive: true });
+
+		// 3. Replace placeholders (sidebar template)
+		if (config.template === 'sidebar') {
+			replaceTemplatePlaceholders(targetDir, config);
+			writeMenuJson(targetDir, config);
+		}
+
+		// 4. Generated files
+		writeManifest(targetDir, config);
+		writePackageJson(targetDir, config);
+		writeReadme(targetDir, config);
 	}
-
-	mkdirSync(targetDir, { recursive: true });
-	cpSync(templateDir, targetDir, { recursive: true });
-
-	// 3. Replace placeholders (sidebar template)
-	if (config.template === 'sidebar') {
-		replaceTemplatePlaceholders(targetDir, config);
-		writeMenuJson(targetDir, config);
-	}
-
-	// 4. Generated files
-	writeManifest(targetDir, config);
-	writePackageJson(targetDir, config);
-	writeReadme(targetDir, config);
 
 	// 4. Install dependencies
 	if (config.install) {
@@ -163,7 +167,8 @@ function writeManifest(dir: string, config: PluginConfig): void {
 }
 
 function writePackageJson(dir: string, config: PluginConfig): void {
-	const isSidebar = config.template === 'sidebar';
+	const isSidebar =
+		config.template === 'sidebar' || (config.template === 'starter' && config.blankSidebar);
 
 	const pkg = {
 		name: `${config.pluginId}-plugin`,
@@ -239,4 +244,247 @@ MIT
 `;
 
 	writeFileSync(join(dir, 'README.md'), readme);
+}
+
+/**
+ * Blank template: minimális projekt generálása, opcionális funkciókkal.
+ */
+async function generateStarterProject(targetDir: string, config: PluginConfig): Promise<void> {
+	const { blankSidebar, blankRemote, blankI18n } = config;
+
+	// Alap könyvtárstruktúra
+	mkdirSync(join(targetDir, 'src'), { recursive: true });
+	mkdirSync(join(targetDir, 'assets'), { recursive: true });
+
+	if (blankI18n) {
+		mkdirSync(join(targetDir, 'locales'), { recursive: true });
+	}
+	if (blankRemote) {
+		mkdirSync(join(targetDir, 'server'), { recursive: true });
+	}
+	if (blankSidebar) {
+		mkdirSync(join(targetDir, 'src', 'components'), { recursive: true });
+	}
+	if (config.blankMigrations) {
+		mkdirSync(join(targetDir, 'migrations'), { recursive: true });
+	}
+
+	// Alap fájlok másolása a basic template-ből (vite.config, dev-server, stb.)
+	const templatesRoot = join(__dirname, '..', 'templates');
+	const basicDir = join(templatesRoot, 'basic');
+	for (const f of [
+		'.gitignore',
+		'build-package.js',
+		'dev-server.ts',
+		'index.html',
+		'svelte.config.js',
+		'tsconfig.json',
+		'vite.config.ts'
+	]) {
+		const src = join(basicDir, f);
+		if (existsSync(src)) {
+			const { copyFileSync } = await import('node:fs');
+			copyFileSync(src, join(targetDir, f));
+		}
+	}
+
+	// icon.svg
+	const iconSrc = join(basicDir, 'assets', 'icon.svg');
+	if (existsSync(iconSrc)) {
+		const { copyFileSync } = await import('node:fs');
+		copyFileSync(iconSrc, join(targetDir, 'assets', 'icon.svg'));
+	}
+
+	// App.svelte
+	writeFileSync(join(targetDir, 'src', 'App.svelte'), generateBlankAppSvelte(config));
+
+	// main.ts
+	writeFileSync(join(targetDir, 'src', 'main.ts'), generateBlankMainTs(config));
+
+	// sidebar komponensek
+	if (blankSidebar) {
+		writeFileSync(
+			join(targetDir, 'src', 'components', 'Overview.svelte'),
+			generateBlankOverviewSvelte()
+		);
+		writeMenuJson(targetDir, config);
+	}
+
+	// server/functions.ts
+	if (blankRemote) {
+		writeFileSync(
+			join(targetDir, 'server', 'functions.ts'),
+			`/**\n * Szerver oldali függvények\n */\n\nexport async function example(): Promise<{ result: string }> {\n\treturn { result: 'Hello from server!' };\n}\n`
+		);
+	}
+
+	// locales
+	if (blankI18n) {
+		writeFileSync(
+			join(targetDir, 'locales', 'hu.json'),
+			JSON.stringify({ title: config.displayName }, null, '\t') + '\n'
+		);
+		writeFileSync(
+			join(targetDir, 'locales', 'en.json'),
+			JSON.stringify({ title: config.displayName }, null, '\t') + '\n'
+		);
+	}
+
+	// migrations/001_init.sql
+	if (config.blankMigrations) {
+		const pluginIdUnderscore = config.pluginId.replace(/-/g, '_');
+		writeFileSync(
+			join(targetDir, 'migrations', '001_init.sql'),
+			`-- ${config.pluginId} kezdeti séma
+-- A táblaneveket a telepítő automatikusan prefixeli a plugin sémájával (plugin__${pluginIdUnderscore})
+-- Nem kell séma prefixet írni — az ElyOS installer automatikusan hozzáadja.
+
+CREATE TABLE IF NOT EXISTS items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    value JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_items_created_at ON items (created_at);
+`
+		);
+	}
+
+	// manifest, package.json, README
+	writeManifest(targetDir, config);
+	writePackageJson(targetDir, config);
+	writeBlankReadme(targetDir, config);
+}
+
+function generateBlankAppSvelte(config: PluginConfig): string {
+	const { blankI18n, blankRemote, blankSidebar } = config;
+
+	const sdkLines: string[] = ['const sdk = window.webOS;'];
+	if (blankRemote) {
+		sdkLines.push('');
+		sdkLines.push('\tasync function callExample() {');
+		sdkLines.push("\t\tconst result = await sdk?.remote.call<{ result: string }>('example');");
+		sdkLines.push("\t\tsdk?.ui.toast(result?.result ?? 'No response', 'info');");
+		sdkLines.push('\t}');
+	}
+
+	const titleExpr = blankI18n
+		? "sdk?.i18n.t('title') ?? '" + config.displayName + "'"
+		: `'${config.displayName}'`;
+
+	let template = '';
+	if (blankSidebar) {
+		template = `\t<p>Select a menu item from the sidebar.</p>`;
+	} else if (blankRemote) {
+		template = `\t<h1>{${titleExpr}}</h1>\n\t<button onclick={callExample}>Call server</button>`;
+	} else {
+		template = `\t<h1>{${titleExpr}}</h1>`;
+	}
+
+	return `<script lang="ts">
+\t${sdkLines.join('\n')}
+</script>
+
+<div class="app">
+${template}
+</div>
+
+<style>
+\t.app {
+\t\tpadding: 2rem;
+\t\tfont-family: system-ui, sans-serif;
+\t}
+</style>
+`;
+}
+
+function generateBlankMainTs(config: PluginConfig): string {
+	const { blankI18n } = config;
+
+	const i18nInit = blankI18n
+		? `\t\t\ti18n: {\n\t\t\t\tlocale: 'en',\n\t\t\t\ttranslations: {\n\t\t\t\t\ten: { title: '${config.displayName}' },\n\t\t\t\t\thu: { title: '${config.displayName}' }\n\t\t\t\t}\n\t\t\t}`
+		: '';
+
+	return `import { mount } from 'svelte';
+import App from './App.svelte';
+
+async function initDevSDK() {
+\tif (typeof window !== 'undefined' && !window.webOS) {
+\t\tconst { MockWebOSSDK } = await import('@elyos/sdk/dev');
+\t\tMockWebOSSDK.initialize({${blankI18n ? `\n${i18nInit}\n\t\t` : ''}});
+\t}
+}
+
+async function init() {
+\tawait initDevSDK();
+\tconst target = document.getElementById('app');
+\tif (target) mount(App, { target });
+}
+
+init();
+export default App;
+`;
+}
+
+function generateBlankOverviewSvelte(): string {
+	return `<script lang="ts">
+\tconst sdk = window.webOS;
+</script>
+
+<div class="page">
+\t<h2>Overview</h2>
+\t<p>Your content here.</p>
+</div>
+
+<style>
+\t.page { padding: 2rem; font-family: system-ui, sans-serif; }
+</style>
+`;
+}
+
+function writeBlankReadme(dir: string, config: PluginConfig): void {
+	const { blankSidebar, blankRemote, blankI18n } = config;
+
+	const structure = [
+		'- `src/App.svelte` — fő komponens',
+		'- `src/main.ts` — belépési pont',
+		blankSidebar ? '- `src/components/` — oldalsáv komponensek' : '',
+		blankRemote ? '- `server/functions.ts` — szerver oldali függvények' : '',
+		blankI18n ? '- `locales/` — fordítások (hu, en)' : '',
+		'- `assets/icon.svg` — alkalmazás ikon',
+		'- `manifest.json` — alkalmazás metaadatok',
+		'- `vite.config.ts` — build konfiguráció'
+	]
+		.filter(Boolean)
+		.join('\n');
+
+	writeFileSync(
+		join(dir, 'README.md'),
+		`# ${config.displayName}
+
+${config.description || 'ElyOS alkalmazás.'}
+
+## Fejlesztés
+
+\`\`\`bash
+bun dev
+\`\`\`
+
+## Build
+
+\`\`\`bash
+bun run build
+\`\`\`
+
+## Struktúra
+
+${structure}
+
+## Licenc
+
+MIT
+`
+	);
 }
