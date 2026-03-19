@@ -1,6 +1,6 @@
 # @elyos-dev/sdk
 
-The official SDK for building [ElyOS](https://elyos.hu) plugins. Provides runtime services (injected by ElyOS), a mock SDK for standalone development, and full TypeScript type definitions.
+The official SDK for building [ElyOS](https://elyos.hu) apps. Provides runtime services (injected by ElyOS), a mock SDK for standalone development, and full TypeScript type definitions.
 
 <a href="https://www.npmjs.com/package/@elyos-dev/sdk"><img src="https://img.shields.io/npm/v/@elyos-dev/sdk?color=blue" alt="npm version" /></a>
 <a href="https://jsr.io/@elyos-dev/sdk"><img src="https://jsr.io/badges/@elyos-dev/sdk" alt="JSR" /></a>
@@ -20,8 +20,8 @@ deno add jsr:@elyos-dev/sdk
 
 ## Package Exports
 
-| Export             | Description                                  |
-| ------------------ | -------------------------------------------- |
+| Export                 | Description                                  |
+| ---------------------- | -------------------------------------------- |
 | `@elyos-dev/sdk`       | Runtime SDK (injected by ElyOS at load time) |
 | `@elyos-dev/sdk/dev`   | Mock SDK for standalone development          |
 | `@elyos-dev/sdk/types` | TypeScript type definitions only             |
@@ -30,13 +30,12 @@ deno add jsr:@elyos-dev/sdk
 
 ### Runtime Mode (inside ElyOS)
 
-When your plugin runs inside ElyOS, the SDK is automatically injected into `window.webOS`:
+When your app runs inside ElyOS, the SDK is automatically injected into `window.webOS`:
 
 ```ts
-// Access the SDK — already initialized by ElyOS
 const sdk = window.webOS!;
 
-sdk.ui.toast('Hello from my plugin!', 'success');
+sdk.ui.toast('Hello from my app!', 'success');
 
 const user = sdk.context.user;
 console.log(`Logged in as ${user.name}`);
@@ -53,7 +52,7 @@ import { MockWebOSSDK } from '@elyos-dev/sdk/dev';
 if (!window.webOS) {
 	MockWebOSSDK.initialize({
 		context: {
-			pluginId: 'my-plugin',
+			pluginId: 'my-app',
 			user: { id: '1', name: 'Dev User', email: 'dev@example.com', roles: ['admin'], groups: [] }
 		},
 		i18n: {
@@ -79,8 +78,6 @@ The mock SDK simulates all services locally:
 
 ### Types Only
 
-For type checking without importing runtime code:
-
 ```ts
 import type { WebOSSDKInterface, UIService, DataService } from '@elyos-dev/sdk/types';
 ```
@@ -93,7 +90,7 @@ import type { WebOSSDKInterface, UIService, DataService } from '@elyos-dev/sdk/t
 sdk.ui.toast('Saved!', 'success', 3000);
 const result = await sdk.ui.dialog({ title: 'Confirm', message: 'Delete?', type: 'confirm' });
 const theme = sdk.ui.theme; // Current theme colors
-const components = sdk.ui.components; // ElyOS UI components (Button, Input, etc.)
+const components = sdk.ui.components; // ElyOS UI components
 ```
 
 ### `data` — Data Service
@@ -116,7 +113,6 @@ await sdk.data.transaction(async (tx) => {
 ### `remote` — Remote Service
 
 ```ts
-// Call server-side functions defined in your plugin's server/ directory
 const result = await sdk.remote.call<{ items: Item[] }>('getItems', { page: 1 });
 const saved = await sdk.remote.call('saveItem', { name: 'Test' }, { timeout: 5000 });
 ```
@@ -147,10 +143,10 @@ await sdk.notifications.send({
 ```ts
 const pluginId = sdk.context.pluginId;
 const user = sdk.context.user; // { id, name, email, roles, groups }
-const params = sdk.context.params; // Parameters passed when opening the plugin
+const params = sdk.context.params; // Parameters passed when opening the app
 const perms = sdk.context.permissions; // ['database', 'notifications', ...]
 
-sdk.context.window.setTitle('My Plugin — Settings');
+sdk.context.window.setTitle('My App — Settings');
 sdk.context.window.close();
 ```
 
@@ -163,7 +159,7 @@ const imageUrl = sdk.assets.getUrl('images/banner.png');
 
 ## TypeScript Support
 
-The SDK ships with full type definitions. All service interfaces are exported from `@elyos-dev/sdk/types`:
+All service interfaces are exported from `@elyos-dev/sdk/types`:
 
 ```ts
 import type {
@@ -185,32 +181,9 @@ import type {
 } from '@elyos-dev/sdk/types';
 ```
 
-## Building
-
-```bash
-bun run build          # Build runtime + dev
-bun run build:runtime  # Build runtime only
-bun run build:dev      # Build dev/mock only
-bun run typecheck      # Type check without emitting
-```
-
-## Publishing
-
-```bash
-# npm
-bun run prepublishOnly && npm publish --access public
-
-# JSR
-bun run jsr:publish:dry  # Dry run — verify before publishing
-bun run jsr:publish      # Publish to JSR
-```
-
 ## Further Reading
 
-- [Plugin Development Guide](../../docs/PLUGIN_DEVELOPMENT.md)
-- [Full API Reference](../../docs/API_REFERENCE.md)
-- [Migration Guide](../../docs/MIGRATION.md)
-- [ElyOS Documentation](https://docs.elyos.hu)
+For user documentation, visit [docs.elyos.hu](https://docs.elyos.hu).
 
 ## License
 
