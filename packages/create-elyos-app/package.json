@@ -1,6 +1,6 @@
 {
 	"name": "@elyos-dev/create-app",
-	"version": "0.1.2",
+	"version": "0.1.12",
 	"description": "CLI tool to scaffold ElyOS app projects",
 	"type": "module",
 	"bin": {
@@ -31,7 +31,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/elyos/core",
+		"url": "https://github.com/ElyOS-webOS/elyos-core",
 		"directory": "packages/create-elyos-app"
 	},
 	"dependencies": {
