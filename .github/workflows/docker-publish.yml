@@ -98,10 +98,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          # Ensure all files are included in build context
-          no-cache: false
+          # Temporarily disable cache to force fresh build
+          # Remove 'no-cache: true' after successful build and uncomment cache lines below
+          no-cache: true
+          # cache-from: type=gha,scope=build-v2
+          # cache-to: type=gha,mode=max,scope=build-v2
 
       # ---------------------------------------------------------------------------
       # 6. Image digest kiírása (ellenőrzéshez)
