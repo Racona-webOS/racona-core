@@ -53,7 +53,7 @@ COPY apps/web ./apps/web
 COPY packages/database ./packages/database
 COPY packages/sdk ./packages/sdk
 COPY packages/create-elyos-plugin ./packages/create-elyos-plugin
-COPY examples/plugins/hello-world ./examples/plugins/hello-world
+COPY examples/plugins/sdk-demo ./examples/plugins/sdk-demo
 COPY examples/plugins/todo-list ./examples/plugins/todo-list
 COPY examples/plugins/weather ./examples/plugins/weather
 
