@@ -1,5 +1,5 @@
 {
-	"name": "@elyos-dev/sdk",
+	"name": "@elyos/sdk",
 	"version": "0.1.15",
 	"description": "ElyOS SDK — runtime and development SDK for ElyOS plugin development",
 	"type": "module",
