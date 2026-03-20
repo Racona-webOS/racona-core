@@ -11,7 +11,7 @@ COPY .env.example ./.env
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/database/package.json ./packages/database/package.json
 COPY packages/webos-sdk-types/package.json ./packages/webos-sdk-types/package.json
-COPY examples/plugins/hello-world/package.json ./examples/plugins/hello-world/package.json
+COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/package.json
 
 # Install all dependencies (respects workspace structure)
 RUN bun install --frozen-lockfile

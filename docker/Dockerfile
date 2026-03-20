@@ -23,7 +23,7 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY packages/create-elyos-plugin/package.json ./packages/create-elyos-plugin/
-COPY examples/plugins/hello-world/package.json ./examples/plugins/hello-world/
+COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 
