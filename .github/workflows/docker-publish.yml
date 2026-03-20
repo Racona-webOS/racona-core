@@ -39,6 +39,21 @@ jobs:
       # ---------------------------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      # ---------------------------------------------------------------------------
+      # 1.5. Debug - Check files
+      # ---------------------------------------------------------------------------
+      - name: Debug - List files
+        run: |
+          echo "=== Root files ==="
+          ls -la
+          echo "=== Check bun.lock ==="
+          ls -la bun.lock || echo "bun.lock NOT FOUND"
+          echo "=== Check package.json ==="
+          ls -la package.json || echo "package.json NOT FOUND"
 
       # ---------------------------------------------------------------------------
       # 2. Docker Buildx setup (multi-platform build-hez)
@@ -77,7 +92,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./
           file: ./docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
@@ -85,6 +100,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Ensure all files are included in build context
+          no-cache: false
 
       # ---------------------------------------------------------------------------
       # 6. Image digest kiírása (ellenőrzéshez)
