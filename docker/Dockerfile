@@ -30,6 +30,9 @@ COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 # Függőségek telepítése frozen lockfile-lal a reprodukálhatóságért
 RUN bun install --frozen-lockfile
 
+# TypeScript telepítése az SDK build-hez (devDependency, de szükséges a build során)
+RUN bun add -d typescript
+
 # ---------------------------------------------------------------------------
 # 2. Fázis: Alkalmazás build
 # ---------------------------------------------------------------------------
