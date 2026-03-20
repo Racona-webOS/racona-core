@@ -6,9 +6,27 @@
 
 import type { DataService, Transaction } from '../../types/index.js';
 
-/** Configuration for the mock data service */
+/**
+ * Configuration for the mock data service.
+ *
+ * Allows you to pre-populate the mock data store with initial key-value pairs
+ * for testing and development.
+ *
+ * @example
+ * ```ts
+ * const config: MockDataConfig = {
+ *   initialData: {
+ *     'user-settings': { theme: 'dark', language: 'en' },
+ *     'app-state': { isLoading: false }
+ *   }
+ * };
+ * ```
+ */
 export interface MockDataConfig {
-	/** Pre-populated key-value data loaded into the mock store on initialization */
+	/**
+	 * Pre-populated key-value data loaded into the mock store on initialization.
+	 * All values are stored in memory and optionally persisted to `localStorage`.
+	 */
 	initialData?: Record<string, unknown>;
 }
 

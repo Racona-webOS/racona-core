@@ -6,9 +6,27 @@
 
 import type { RemoteService, CallOptions } from '../../types/index.js';
 
-/** Configuration for the mock remote service */
+/**
+ * Configuration for the mock remote service.
+ *
+ * Allows you to define custom handlers for simulated server-side function calls
+ * during standalone development.
+ *
+ * @example
+ * ```ts
+ * const config: MockRemoteConfig = {
+ *   handlers: {
+ *     'getUserData': (params) => ({ id: '1', name: 'John' }),
+ *     'saveSettings': (params) => ({ success: true })
+ *   }
+ * };
+ * ```
+ */
 export interface MockRemoteConfig {
-	/** Map of function name → handler for simulated server-side calls */
+	/**
+	 * Map of function name → handler for simulated server-side calls.
+	 * Each handler receives the parameters passed to `call()` and should return the simulated result.
+	 */
 	handlers?: Record<string, (...args: unknown[]) => unknown>;
 }
 

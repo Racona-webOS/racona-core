@@ -6,11 +6,33 @@
 
 import type { I18nService } from '../../types/index.js';
 
-/** Configuration for the mock i18n service */
+/**
+ * Configuration for the mock i18n service.
+ *
+ * Allows you to configure the initial locale and provide a translation map
+ * for testing and standalone development.
+ *
+ * @example
+ * ```ts
+ * const config: MockI18nConfig = {
+ *   locale: 'hu',
+ *   translations: {
+ *     en: { greeting: 'Hello', farewell: 'Goodbye' },
+ *     hu: { greeting: 'Szia', farewell: 'Viszlát' }
+ *   }
+ * };
+ * ```
+ */
 export interface MockI18nConfig {
-	/** Initial locale code (default: `"en"`) */
+	/**
+	 * Initial locale code.
+	 * @default `"en"`
+	 */
 	locale?: string;
-	/** Translations map: `{ [locale]: { [key]: value } }` */
+	/**
+	 * Translations map: `{ [locale]: { [key]: value } }`.
+	 * Each locale maps to an object of translation keys and their values.
+	 */
 	translations?: Record<string, Record<string, string>>;
 }
 

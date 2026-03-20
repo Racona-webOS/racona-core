@@ -6,9 +6,24 @@
 
 import type { AssetService } from '../../types/index.js';
 
-/** Configuration for the mock asset service */
+/**
+ * Configuration for the mock asset service.
+ *
+ * Allows you to customize the base URL used for generating asset URLs
+ * during standalone development.
+ *
+ * @example
+ * ```ts
+ * const config: MockAssetConfig = {
+ *   baseUrl: 'https://cdn.example.com/assets'
+ * };
+ * ```
+ */
 export interface MockAssetConfig {
-	/** Base URL prepended to all asset paths (default: `"/assets"`) */
+	/**
+	 * Base URL prepended to all asset paths.
+	 * @default `"/assets"`
+	 */
 	baseUrl?: string;
 }
 

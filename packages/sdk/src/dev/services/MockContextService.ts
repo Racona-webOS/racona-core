@@ -6,15 +6,41 @@
 
 import type { ContextService, UserInfo, WindowControls } from '../../types/index.js';
 
-/** Configuration for the mock context service */
+/**
+ * Configuration for the mock context service.
+ *
+ * Allows you to customize the mock plugin context, including plugin ID, user info,
+ * launch parameters, and permissions for standalone development.
+ *
+ * @example
+ * ```ts
+ * const config: MockContextConfig = {
+ *   pluginId: 'my-app',
+ *   user: { name: 'Test User', email: 'test@example.com' },
+ *   permissions: ['database', 'notifications']
+ * };
+ * ```
+ */
 export interface MockContextConfig {
-	/** Plugin ID to use in mock context (default: `"dev-plugin"`) */
+	/**
+	 * Plugin ID to use in mock context.
+	 * @default `"dev-plugin"`
+	 */
 	pluginId?: string;
-	/** Partial user info to override mock defaults */
+	/**
+	 * Partial user info to override mock defaults.
+	 * Merged with the default mock user data.
+	 */
 	user?: Partial<UserInfo>;
-	/** Parameters passed to the app on launch */
+	/**
+	 * Parameters passed to the app on launch.
+	 * Accessible via `context.params`.
+	 */
 	params?: Record<string, unknown>;
-	/** Permissions granted to the app (default: `["database", "notifications", "remote_functions"]`) */
+	/**
+	 * Permissions granted to the app.
+	 * @default `["database", "notifications", "remote_functions"]`
+	 */
 	permissions?: string[];
 }
 
