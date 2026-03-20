@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://elyos.hu/logo.png" alt="ElyOS Logo" width="120" />
+  <img src="https://elyos.hu/logo.webp" alt="ElyOS Logo" width="120" />
 </p>
 
 <!-- <h1 align="center">ElyOS</h1> -->
