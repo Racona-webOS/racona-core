@@ -1,6 +1,6 @@
 {
 	"name": "@elyos-dev/sdk",
-	"version": "0.1.14",
+	"version": "0.1.15",
 	"exports": {
 		".": "./src/index.ts",
 		"./dev": "./src/dev/index.ts",
