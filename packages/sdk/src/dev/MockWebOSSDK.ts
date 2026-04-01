@@ -29,6 +29,7 @@ import { MockI18nService } from './services/MockI18nService.js';
 import { MockNotificationService } from './services/MockNotificationService.js';
 import { MockContextService } from './services/MockContextService.js';
 import { MockAssetService } from './services/MockAssetService.js';
+import { MockSharedLibrariesService } from './services/MockSharedLibrariesService.js';
 
 /** Mock WebOS SDK — simulates all services locally for standalone plugin development. */
 export class MockWebOSSDK implements WebOSSDKInterface {
@@ -46,6 +47,8 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 	readonly context: MockContextService;
 	/** Mock Asset service */
 	readonly assets: MockAssetService;
+	/** Mock Shared Libraries service */
+	readonly libs: MockSharedLibrariesService;
 	/** Mock UI components — empty object in dev mode */
 	readonly components: WebOSSDKInterface['components'];
 
@@ -60,6 +63,7 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 			config?.context as ConstructorParameters<typeof MockContextService>[0]
 		);
 		this.assets = new MockAssetService(config?.assets);
+		this.libs = new MockSharedLibrariesService(config?.libs?.mockLibraries);
 		this.components = {};
 	}
 

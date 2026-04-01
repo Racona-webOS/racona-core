@@ -17,6 +17,7 @@
 	import type { BackgroundType } from '$lib/types/desktopEnviroment.ts';
 	import { browser } from '$app/environment';
 	import { useI18n } from '$lib/i18n/hooks';
+	import { initializeSharedLibraries } from '$lib/sdk/shared-libraries';
 
 	const { t } = useI18n();
 
@@ -52,6 +53,10 @@
 	$effect(() => {
 		if (browser && !isInitialized) {
 			isInitialized = true;
+
+			// Initialize shared libraries for plugins
+			initializeSharedLibraries();
+
 			themeManager = getThemeManager();
 			desktopStore.loadShortcuts();
 			getApps()

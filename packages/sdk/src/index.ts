@@ -22,6 +22,7 @@ export { I18nService } from './runtime/services/I18nService.js';
 export { NotificationService } from './runtime/services/NotificationService.js';
 export { ContextService } from './runtime/services/ContextService.js';
 export { AssetService } from './runtime/services/AssetService.js';
+export { SharedLibrariesService } from './runtime/services/SharedLibrariesService.js';
 
 export { PluginErrorCode } from './types/index.js';
 
@@ -33,6 +34,7 @@ export type {
 	NotificationService as INotificationService,
 	ContextService as IContextService,
 	AssetService as IAssetService,
+	SharedLibrariesService as ISharedLibrariesService,
 	DialogOptions,
 	DialogButton,
 	DialogResult,

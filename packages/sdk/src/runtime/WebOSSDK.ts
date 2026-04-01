@@ -13,6 +13,7 @@ import { I18nService } from './services/I18nService.js';
 import { NotificationService } from './services/NotificationService.js';
 import { ContextService } from './services/ContextService.js';
 import { AssetService } from './services/AssetService.js';
+import { SharedLibrariesService } from './services/SharedLibrariesService.js';
 
 /** WebOS SDK — injected into plugins by the ElyOS core, aggregates all services. */
 export class WebOSSDK implements WebOSSDKInterface {
@@ -30,6 +31,8 @@ export class WebOSSDK implements WebOSSDKInterface {
 	readonly context: ContextService;
 	/** Asset service — generate plugin asset URLs */
 	readonly assets: AssetService;
+	/** Shared Libraries service — access to core libraries */
+	readonly libs: SharedLibrariesService;
 	/** ElyOS UI components */
 	readonly components: WebOSComponents;
 
@@ -60,6 +63,7 @@ export class WebOSSDK implements WebOSSDKInterface {
 		this.notifications = new NotificationService(pluginId, permissions);
 		this.context = new ContextService(pluginId, user, params, permissions, windowElement);
 		this.assets = new AssetService(pluginId);
+		this.libs = new SharedLibrariesService();
 		this.components = components ?? {};
 	}
 

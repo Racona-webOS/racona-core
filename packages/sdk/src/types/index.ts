@@ -206,6 +206,30 @@ export interface AssetService {
 	getUrl(assetPath: string): string;
 }
 
+/** Shared Libraries service — access to libraries installed in the ElyOS core */
+export interface SharedLibrariesService {
+	/** Get a shared library by name */
+	get(libraryName: string): any;
+	/** Check if a library is available */
+	has(libraryName: string): boolean;
+	/** Get all available shared libraries */
+	list(): string[];
+	/** Get library version information */
+	version(libraryName: string): string | undefined;
+	/** Lucide Svelte icons library */
+	lucide: any;
+	/** Phosphor Svelte icons library */
+	phosphor: any;
+	/** Svelte MapLibre GL library */
+	maplibre: any;
+	/** TanStack Table Core library */
+	tanstackTable: any;
+	/** Clsx utility for conditional class names */
+	clsx: any;
+	/** Tailwind Merge utility */
+	tailwindMerge: any;
+}
+
 // ─── Components ─────────────────────────────────────────────────
 
 /** ElyOS UI components exposed to apps */
@@ -232,6 +256,8 @@ export interface WebOSSDKInterface {
 	context: ContextService;
 	/** Asset service — resolve asset URLs */
 	assets: AssetService;
+	/** Shared Libraries service — access to core libraries */
+	libs: SharedLibrariesService;
 	/** ElyOS UI components */
 	components: WebOSComponents;
 }
@@ -267,6 +293,11 @@ export interface MockSDKConfig {
 	assets?: {
 		/** Base URL prepended to all asset paths (default: `/assets`) */
 		baseUrl?: string;
+	};
+	/** Configure mock shared libraries service */
+	libs?: {
+		/** Mock libraries to make available in dev mode */
+		mockLibraries?: Record<string, any>;
 	};
 }
 
