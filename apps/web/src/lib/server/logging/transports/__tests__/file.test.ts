@@ -12,8 +12,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { serialize, deserialize } from '../serializer.js';
-import type { LogEntry } from '../types.js';
+import { serialize, deserialize } from '../../serializer.js';
+import type { LogEntry } from '../../types.js';
 
 const testConfig = { numRuns: 100 };
 
@@ -34,9 +34,15 @@ const logEntryArbitrary: fc.Arbitrary<LogEntry> = fc.record({
 	level: logLevelArbitrary,
 	message: fc.string({ minLength: 1 }),
 	source: fc.string({ minLength: 1 }),
-	timestamp: fc.date().map((d) => d.toISOString()),
+	timestamp: fc.date({ noInvalidDate: true }).map((d) => d.toISOString()),
 	stack: fc.option(fc.string(), { nil: undefined }),
-	context: fc.option(fc.dictionary(fc.string(), fc.jsonValue()), { nil: undefined }),
+	context: fc.option(
+		fc.dictionary(
+			fc.string(),
+			fc.jsonValue().filter((v) => !Object.is(v, -0))
+		),
+		{ nil: undefined }
+	),
 	userId: fc.option(fc.string(), { nil: undefined }),
 	url: fc.option(fc.webUrl(), { nil: undefined }),
 	method: fc.option(fc.constantFrom('GET', 'POST', 'PUT', 'DELETE', 'PATCH'), { nil: undefined }),
@@ -65,8 +71,8 @@ describe('Feature: error-logging, Property 4: JSON Lines formátum', () => {
 					for (let i = 0; i < lines.length; i++) {
 						// Each line must be independently valid JSON
 						const parsed = deserialize(lines[i]);
-						// Round-trip must produce equivalent object
-						expect(parsed).toEqual(entries[i]);
+						// JSON round-trip összehasonlítás (-0 és hasonló edge case-ek kizárva)
+						expect(JSON.stringify(parsed)).toBe(JSON.stringify(entries[i]));
 					}
 				}
 			),

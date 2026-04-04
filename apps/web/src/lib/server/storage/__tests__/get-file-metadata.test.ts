@@ -12,7 +12,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import type { FileScope } from './types.js';
+import type { FileScope } from '../types.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

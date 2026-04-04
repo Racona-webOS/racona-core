@@ -17,7 +17,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 import sharp from 'sharp';
-import { resizeImage, calculateProportionalDimensions, processImage } from './image-processor.js';
+import { resizeImage, calculateProportionalDimensions, processImage } from '../image-processor.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

@@ -35,7 +35,7 @@ import {
 	sanitizeFilename,
 	generateStoragePath,
 	generateUniqueFilename
-} from './filesystem.js';
+} from '../filesystem.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
-import { interpolate } from './interpolate';
+import { interpolate } from '../interpolate';
 
 describe('interpolate', () => {
 	// Unit tesztek

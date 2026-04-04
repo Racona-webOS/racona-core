@@ -12,8 +12,8 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import * as fc from 'fast-check';
-import { LOG_LEVEL_PRIORITY } from './types.js';
-import type { LogLevel, LogEntry, LogTransport } from './types.js';
+import { LOG_LEVEL_PRIORITY } from '../types.js';
+import type { LogLevel, LogEntry, LogTransport } from '../types.js';
 
 // Mock env to avoid DATABASE_URL validation when importing logger.ts
 vi.mock('$lib/env', () => ({
@@ -25,7 +25,7 @@ vi.mock('$lib/env', () => ({
 }));
 
 // Import Logger after mock is set up
-const { Logger } = await import('./logger.js');
+const { Logger } = await import('../logger.js');
 
 const testConfig = { numRuns: 100 };
 

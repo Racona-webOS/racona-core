@@ -13,7 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { join } from 'node:path';
-import { getLogFilePath } from './file.js';
+import { getLogFilePath } from '../file.js';
 
 const testConfig = { numRuns: 100 };
 

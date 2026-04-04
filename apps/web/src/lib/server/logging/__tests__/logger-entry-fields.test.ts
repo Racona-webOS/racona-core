@@ -12,7 +12,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import * as fc from 'fast-check';
-import type { LogLevel, LogEntry, LogTransport } from './types.js';
+import type { LogLevel, LogEntry, LogTransport } from '../types.js';
 
 vi.mock('$lib/env', () => ({
 	env: {
@@ -22,7 +22,7 @@ vi.mock('$lib/env', () => ({
 	}
 }));
 
-const { Logger } = await import('./logger.js');
+const { Logger } = await import('../logger.js');
 
 const testConfig = { numRuns: 100 };
 

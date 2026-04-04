@@ -17,7 +17,7 @@ import {
 	getPluralCategory,
 	hasPlural,
 	type PluralCategory
-} from './plural.js';
+} from '../plural.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

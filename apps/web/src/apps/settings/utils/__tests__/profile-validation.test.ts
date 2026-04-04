@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateName, validateUsername } from './profile-validation';
+import { validateName, validateUsername } from '../profile-validation';
 
 describe('validateName', () => {
 	it('should accept valid names', () => {

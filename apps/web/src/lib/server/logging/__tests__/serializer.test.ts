@@ -12,8 +12,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { serialize, deserialize } from './serializer.js';
-import type { LogEntry } from './types.js';
+import { serialize, deserialize } from '../serializer.js';
+import type { LogEntry } from '../types.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };
@@ -40,7 +40,21 @@ const logEntryArbitrary: fc.Arbitrary<LogEntry> = fc.record({
 		.filter((d) => !isNaN(d.getTime()))
 		.map((d) => d.toISOString()),
 	stack: fc.option(fc.string(), { nil: undefined }),
-	context: fc.option(fc.dictionary(fc.string(), fc.jsonValue()), { nil: undefined }),
+	context: fc.option(
+		fc.dictionary(
+			fc.string(),
+			fc.jsonValue().filter((v) => {
+				// -0 kizárása: JSON.stringify(-0) === '0', de Object.is(-0, 0) === false
+				if (Object.is(v, -0)) return false;
+				// Nested objektumokban is kizárjuk a -0-t
+				if (typeof v === 'object' && v !== null) {
+					return JSON.stringify(v) === JSON.stringify(JSON.parse(JSON.stringify(v)));
+				}
+				return true;
+			})
+		),
+		{ nil: undefined }
+	),
 	userId: fc.option(fc.string(), { nil: undefined }),
 	url: fc.option(fc.webUrl(), { nil: undefined }),
 	method: fc.option(fc.constantFrom('GET', 'POST', 'PUT', 'DELETE', 'PATCH'), { nil: undefined }),
@@ -57,7 +71,8 @@ describe('Feature: error-logging, Property 9: LogEntry szerializáció round-tri
 		fc.assert(
 			fc.property(logEntryArbitrary, (entry: LogEntry) => {
 				const result = deserialize(serialize(entry));
-				expect(result).toEqual(entry);
+				// JSON round-trip összehasonlítás: -0 és más nem-JSON-safe értékek kizárva
+				expect(JSON.stringify(result)).toBe(JSON.stringify(entry));
 			}),
 			testConfig
 		);

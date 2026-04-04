@@ -13,8 +13,8 @@ import {
 	fetchWithRetry,
 	createVarlockClient,
 	type InfisicalClient
-} from './varlock.js';
-import { validEnvArbitrary, REQUIRED_KEYS } from './schema.js';
+} from '../varlock.js';
+import { validEnvArbitrary, REQUIRED_KEYS } from '../schema.js';
 
 // =============================================================================
 // Segédfüggvények

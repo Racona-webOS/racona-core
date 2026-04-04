@@ -17,7 +17,7 @@ import {
 	hasInterpolation,
 	extractVariables,
 	getMissingParams
-} from './interpolate.js';
+} from '../interpolate.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

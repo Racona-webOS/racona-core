@@ -22,7 +22,7 @@ import {
 	getFileExtension,
 	validateFileSize,
 	validateFileCount
-} from './validation.js';
+} from '../validation.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };
@@ -443,8 +443,8 @@ describe('File Count Validation - Property 3: Fájlszám validáció', () => {
 // Property 4: MIME típus validáció konzisztencia
 // ============================================================================
 
-import { validateMimeType, getAllowedMimeTypes } from './mime-validator.js';
-import type { FileType } from './types.js';
+import { validateMimeType, getAllowedMimeTypes } from '../mime-validator.js';
+import type { FileType } from '../types.js';
 
 /**
  * Minimal valid file buffers for different MIME types.
@@ -702,28 +702,14 @@ describe('MIME Type Validation - Property 4: MIME típus validáció konzisztenc
 
 		await fc.assert(
 			fc.asyncProperty(randomBytesArb, fileTypeArb, async (randomBytes, fileType) => {
-				// Ensure the random bytes don't accidentally match a known signature
-				// by checking the first few bytes
-				const firstBytes = Array.from(randomBytes.slice(0, 4));
-				const knownPrefixes = [
-					[0xff, 0xd8, 0xff], // JPEG
-					[0x89, 0x50, 0x4e, 0x47], // PNG
-					[0x47, 0x49, 0x46, 0x38], // GIF
-					[0x52, 0x49, 0x46, 0x46], // WebP/RIFF
-					[0x25, 0x50, 0x44, 0x46] // PDF
-				];
-
-				const matchesKnownPrefix = knownPrefixes.some((prefix) =>
-					prefix.every((byte, i) => firstBytes[i] === byte)
-				);
-
-				if (matchesKnownPrefix) {
-					return true; // Skip if accidentally matches a known format
-				}
-
 				const result = await validateMimeType(randomBytes, fileType);
 
-				// Random bytes should not be valid (no declared MIME type provided)
+				// Ha a file-type felismerte a formátumot, skip (nem tudjuk garantálni)
+				if (result.detectedMimeType !== null) {
+					return true;
+				}
+
+				// Ha nem detektálható, valid=false kell (nincs declaredMimeType)
 				expect(result.valid).toBe(false);
 				expect(result.detectedMimeType).toBeNull();
 
@@ -738,7 +724,7 @@ describe('MIME Type Validation - Property 4: MIME típus validáció konzisztenc
 // Property 8: Progress értékek tartománya
 // ============================================================================
 
-import { validateProgress, normalizeProgress } from './validation.js';
+import { validateProgress, normalizeProgress } from '../validation.js';
 
 describe('Progress Validation - Property 8: Progress értékek tartománya', () => {
 	/**

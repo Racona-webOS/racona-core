@@ -12,9 +12,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { parseLogTargets, parseLogLevel, createLogConfig } from './config.js';
-import { LOG_LEVEL_PRIORITY } from './types.js';
-import type { LogLevel } from './types.js';
+import { parseLogTargets, parseLogLevel, createLogConfig } from '../config.js';
+import { LOG_LEVEL_PRIORITY } from '../types.js';
+import type { LogLevel } from '../types.js';
 
 const testConfig = { numRuns: 100 };
 

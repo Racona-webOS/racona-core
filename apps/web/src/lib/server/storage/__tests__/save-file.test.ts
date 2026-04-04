@@ -11,7 +11,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import type { StoredFile, FileScope } from './types.js';
+import type { StoredFile, FileScope } from '../types.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

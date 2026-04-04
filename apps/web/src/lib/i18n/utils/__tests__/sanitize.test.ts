@@ -21,7 +21,7 @@ import {
 	DANGEROUS_ELEMENTS,
 	DANGEROUS_ATTRIBUTES,
 	DANGEROUS_PROTOCOLS
-} from './sanitize.js';
+} from '../sanitize.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };

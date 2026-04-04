@@ -17,7 +17,7 @@ import {
 	formatCurrency,
 	formatPercent,
 	formatRelativeTime
-} from './format.js';
+} from '../format.js';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };
@@ -25,10 +25,11 @@ const testConfig = { numRuns: 100 };
 // Arbitrary for supported locales
 const localeArb = fc.constantFrom('hu', 'en');
 
-// Arbitrary for valid dates (within reasonable range)
+// Arbitrary for valid dates (within reasonable range, NaN kizárva)
 const dateArb = fc.date({
 	min: new Date('1970-01-01'),
-	max: new Date('2100-12-31')
+	max: new Date('2100-12-31'),
+	noInvalidDate: true
 });
 
 // Arbitrary for numbers (including decimals)

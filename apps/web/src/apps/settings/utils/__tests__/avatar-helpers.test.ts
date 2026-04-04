@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDisplayedAvatar, getUserInitials } from './avatar-helpers';
+import { getDisplayedAvatar, getUserInitials } from '../avatar-helpers';
 import type { ProfileData } from '$lib/server/database/repositories';
 
 describe('Avatar Helpers', () => {
