@@ -59,7 +59,7 @@ INSERT INTO platform.apps (
         NULL,
         'System',
         '["beállítások", "konfiguráció", "testreszabás", "rendszer", "settings", "configuration", "customization"]'::jsonb,
-        1,
+        NULL,
         true,
         true,
         20
@@ -123,7 +123,7 @@ INSERT INTO platform.apps (
         'System',
         '["értesítés", "notification", "demo", "teszt", "test"]'::jsonb,
         NULL,
-        true,
+        false,
         true,
         90
     ),
@@ -172,7 +172,7 @@ INSERT INTO platform.apps (
     -- Plugin Manager app (system category) - Admin only
     (
         'plugin-manager',
-        '{"hu": "Alkalmazásbolt", "en": "App Store"}'::jsonb,
+        '{"hu": "Alkalmazások", "en": "Apps"}'::jsonb,
         '{"hu": "Alkalmazások feltöltése és telepítése", "en": "Upload and install apps"}'::jsonb,
         '1.0.0',
         'Package',

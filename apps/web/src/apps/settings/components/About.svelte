@@ -4,16 +4,10 @@
 	import ContentSection from '$lib/components/shared/ContentSection.svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 
-	interface Props {
-		// Jövőbeli props-ok ide kerülnek
-	}
-
-	let {}: Props = $props();
-
 	const { t } = useI18n();
 
-	const version = '0.0.2';
-	const contactEmail = 'info@elyos.hu';
+	const version = '0.1.1';
+	const contactEmail = 'hello@elyos.hu';
 	const website = 'https://elyos.hu';
 	const year = new Date().getFullYear();
 
@@ -73,11 +67,11 @@
 		</div>
 
 		<!-- Changelog Section -->
-		<div class="mt-8 w-full max-w-md">
+		<div class="mt-8 hidden w-full max-w-md">
 			<ContentSection title="" description={t('settings.about.changelog')}>
 				{#snippet info()}
 					<div class="space-y-2">
-						{#each changelog as entry}
+						{#each changelog as entry (entry.version)}
 							<button
 								class="flex w-full items-center justify-between rounded-lg bg-white/5 p-3 text-left transition-colors hover:bg-white/10"
 							>
