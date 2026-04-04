@@ -3,6 +3,9 @@
 	import type { MenuItem } from '$lib/types/menu';
 	import UniversalIcon from './UniversalIcon.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	interface Props {
 		items: MenuItem[];
@@ -159,7 +162,7 @@
 			<Input
 				name="menuSearch"
 				class="search-input rounded-full"
-				placeholder="Keresés..."
+				placeholder={t('common.sidebar.search')}
 				bind:value={searchQuery}
 			/>
 		</div>

@@ -3,6 +3,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical';
 	import type { RowAction } from './actions-column';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	interface Props {
 		actions: RowAction<TData>[];
@@ -41,7 +44,7 @@
 				{#snippet child({ props })}
 					<Button {...props} variant="outline" size="icon" class="h-7 w-7 rounded-l-none">
 						<EllipsisVertical class="size-3.5" />
-						<span class="sr-only">Műveletek</span>
+						<span class="sr-only">{t('common.dataTable.rowActions')}</span>
 					</Button>
 				{/snippet}
 			</DropdownMenu.Trigger>

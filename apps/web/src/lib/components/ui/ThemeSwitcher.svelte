@@ -2,6 +2,9 @@
 	import { getThemeManager } from '$lib/stores';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { browser } from '$app/environment';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	const theme = $derived(browser ? getThemeManager() : null);
 	const isDark = $derived(theme?.isDark ?? false);
@@ -21,7 +24,9 @@
 					class="theme-toggle self-center"
 					class:dark={isDark}
 					onclick={toggleTheme}
-					aria-label={isDark ? 'Váltás világos módra' : 'Váltás sötét módra'}
+					aria-label={isDark
+						? t('common.themeSwitcher.toggle', { mode: t('common.themeSwitcher.lightMode') })
+						: t('common.themeSwitcher.toggle', { mode: t('common.themeSwitcher.darkMode') })}
 				>
 					<!-- Nappali háttér -->
 					<svg
@@ -96,7 +101,11 @@
 					</svg>
 				</button>
 			</Tooltip.Trigger>
-			<Tooltip.Content>Váltás {isDark ? 'világos' : 'sötét'} módra</Tooltip.Content>
+			<Tooltip.Content
+				>{t('common.themeSwitcher.toggle', {
+					mode: isDark ? t('common.themeSwitcher.lightMode') : t('common.themeSwitcher.darkMode')
+				})}</Tooltip.Content
+			>
 		</Tooltip.Root>
 	</Tooltip.Provider>
 {/if}

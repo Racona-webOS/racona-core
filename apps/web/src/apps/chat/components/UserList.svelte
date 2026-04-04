@@ -6,6 +6,9 @@
 	import { getChatStore } from '../stores/chatStore.svelte';
 	import { getChatUsers } from '../chat.remote';
 	import type { ChatUser } from '../stores/chatStore.svelte';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	const chatStore = getChatStore();
 
@@ -55,20 +58,25 @@
 
 <div class="user-list">
 	<div class="user-list-header">
-		<h3>Felhasználók</h3>
+		<h3>{t('chat.userList.title')}</h3>
 		<div class="search-box">
 			<span class="search-icon-wrapper">
 				<Search size={16} />
 			</span>
-			<Input type="text" placeholder="Keresés..." bind:value={searchQuery} class="search-input" />
+			<Input
+				type="text"
+				placeholder={t('common.buttons.search')}
+				bind:value={searchQuery}
+				class="search-input"
+			/>
 		</div>
 	</div>
 
 	<div class="user-list-content custom-scrollbar">
 		{#if loading}
-			<div class="loading">Betöltés...</div>
+			<div class="loading">{t('chat.userList.loading')}</div>
 		{:else if filteredUsers.length === 0}
-			<div class="empty">Nincs találat</div>
+			<div class="empty">{t('chat.userList.noResults')}</div>
 		{:else}
 			<!-- Online Users -->
 			{#if onlineUsers.length > 0}
@@ -79,7 +87,7 @@
 						{:else}
 							<ChevronRight size={16} />
 						{/if}
-						<span>Online ({onlineUsers.length})</span>
+						<span>{t('chat.userList.online', { count: String(onlineUsers.length) })}</span>
 					</button>
 					{#if onlineExpanded}
 						<div class="group-content">
@@ -121,7 +129,7 @@
 						{:else}
 							<ChevronRight size={16} />
 						{/if}
-						<span>Offline ({offlineUsers.length})</span>
+						<span>{t('chat.userList.offline', { count: String(offlineUsers.length) })}</span>
 					</button>
 					{#if offlineExpanded}
 						<div class="group-content">

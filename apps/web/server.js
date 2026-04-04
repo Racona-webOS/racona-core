@@ -4,6 +4,10 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
 const app = express();
+
+// Disable X-Powered-By header
+app.disable('x-powered-by');
+
 const server = createServer(app);
 
 // Socket.IO inicializálása — az event handlerek a SvelteKit build-ben vannak (src/lib/server/socket/index.ts)

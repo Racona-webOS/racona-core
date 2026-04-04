@@ -38,6 +38,6 @@
 				{/if}
 			</button>
 		</Tooltip.Trigger>
-		<Tooltip.Content>Üzenetek</Tooltip.Content>
+		<Tooltip.Content>{t('desktop.taskbar.messages')}</Tooltip.Content>
 	</Tooltip.Root>
 </Tooltip.Provider>

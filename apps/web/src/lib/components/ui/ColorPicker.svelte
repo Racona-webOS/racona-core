@@ -9,6 +9,7 @@
 	 */
 
 	import * as Popover from '$lib/components/ui/popover';
+	import T from '$lib/i18n/components/T.svelte';
 
 	// Props interface
 	interface ColorPickerProps {
@@ -228,7 +229,9 @@
 						</div>
 					</div>
 
-					<button type="button" class="apply-button" onclick={applyCustomColor}>Alkalmaz</button>
+					<button type="button" class="apply-button" onclick={applyCustomColor}
+						><T key="common.colorPicker.apply" /></button
+					>
 				</div>
 			</Popover.Content>
 		</Popover.Root>

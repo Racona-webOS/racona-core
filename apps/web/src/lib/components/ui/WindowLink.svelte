@@ -8,6 +8,9 @@
 	import { getWindowManager } from '$lib/stores';
 	import { toast } from 'svelte-sonner';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	let appGuid = $state('');
 	let popoverOpen = $state(false);
@@ -70,8 +73,7 @@
 			</Tooltip.Trigger>
 			<Popover.Content class="z-1000 mx-2 my-2 w-[600px] ">
 				<p class="prose-sm flex items-center gap-2 pb-2 leading-7 text-(--color-muted-foreground)">
-					<span>Alkalmazás megnyitása guid hivatkozás alapján</span>
-
+					<span>{t('common.windowLink.title')}</span>
 					<button onclick={help}
 						><MessageCircleQuestionMark size={16} class="text-primary" /></button
 					>
@@ -82,24 +84,24 @@
 							<Tooltip.Trigger>
 								<Button variant="outline" onclick={async () => paste()}><ClipboardPaste /></Button>
 							</Tooltip.Trigger>
-							<Tooltip.Content class="z-1001"
-								>Guid beillesztés és alkalmazás megnyitása</Tooltip.Content
+							<Tooltip.Content class="z-1001">{t('common.windowLink.pasteAndOpen')}</Tooltip.Content
 							>
 						</Tooltip.Root>
 					</Tooltip.Provider>
 					<Input
 						name="appGuidInput"
-						placeholder="Alkalmazás guid hivatkozás"
+						placeholder={t('common.windowLink.placeholder')}
 						bind:value={appGuid}
 						class="text-xs"
 						autocomplete="off"
 					/>
-					<Button variant="outline" onclick={open} disabled={appGuid.length === 0}>Megnyitás</Button
+					<Button variant="outline" onclick={open} disabled={appGuid.length === 0}
+						>{t('common.windowLink.open')}</Button
 					>
 				</div>
 			</Popover.Content>
 			<Tooltip.Content class="z-1001" interactOutsideBehavior="defer-otherwise-close"
-				>Alkalmazás megnyitása guid hivatkozás alapján</Tooltip.Content
+				>{t('common.windowLink.title')}</Tooltip.Content
 			>
 		</Tooltip.Root>
 	</Popover.Root>

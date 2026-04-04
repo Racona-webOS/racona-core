@@ -24,7 +24,7 @@
 			<ArrowLeft class="size-4" />
 			<span class="sr-only">{t('common.buttons.back')}</span>
 		</Button>
-		<h2>Erőforrás részletei</h2>
+		<h2>{t('users.resources.detail.title')}</h2>
 	</div>
 </div>
 

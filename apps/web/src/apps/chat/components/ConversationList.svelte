@@ -2,6 +2,9 @@
 	import { User, RefreshCw } from 'lucide-svelte';
 	import { getChatStore } from '../stores/chatStore.svelte';
 	import { formatDistanceToNow } from '$lib/utils/date';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	const chatStore = getChatStore();
 
@@ -28,7 +31,7 @@
 
 <div class="conversation-list">
 	<div class="conversation-list-header">
-		<h3>Beszélgetések</h3>
+		<h3>{t('chat.conversationList.title')}</h3>
 		<button class="reload-button" onclick={handleReload} title="Frissítés">
 			<RefreshCw size={16} />
 		</button>
@@ -37,8 +40,8 @@
 	<div class="conversation-list-content custom-scrollbar">
 		{#if conversations.length === 0}
 			<div class="empty">
-				<p>Még nincs beszélgetésed</p>
-				<p class="hint">Válassz egy felhasználót a jobb oldalon</p>
+				<p>{t('chat.conversationList.empty')}</p>
+				<p class="hint">{t('chat.conversationList.hint')}</p>
 			</div>
 		{:else}
 			{#each conversations as conversation (conversation.id)}

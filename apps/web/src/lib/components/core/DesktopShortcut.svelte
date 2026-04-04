@@ -9,6 +9,9 @@
 	import { UniversalIcon } from '$lib/components/shared';
 	import { getContext } from 'svelte';
 	import type { DesktopSettings } from '$lib/types/settings';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	let {
 		shortcut,
@@ -196,44 +199,52 @@
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content class="z-1000">
-		<ContextMenu.Item onclick={handleDoubleClick}>Megnyitás</ContextMenu.Item>
-		<ContextMenu.Item onclick={handleRename}>Átnevezés</ContextMenu.Item>
+		<ContextMenu.Item onclick={handleDoubleClick}>{t('desktop.shortcut.open')}</ContextMenu.Item>
+		<ContextMenu.Item onclick={handleRename}>{t('desktop.shortcut.rename')}</ContextMenu.Item>
 		<ContextMenu.Separator />
-		<ContextMenu.Item onclick={handleDeleteClick} class="text-destructive">Törlés</ContextMenu.Item>
+		<ContextMenu.Item onclick={handleDeleteClick} class="text-destructive"
+			>{t('desktop.shortcut.delete')}</ContextMenu.Item
+		>
 	</ContextMenu.Content>
 </ContextMenu.Root>
 
 <CustomDialog
 	bind:open={renameDialogOpen}
-	title="Parancsikon átnevezése"
+	title={t('desktop.shortcut.renameDialog.title')}
 	onClose={handleRenameCancel}
 >
 	{#snippet content()}
 		<div class="space-y-2">
-			<label for="shortcut-name" class="text-sm font-medium">Név</label>
+			<label for="shortcut-name" class="text-sm font-medium"
+				>{t('desktop.shortcut.renameDialog.label')}</label
+			>
 			<Input
 				id="shortcut-name"
 				type="text"
 				bind:value={renameValue}
-				placeholder="Adja meg az új nevet"
+				placeholder={t('desktop.shortcut.renameDialog.placeholder')}
 				disabled={isSubmitting}
 			/>
 		</div>
 	{/snippet}
 	{#snippet actions()}
-		<Button variant="outline" onclick={handleRenameCancel} disabled={isSubmitting}>Mégse</Button>
+		<Button variant="outline" onclick={handleRenameCancel} disabled={isSubmitting}
+			>{t('common.buttons.cancel')}</Button
+		>
 		<Button onclick={handleRenameSubmit} disabled={isSubmitting || !renameValue.trim()}>
-			{isSubmitting ? 'Mentés...' : 'Mentés'}
+			{isSubmitting
+				? t('desktop.shortcut.renameDialog.saving')
+				: t('desktop.shortcut.renameDialog.save')}
 		</Button>
 	{/snippet}
 </CustomDialog>
 
 <ConfirmDialog
 	bind:open={deleteDialogOpen}
-	title="Parancsikon törlése"
-	description="Biztosan törölni szeretné ezt a parancsikonot az asztalról?"
-	confirmText="Törlés"
-	cancelText="Mégse"
+	title={t('desktop.shortcut.deleteDialog.title')}
+	description={t('desktop.shortcut.deleteDialog.description')}
+	confirmText={t('common.buttons.delete')}
+	cancelText={t('common.buttons.cancel')}
 	confirmVariant="destructive"
 	onConfirm={handleDelete}
 	onCancel={handleDeleteCancel}

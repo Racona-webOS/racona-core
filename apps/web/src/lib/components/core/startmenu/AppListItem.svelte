@@ -5,24 +5,41 @@
 	interface Props {
 		app: AppMetadata;
 		onclick?: () => void;
+		ondragstart?: () => void;
+		ondragend?: () => void;
 	}
 
-	let { app, onclick }: Props = $props();
+	let { app, onclick, ondragstart, ondragend }: Props = $props();
+
+	let isDragging = $state(false);
 
 	function handleDragStart(e: DragEvent) {
 		if (!e.dataTransfer) return;
+		isDragging = true;
 		e.dataTransfer.effectAllowed = 'copy';
 		e.dataTransfer.setData('application/x-elyos-app', app.appName);
 		e.dataTransfer.setData('text/plain', app.title);
+		ondragstart?.();
+	}
+
+	function handleDragEnd() {
+		isDragging = false;
+		ondragend?.();
+	}
+
+	function handleClick() {
+		if (isDragging) return;
+		onclick?.();
 	}
 </script>
 
 <button
 	class="app-list-item"
-	{onclick}
+	onclick={handleClick}
 	type="button"
 	draggable="true"
 	ondragstart={handleDragStart}
+	ondragend={handleDragEnd}
 >
 	<div class="app-icon" data-icon-style={app.iconStyle ?? 'icon'}>
 		<UniversalIcon
@@ -50,6 +67,8 @@
 		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 		cursor: pointer;
 		box-sizing: border-box;
+		user-select: none;
+		-webkit-user-drag: element;
 
 		/* Subtle shadow */
 		box-shadow:

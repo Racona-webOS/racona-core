@@ -708,3 +708,14 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'users', 'groups.delete.success', 'Group deleted successfully'),
 ('en', 'users', 'groups.delete.error', 'Failed to delete group')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Jogosultság és erőforrás részletek (PermissionDetail, ResourceDetail)
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'users', 'permissions.detail.title', 'Jogosultság részletei'),
+('hu', 'users', 'resources.detail.title', 'Erőforrás részletei')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'users', 'permissions.detail.title', 'Permission details'),
+('en', 'users', 'resources.detail.title', 'Resource details')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

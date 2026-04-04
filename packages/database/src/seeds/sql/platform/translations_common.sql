@@ -224,3 +224,45 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'common', 'dataTable.clearFilters', 'Clear filters'),
 ('en', 'common', 'dataTable.selected', 'selected')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- UI komponensek - ThemeSwitcher, ColorPicker, WindowLink, DataTable
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'common', 'themeSwitcher.toggle', 'Váltás {mode} módra'),
+('hu', 'common', 'themeSwitcher.lightMode', 'világos'),
+('hu', 'common', 'themeSwitcher.darkMode', 'sötét'),
+('hu', 'common', 'colorPicker.hue', 'Árnyalat'),
+('hu', 'common', 'colorPicker.preview', 'Előnézet'),
+('hu', 'common', 'colorPicker.apply', 'Alkalmaz'),
+('hu', 'common', 'windowLink.title', 'Alkalmazás megnyitása guid hivatkozás alapján'),
+('hu', 'common', 'windowLink.pasteAndOpen', 'Guid beillesztés és alkalmazás megnyitása'),
+('hu', 'common', 'windowLink.open', 'Megnyitás'),
+('hu', 'common', 'windowLink.placeholder', 'Alkalmazás guid hivatkozás'),
+('hu', 'common', 'dataTable.rowActions', 'Műveletek'),
+('hu', 'common', 'pluginDialog.cancel', 'Mégse'),
+('hu', 'common', 'pluginDialog.confirm', 'Megerősítés'),
+('hu', 'common', 'pluginDialog.send', 'Küldés'),
+('hu', 'common', 'sidebar.search', 'Keresés...'),
+('hu', 'common', 'error.backToHome', 'Vissza a főoldalra'),
+('hu', 'common', 'error.technicalInfo', 'Technikai információ')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- UI components - EN
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'common', 'themeSwitcher.toggle', 'Switch to {mode} mode'),
+('en', 'common', 'themeSwitcher.lightMode', 'light'),
+('en', 'common', 'themeSwitcher.darkMode', 'dark'),
+('en', 'common', 'colorPicker.hue', 'Hue'),
+('en', 'common', 'colorPicker.preview', 'Preview'),
+('en', 'common', 'colorPicker.apply', 'Apply'),
+('en', 'common', 'windowLink.title', 'Open application by guid link'),
+('en', 'common', 'windowLink.pasteAndOpen', 'Paste guid and open application'),
+('en', 'common', 'windowLink.open', 'Open'),
+('en', 'common', 'windowLink.placeholder', 'Application guid link'),
+('en', 'common', 'dataTable.rowActions', 'Actions'),
+('en', 'common', 'pluginDialog.cancel', 'Cancel'),
+('en', 'common', 'pluginDialog.confirm', 'Confirm'),
+('en', 'common', 'pluginDialog.send', 'Send'),
+('en', 'common', 'sidebar.search', 'Search...'),
+('en', 'common', 'error.backToHome', 'Back to home'),
+('en', 'common', 'error.technicalInfo', 'Technical information')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

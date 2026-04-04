@@ -8,6 +8,9 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import type { DialogOptions, DialogResult } from '@elyos/sdk';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	// Belső állapot
 	let open = $state(false);
@@ -84,11 +87,11 @@
 			{#if type === 'info'}
 				<Button onclick={handleOk}>OK</Button>
 			{:else if type === 'confirm'}
-				<Button variant="outline" onclick={handleCancel}>Mégse</Button>
-				<Button onclick={handleConfirm}>Megerősítés</Button>
+				<Button variant="outline" onclick={handleCancel}>{t('common.pluginDialog.cancel')}</Button>
+				<Button onclick={handleConfirm}>{t('common.pluginDialog.confirm')}</Button>
 			{:else if type === 'prompt'}
-				<Button variant="outline" onclick={handleCancel}>Mégse</Button>
-				<Button onclick={handleSubmit}>Küldés</Button>
+				<Button variant="outline" onclick={handleCancel}>{t('common.pluginDialog.cancel')}</Button>
+				<Button onclick={handleSubmit}>{t('common.pluginDialog.send')}</Button>
 			{/if}
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

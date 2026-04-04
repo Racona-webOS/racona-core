@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { getAppParameters, getParameter, getWindowId } from '$lib/services/client/appContext';
 	import { getWindowManager } from '$lib/stores';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 	const helpId = getParameter<number | undefined>('helpId', undefined);
 	const parameters = getAppParameters();
 	const helps = [
@@ -42,9 +45,9 @@
 		{#if help}
 			<p>{help.content}</p>
 		{:else}
-			<p>Nem található súgó</p>
+			<p>{t('help.notFound')}</p>
 		{/if}
 	{:else}
-		<p>Általános súgó alkalmazás tartalom.</p>
+		<p>{t('help.generalContent')}</p>
 	{/if}
 </div>

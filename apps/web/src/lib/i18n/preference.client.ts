@@ -40,7 +40,8 @@ export function setLocaleCookie(locale: string): boolean {
 	const expires = new Date();
 	expires.setTime(expires.getTime() + LOCALE_COOKIE_MAX_AGE * 1000);
 
-	document.cookie = `${LOCALE_COOKIE_NAME}=${encodeURIComponent(locale)}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+	const secure = location.protocol === 'https:' ? '; Secure' : '';
+	document.cookie = `${LOCALE_COOKIE_NAME}=${encodeURIComponent(locale)}; path=/; expires=${expires.toUTCString()}; SameSite=Lax${secure}`;
 
 	return true;
 }
@@ -51,7 +52,8 @@ export function setLocaleCookie(locale: string): boolean {
 export function clearLocaleCookie(): void {
 	if (typeof document === 'undefined') return;
 
-	document.cookie = `${LOCALE_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+	const secure = location.protocol === 'https:' ? '; Secure' : '';
+	document.cookie = `${LOCALE_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT${secure}`;
 }
 
 /**

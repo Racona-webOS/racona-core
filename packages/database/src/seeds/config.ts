@@ -131,6 +131,16 @@ export const seedConfig: Record<string, SeedDefinition> = {
 		dependsOn: ['locales'],
 		description: 'Plugin Manager app translations'
 	},
+	translations_chat: {
+		file: 'platform/translations_chat.sql',
+		dependsOn: ['locales'],
+		description: 'Chat app translations (UserList, ConversationList, ChatWindow)'
+	},
+	translations_help: {
+		file: 'platform/translations_help.sql',
+		dependsOn: ['locales'],
+		description: 'Help app translations'
+	},
 
 	// Platform schema - apps
 	apps: {

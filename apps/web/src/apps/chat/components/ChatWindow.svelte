@@ -6,6 +6,9 @@
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { getChatStore } from '../stores/chatStore.svelte';
 	import { formatDistanceToNow } from '$lib/utils/date';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	let { currentUserId = null }: { currentUserId: number | null } = $props();
 
@@ -132,7 +135,7 @@
 <div class="chat-window">
 	{#if !activeConversation}
 		<div class="empty-state">
-			<p>Válassz egy beszélgetést</p>
+			<p>{t('chat.chatWindow.selectConversation')}</p>
 		</div>
 	{:else}
 		<div class="chat-header">
@@ -156,7 +159,7 @@
 		<div class="chat-messages custom-scrollbar" bind:this={messagesContainer}>
 			{#if messages.length === 0}
 				<div class="no-messages">
-					<p>Még nincs üzenet ebben a beszélgetésben</p>
+					<p>{t('chat.chatWindow.noMessages')}</p>
 				</div>
 			{:else}
 				{#each messages as message, index (message.id)}

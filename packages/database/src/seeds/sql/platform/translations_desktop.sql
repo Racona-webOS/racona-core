@@ -122,3 +122,53 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'desktop', 'videoBackground.notSupported', 'Your browser does not support video playback.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Asztali parancsikon (DesktopShortcut)
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'desktop', 'shortcut.open', 'Megnyitás'),
+('hu', 'desktop', 'shortcut.rename', 'Átnevezés'),
+('hu', 'desktop', 'shortcut.delete', 'Törlés'),
+('hu', 'desktop', 'shortcut.renameDialog.title', 'Parancsikon átnevezése'),
+('hu', 'desktop', 'shortcut.renameDialog.label', 'Név'),
+('hu', 'desktop', 'shortcut.renameDialog.placeholder', 'Adja meg az új nevet'),
+('hu', 'desktop', 'shortcut.renameDialog.save', 'Mentés'),
+('hu', 'desktop', 'shortcut.renameDialog.saving', 'Mentés...'),
+('hu', 'desktop', 'shortcut.deleteDialog.title', 'Parancsikon törlése'),
+('hu', 'desktop', 'shortcut.deleteDialog.description', 'Biztosan törölni szeretné ezt a parancsikonot az asztalról?')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Tálca - Chat ikon
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'desktop', 'taskbar.messages', 'Üzenetek')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Tartalom terület
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'desktop', 'contentArea.loading', 'Betöltés...'),
+('hu', 'desktop', 'contentArea.selectMenuItem', 'Válassz egy menüpontot a bal oldalon')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Asztali parancsikon (DesktopShortcut) - EN
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'desktop', 'shortcut.open', 'Open'),
+('en', 'desktop', 'shortcut.rename', 'Rename'),
+('en', 'desktop', 'shortcut.delete', 'Delete'),
+('en', 'desktop', 'shortcut.renameDialog.title', 'Rename Shortcut'),
+('en', 'desktop', 'shortcut.renameDialog.label', 'Name'),
+('en', 'desktop', 'shortcut.renameDialog.placeholder', 'Enter new name'),
+('en', 'desktop', 'shortcut.renameDialog.save', 'Save'),
+('en', 'desktop', 'shortcut.renameDialog.saving', 'Saving...'),
+('en', 'desktop', 'shortcut.deleteDialog.title', 'Delete Shortcut'),
+('en', 'desktop', 'shortcut.deleteDialog.description', 'Are you sure you want to delete this shortcut from the desktop?')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Taskbar - Chat icon - EN
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'desktop', 'taskbar.messages', 'Messages')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Content area - EN
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'desktop', 'contentArea.loading', 'Loading...'),
+('en', 'desktop', 'contentArea.selectMenuItem', 'Select a menu item on the left')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

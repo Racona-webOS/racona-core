@@ -9,6 +9,9 @@
 	 */
 
 	import * as Popover from '$lib/components/ui/popover';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	// Props interface
 	interface ColorHuePickerProps {
@@ -142,7 +145,7 @@
 			<Popover.Content class="color-picker-popover" align="start" side="top" sideOffset={8}>
 				<div class="custom-hue-picker">
 					<div class="slider-container">
-						<label for="hue-slider" class="slider-label">Árnyalat</label>
+						<label for="hue-slider" class="slider-label">{t('common.colorPicker.hue')}</label>
 						<div class="slider-row">
 							<input
 								id="hue-slider"
@@ -160,9 +163,11 @@
 					</div>
 					<div class="preview-container">
 						<div class="preview-swatch" style="background-color: {getColorStyle(customHue)}"></div>
-						<span class="preview-label">Előnézet</span>
+						<span class="preview-label">{t('common.colorPicker.preview')}</span>
 					</div>
-					<button type="button" class="apply-button" onclick={applyCustomHue}>Alkalmaz</button>
+					<button type="button" class="apply-button" onclick={applyCustomHue}
+						>{t('common.colorPicker.apply')}</button
+					>
 				</div>
 			</Popover.Content>
 		</Popover.Root>

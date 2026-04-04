@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { useI18n } from '$lib/i18n/hooks';
+
+	const { t } = useI18n();
 
 	interface Props {
 		appName: string;
@@ -148,7 +151,7 @@
 	{#if loading}
 		<div class="loading">
 			<div class="spinner"></div>
-			<p>Betöltés...</p>
+			<p>{t('desktop.contentArea.loading')}</p>
 		</div>
 	{:else if error}
 		<div class="error">
@@ -169,7 +172,7 @@
 		{/if}
 	{:else}
 		<div class="placeholder">
-			<p>Válassz egy menüpontot a bal oldalon</p>
+			<p>{t('desktop.contentArea.selectMenuItem')}</p>
 		</div>
 	{/if}
 </div>

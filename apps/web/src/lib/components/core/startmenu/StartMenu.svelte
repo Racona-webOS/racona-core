@@ -99,7 +99,22 @@
 		}
 	}
 
+	let isDraggingApp = $state(false);
+
+	function handleAppDragStart() {
+		isDraggingApp = true;
+	}
+
+	function handleAppDragEnd() {
+		// Kis késleltetés, hogy a drop esemény lefuthasson a workspace-en
+		setTimeout(() => {
+			isDraggingApp = false;
+			open = false;
+		}, 150);
+	}
+
 	function handleAppClick(app: AppMetadata) {
+		if (isDraggingApp) return;
 		windowManager.openWindow(app.appName, app.title, app, app.parameters);
 		open = false;
 	}
@@ -144,7 +159,12 @@
 					{#if viewMode === 'grid'}
 						<AppIcon onclick={() => handleAppClick(app)} {app} />
 					{:else}
-						<AppListItem onclick={() => handleAppClick(app)} {app} />
+						<AppListItem
+							onclick={() => handleAppClick(app)}
+							ondragstart={handleAppDragStart}
+							ondragend={handleAppDragEnd}
+							{app}
+						/>
 					{/if}
 				{/each}
 			</div>

@@ -53,6 +53,30 @@
 	const settings = settingsContext;
 
 	let startMenuOpen = $state(false);
+	let isDraggingFromStartMenu = $state(false);
+
+	// Drag figyelés: ha a start menüből húznak ki valamit, ne zárjuk be a popover-t
+	$effect(() => {
+		if (!browser) return;
+
+		const handleDragStart = (e: DragEvent) => {
+			if ((e.target as HTMLElement)?.closest?.('[data-slot="popover-content"]')) {
+				isDraggingFromStartMenu = true;
+			}
+		};
+
+		const handleDragEnd = () => {
+			isDraggingFromStartMenu = false;
+		};
+
+		document.addEventListener('dragstart', handleDragStart);
+		document.addEventListener('dragend', handleDragEnd);
+
+		return () => {
+			document.removeEventListener('dragstart', handleDragStart);
+			document.removeEventListener('dragend', handleDragEnd);
+		};
+	});
 
 	// ThemeManager csak kliens oldalon
 	let themeManager = $state<ReturnType<typeof getThemeManager> | null>(null);
@@ -179,7 +203,13 @@
 						e.stopPropagation();
 					}}
 				>
-					<Popover.Root bind:open={startMenuOpen}>
+					<Popover.Root
+						bind:open={startMenuOpen}
+						onOpenChange={(v) => {
+							if (!v && isDraggingFromStartMenu) return;
+							startMenuOpen = v;
+						}}
+					>
 						<Popover.Trigger class="btn-startmenu btn-click-effect border-gradient">
 							<ContextMenu.Root>
 								<ContextMenu.Trigger>
