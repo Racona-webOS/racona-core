@@ -364,7 +364,7 @@ export class WindowManager {
 			(window_obj as any).pluginMenuData = menuData;
 			(window_obj as any).pluginId = pluginId;
 			(window_obj as any).isPluginWithLayout = true;
-			window_obj.component = PluginLayoutWrapper.default;
+			window_obj.component = PluginLayoutWrapper.default as any;
 			window_obj.isLoading = false;
 			this.windows = [...this.windows];
 
@@ -625,7 +625,7 @@ export class WindowManager {
 				(window_obj as any).pluginMenuData = devMenuData;
 				(window_obj as any).pluginId = pluginId;
 				(window_obj as any).isPluginWithLayout = true;
-				window_obj.component = PluginLayoutWrapper.default;
+				window_obj.component = PluginLayoutWrapper.default as any;
 				window_obj.isLoading = false;
 				this.windows = [...this.windows];
 

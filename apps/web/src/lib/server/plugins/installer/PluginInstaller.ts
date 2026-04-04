@@ -10,7 +10,7 @@ import { getPluginDir, ensureDir, removeDir, safeWriteFile, copyDir } from '../u
 import { zipValidator } from '../validation/ZipValidator';
 import db from '$lib/server/database';
 import { apps, pluginLogs } from '@elyos/database';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import AdmZip from 'adm-zip';
 import path from 'path';
 import fs from 'fs/promises';
@@ -273,7 +273,7 @@ export class PluginInstaller {
 				.values(values)
 				.onConflictDoUpdate({
 					target: [translationsTable.namespace, translationsTable.key, translationsTable.locale],
-					set: { value: db.sql`excluded.value`, updatedAt: new Date() }
+					set: { value: sql`excluded.value`, updatedAt: new Date() }
 				});
 		}
 	}

@@ -77,7 +77,7 @@ export interface UserListItem {
 	createdAt: Date | null;
 	updatedAt: Date | null;
 	deletedAt: Date | null;
-	isActive: boolean;
+	isActive: boolean | null;
 	providerId: string;
 }
 

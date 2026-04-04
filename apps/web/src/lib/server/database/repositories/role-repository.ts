@@ -40,8 +40,8 @@ export interface RoleWithPermissions {
 export interface RoleAppRow {
 	id: number;
 	appId: string;
-	name: string;
-	description: string | null;
+	name: string | Record<string, string>;
+	description: string | Record<string, string> | null;
 	icon: string;
 	category: string;
 	createdAt: Date | null;

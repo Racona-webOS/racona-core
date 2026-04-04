@@ -4,37 +4,12 @@
  * Ez a fájl tartalmazza a plugin rendszer összes közös típusdefinícióját.
  */
 
-// ============================================================================
-// Plugin Manifest
-// ============================================================================
+import type { LocalizedText, WindowSize } from '../schemas/platform/apps/apps';
+import type { PluginPermission } from '../schemas/platform/plugins/plugins';
 
-/**
- * Plugin jogosultság típusok
- */
-export type PluginPermission =
-	| 'database' // Adatbázis hozzáférés
-	| 'notifications' // Értesítések küldése
-	| 'file_access' // Fájl hozzáférés
-	| 'remote_functions' // Remote függvények használata
-	| 'user_data'; // Felhasználói adatok hozzáférése
-
-/**
- * Lokalizált szöveg típus
- */
-export type LocalizedText = {
-	hu: string;
-	en: string;
-	[key: string]: string;
-};
-
-/**
- * Ablak méret típus
- */
-export type WindowSize = {
-	width: number;
-	height: number;
-	maximized?: boolean;
-};
+// Re-export a duplikáció elkerüléséhez
+export type { LocalizedText, WindowSize };
+export type { PluginPermission };
 
 /**
  * Plugin manifest struktúra

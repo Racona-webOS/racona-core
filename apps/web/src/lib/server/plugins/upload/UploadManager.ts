@@ -65,7 +65,7 @@ export class UploadManager {
 		const errors: Array<{ code: string; message: string }> = [];
 
 		// Kiterjesztés ellenőrzés - meglévő függvény használata
-		if (!validateExtension(file.name, [PLUGIN_UPLOAD_CONFIG.ALLOWED_EXTENSION])) {
+		if (!validateExtension(file.name, [PLUGIN_UPLOAD_CONFIG.ALLOWED_EXTENSION ?? ''])) {
 			errors.push({
 				code: PluginErrorCode.INVALID_EXTENSION,
 				message: `Invalid file extension. Only .${PLUGIN_UPLOAD_CONFIG.ALLOWED_EXTENSION} files are allowed.`
@@ -73,8 +73,8 @@ export class UploadManager {
 		}
 
 		// Fájlméret ellenőrzés - meglévő függvény használata
-		if (!validateFileSize(file.size, PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE)) {
-			const maxSizeMB = PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE / (1024 * 1024);
+		if (!validateFileSize(file.size, PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE ?? 0)) {
+			const maxSizeMB = (PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE ?? 0) / (1024 * 1024);
 			errors.push({
 				code: PluginErrorCode.FILE_TOO_LARGE,
 				message: `File size exceeds maximum allowed size of ${maxSizeMB} MB.`
@@ -125,7 +125,7 @@ export class UploadManager {
 
 			// Méret ellenőrzés a mentett fájlon (double-check)
 			const actualSize = await getFileSize(tempPath);
-			if (actualSize > PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE) {
+			if (actualSize > (PLUGIN_UPLOAD_CONFIG.MAX_FILE_SIZE ?? 0)) {
 				// Fájl törlése
 				await fs.unlink(tempPath);
 

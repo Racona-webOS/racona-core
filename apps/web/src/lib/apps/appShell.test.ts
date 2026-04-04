@@ -26,12 +26,15 @@ vi.mock('$lib/i18n/store.svelte', () => ({
 
 vi.mock('$lib/apps/localization', () => ({
 	localizeMenuItems: (_ns: string, items: unknown[]) =>
-		items.map((item: Record<string, unknown>) => ({
-			label: item.label || '',
-			href: item.href,
-			component: item.component,
-			props: item.props
-		}))
+		items.map((item: unknown) => {
+			const i = item as Record<string, unknown>;
+			return {
+				label: i.label || '',
+				href: i.href,
+				component: i.component,
+				props: i.props
+			};
+		})
 }));
 
 vi.mock('svelte', async () => {

@@ -52,8 +52,8 @@ export const updateGroup = command(updateGroupSchema, async (input) => {
 				: undefined;
 
 		const group = await groupRepository.update(input.groupId, {
-			name: nameObj,
-			description: descObj
+			name: nameObj as Record<string, string>,
+			description: descObj as Record<string, string> | undefined
 		});
 		return { success: true as const, data: group };
 	} catch (error) {

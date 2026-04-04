@@ -409,16 +409,16 @@ class NotificationStore {
 		if (!browser || !('Notification' in window)) return;
 
 		if (Notification.permission === 'granted') {
-			new Notification(notification.title, {
-				body: notification.message,
+			new Notification(String(notification.title), {
+				body: String(notification.message),
 				icon: '/favicon.svg',
 				tag: `notification-${notification.id}`
 			});
 		} else if (Notification.permission !== 'denied') {
 			Notification.requestPermission().then((permission) => {
 				if (permission === 'granted') {
-					new Notification(notification.title, {
-						body: notification.message,
+					new Notification(String(notification.title), {
+						body: String(notification.message),
 						icon: '/favicon.svg',
 						tag: `notification-${notification.id}`
 					});

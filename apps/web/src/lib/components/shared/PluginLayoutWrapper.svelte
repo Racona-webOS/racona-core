@@ -26,8 +26,6 @@
 
 	// De a namespace-t plugin:pluginId-re állítjuk a fordításokhoz
 	const pluginNamespace = `plugin:${pluginId}`;
-
-	console.log('[PluginLayoutWrapper] Created with pluginId:', pluginId);
 </script>
 
 <AppLayout {shell} namespaces={[pluginNamespace]} isPlugin={true} searchable={true} />

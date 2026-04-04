@@ -19,6 +19,7 @@
 	import PluginDialog from '$lib/components/core/PluginDialog.svelte';
 	import { setGlobalDialogHandler } from '$lib/stores/windowStore.svelte';
 	import type { DialogOptions, DialogResult } from '@elyos/sdk';
+	// @ts-ignore - no type declarations available
 	import '@fontsource-variable/quicksand';
 
 	// PluginDialog referencia a dialog handler regisztrálásához

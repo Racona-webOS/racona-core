@@ -3,6 +3,7 @@
 	import '../appAdmin.css';
 	import Decor from '$lib/components/auth/Decor.svelte';
 	import LogoVideo from '$lib/components/shared/LogoVideo.svelte';
+	// @ts-expect-error - no type declarations available
 	import '@fontsource-variable/quicksand';
 	import { setContext } from 'svelte';
 	import { I18nProvider, AuthLocaleSwitcher } from '$lib/i18n/components';
@@ -20,7 +21,13 @@
 	// Támogatott nyelvek beállítása a szerverről jövő konfigurációval
 	if (browser) {
 		// eslint-disable-next-line svelte/valid-compile -- initial setup, not reactive
-		const supportedLocales = getSupportedLocales(data.supportedLocales);
+		const rawLocales = data.supportedLocales;
+		const localeArray = Array.isArray(rawLocales)
+			? rawLocales
+			: rawLocales
+				? [rawLocales]
+				: undefined;
+		const supportedLocales = getSupportedLocales(localeArray);
 		store.setSupportedLocales(supportedLocales);
 	}
 

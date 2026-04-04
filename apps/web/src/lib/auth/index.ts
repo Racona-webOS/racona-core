@@ -38,7 +38,7 @@ export const auth = betterAuth({
 	...baseAuthConfig,
 	plugins: [
 		emailOTP({
-			expiresIn: config.EMAIL_OTP_EXPIRES_IN * 60,
+			expiresIn: (config.EMAIL_OTP_EXPIRES_IN ?? 10) * 60,
 			async sendVerificationOTP({ email, otp }: { email: string; otp: string }) {
 				const emailManager = new EmailManager();
 				const locale = getUserLocale();

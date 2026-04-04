@@ -124,7 +124,9 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 				await notificationRepository.markAsRead(notificationId);
 				logger.info(`[Socket.IO] Notification marked as read: ${notificationId}`);
 			} catch (error) {
-				logger.error('[Socket.IO] Error marking notification as read:', error);
+				logger.error('[Socket.IO] Error marking notification as read:', {
+					context: { error: String(error) }
+				});
 			}
 		});
 
@@ -136,7 +138,9 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 				socket.emit('notification:unread-count', 0);
 				logger.info(`[Socket.IO] All notifications marked as read for user: ${userIdNum}`);
 			} catch (error) {
-				logger.error('[Socket.IO] Error marking all notifications as read:', error);
+				logger.error('[Socket.IO] Error marking all notifications as read:', {
+					context: { error: String(error) }
+				});
 			}
 		});
 
@@ -285,7 +289,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
 		}
 	} catch (error) {
 		console.error('[sendNotification] Error:', error);
-		logger.error('[Socket.IO] Error sending notification:', error);
+		logger.error('[Socket.IO] Error sending notification:', { context: { error: String(error) } });
 		throw error;
 	}
 }

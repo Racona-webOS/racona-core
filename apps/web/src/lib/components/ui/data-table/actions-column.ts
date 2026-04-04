@@ -38,7 +38,7 @@ export function createActionsColumn<TData>(
 			const resolvedActions = typeof actions === 'function' ? actions(row.original) : actions;
 
 			return renderComponent(DataTableRowActions, {
-				actions: resolvedActions,
+				actions: resolvedActions as RowAction<unknown>[],
 				row: row.original
 			});
 		}

@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			throw error(403, `${PluginErrorCode.PLUGIN_INACTIVE}: Plugin is not active`);
 		}
 
-		const permissions = (pluginResult[0].permissions as string[]) ?? [];
+		const permissions = (pluginResult[0].permissions as unknown as string[]) ?? [];
 		if (!permissions.includes('database')) {
 			throw error(
 				403,

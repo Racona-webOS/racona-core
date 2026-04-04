@@ -767,9 +767,9 @@
 				{@const props = (windowState as any).pluginProps || {}}
 				<svelte:element
 					this={tagName}
-					window-id={props.windowId}
-					plugin-id={props.pluginId}
-					parameters={JSON.stringify(props.parameters || {})}
+					data-window-id={props.windowId}
+					data-plugin-id={props.pluginId}
+					data-parameters={JSON.stringify(props.parameters || {})}
 				/>
 			{:else if windowState.component}
 				{@const Component = windowState.component}

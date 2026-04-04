@@ -40,8 +40,8 @@ export interface GroupWithUsersAndPermissions {
 export interface GroupAppRow {
 	id: number;
 	appId: string;
-	name: string;
-	description: string | null;
+	name: string | Record<string, string>;
+	description: string | Record<string, string> | null;
 	icon: string;
 	category: string;
 	createdAt: Date | null;
@@ -58,8 +58,8 @@ export class GroupRepository {
 		const [group] = await db
 			.insert(groups)
 			.values({
-				name: data.name,
-				description: data.description ?? null
+				name: data.name as any,
+				description: (data.description ?? null) as any
 			})
 			.returning();
 		return group;
@@ -75,8 +75,8 @@ export class GroupRepository {
 		const [group] = await db
 			.update(groups)
 			.set({
-				name: data.name,
-				description: data.description ?? null,
+				name: data.name as any,
+				description: (data.description ?? null) as any,
 				updatedAt: new Date()
 			})
 			.where(eq(groups.id, id))
@@ -281,7 +281,9 @@ export class GroupRepository {
 			.from(userGroups)
 			.where(eq(userGroups.groupId, groupId));
 
-		const userIdsInGroup = usersInGroup.map((ug) => ug.userId);
+		const userIdsInGroup = usersInGroup
+			.map((ug) => ug.userId)
+			.filter((id): id is number => id !== null);
 
 		if (userIdsInGroup.length === 0) {
 			return db.select().from(users).orderBy(asc(users.name));
@@ -310,7 +312,9 @@ export class GroupRepository {
 			.from(userGroups)
 			.where(eq(userGroups.userId, userId));
 
-		const groupIdsForUser = userGroupsData.map((ug) => ug.groupId);
+		const groupIdsForUser = userGroupsData
+			.map((ug) => ug.groupId)
+			.filter((id): id is number => id !== null);
 
 		if (groupIdsForUser.length === 0) {
 			return db.select().from(groups).orderBy(asc(groups.name));

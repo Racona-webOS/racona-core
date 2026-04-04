@@ -28,7 +28,7 @@ export const PLUGIN_MAX_SIZE = env.PLUGIN_MAX_SIZE;
 /**
  * Maximális plugin csomag méret megabájtokban (olvasható formátum)
  */
-export const PLUGIN_MAX_SIZE_MB = PLUGIN_MAX_SIZE / (1024 * 1024);
+export const PLUGIN_MAX_SIZE_MB = (PLUGIN_MAX_SIZE ?? 0) / (1024 * 1024);
 
 /**
  * Plugin tárolási könyvtár

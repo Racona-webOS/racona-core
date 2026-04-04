@@ -184,8 +184,8 @@
 	};
 
 	// Success state for showing verification message
-	let registrationSuccess = false;
-	let registeredEmail = '';
+	let registrationSuccess = $state(false);
+	let registeredEmail = $state('');
 
 	const handleSignUp = async () => {
 		// Clear any previous general errors

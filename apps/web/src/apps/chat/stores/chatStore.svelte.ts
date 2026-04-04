@@ -303,7 +303,7 @@ class ChatStore {
 				// Add to local messages if this is the active conversation
 				if (this.state.activeConversationId === result.conversationId) {
 					// Get current user info for the message
-					const sender = await this.getCurrentUser();
+					const sender = (await this.getCurrentUser()) as { name?: string; image?: string } | null;
 					const messageWithSender: MessageWithSender = {
 						...result.message,
 						senderName: sender?.name || 'You',

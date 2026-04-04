@@ -6,7 +6,7 @@ import { env } from '$lib/env';
 export class ActivityLogService {
 	async log(input: ActivityLogInput): Promise<void> {
 		// Ha a naplózás ki van kapcsolva env szinten, azonnal visszatérünk
-		if (env.ACTIVITY_LOG_ENABLED === false) {
+		if ((env as any).ACTIVITY_LOG_ENABLED === false) {
 			return;
 		}
 

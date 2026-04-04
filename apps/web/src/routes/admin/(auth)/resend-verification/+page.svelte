@@ -4,12 +4,12 @@
 	import { Label } from '$lib/components/ui/label';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { getContext, onMount } from 'svelte';
+	import { getContext, onMount, onDestroy } from 'svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 
 	const { t, store } = useI18n();
 
-	let email = '';
+	let email = $state('');
 
 	const authDecor = getContext<{
 		setDecorText: (title: string, description: string) => void;
@@ -29,11 +29,11 @@
 		}
 	});
 
-	let isLoading = false;
-	let status: 'idle' | 'success' | 'error' | 'rate_limited' = 'idle';
-	let message = '';
-	let countdown = 0;
-	let countdownInterval: NodeJS.Timeout | null = null;
+	let isLoading = $state(false);
+	let status = $state<'idle' | 'success' | 'error' | 'rate_limited'>('idle');
+	let message = $state('');
+	let countdown = $state(0);
+	let countdownInterval: ReturnType<typeof setInterval> | null = null;
 
 	async function handleResendVerification(event: Event) {
 		event.preventDefault();

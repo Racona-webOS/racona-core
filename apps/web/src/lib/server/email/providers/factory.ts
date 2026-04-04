@@ -92,8 +92,8 @@ export class ProviderConfigBuilder {
 	static buildSMTPConfig(): SMTPConfig {
 		return {
 			host: env.SMTP_HOST || 'localhost',
-			port: parseInt(env.SMTP_PORT || '587'),
-			secure: env.SMTP_SECURE === 'true',
+			port: parseInt(String(env.SMTP_PORT ?? '587')),
+			secure: env.SMTP_SECURE === true || String(env.SMTP_SECURE) === 'true',
 			username: env.SMTP_USERNAME || '',
 			password: env.SMTP_PASSWORD || ''
 		};

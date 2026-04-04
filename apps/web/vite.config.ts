@@ -1,3 +1,4 @@
+// @ts-nocheck -- Vite verziókonfliktus a bun dependency resolution miatt (vite@7 vs vite@8)
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';

@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		// 4. File size validation (Property 2)
-		if (file.size > MAX_FILE_SIZE) {
+		if (file.size > (MAX_FILE_SIZE ?? 0)) {
 			throw error(
 				400,
 				`${PluginErrorCode.FILE_TOO_LARGE}: File size exceeds ${PLUGIN_MAX_SIZE_MB} MB limit (${(file.size / 1024 / 1024).toFixed(2)} MB)`

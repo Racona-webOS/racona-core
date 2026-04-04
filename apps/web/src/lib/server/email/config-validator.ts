@@ -123,7 +123,7 @@ export class EmailConfigValidator {
 		// Port validation
 		const port = env.SMTP_PORT;
 		if (port) {
-			const portNum = parseInt(port, 10);
+			const portNum = parseInt(String(port), 10);
 			if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
 				result.errors.push('SMTP_PORT must be a valid port number (1-65535)');
 			}
@@ -131,7 +131,11 @@ export class EmailConfigValidator {
 
 		// Security validation
 		const secure = env.SMTP_SECURE;
-		if (secure && !['true', 'false'].includes(secure.toLowerCase())) {
+		if (
+			secure !== undefined &&
+			typeof secure !== 'boolean' &&
+			!['true', 'false'].includes(String(secure).toLowerCase())
+		) {
 			result.warnings.push('SMTP_SECURE should be "true" or "false"');
 		}
 	}
