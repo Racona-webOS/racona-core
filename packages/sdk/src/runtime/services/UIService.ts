@@ -20,6 +20,16 @@ export class UIService implements IUIService {
 	private toastFn: ((message: string, type: ToastType, duration: number) => void) | null = null;
 	/** Registered dialog display function, set by the ElyOS core */
 	private dialogFn: ((options: DialogOptions) => Promise<DialogResult>) | null = null;
+	/** Registered components, set by the ElyOS core */
+	private _components: WebOSComponents = {};
+
+	/**
+	 * Register the components (called by the ElyOS core).
+	 * @param components - ElyOS UI components
+	 */
+	_setComponents(components: WebOSComponents): void {
+		this._components = components;
+	}
 
 	/**
 	 * Register the toast handler (called by the ElyOS core).
@@ -80,10 +90,10 @@ export class UIService implements IUIService {
 
 	/**
 	 * Access ElyOS UI components.
-	 * Components are registered by the ElyOS core.
+	 * Components are registered by the ElyOS core via `_setComponents`.
 	 */
 	get components(): WebOSComponents {
-		return {};
+		return this._components;
 	}
 
 	/**

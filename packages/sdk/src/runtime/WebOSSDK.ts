@@ -65,6 +65,7 @@ export class WebOSSDK implements WebOSSDKInterface {
 		this.assets = new AssetService(pluginId);
 		this.libs = new SharedLibrariesService();
 		this.components = components ?? {};
+		this.ui._setComponents(this.components);
 	}
 
 	/**

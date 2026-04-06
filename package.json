@@ -31,7 +31,9 @@
 		"docker:build:amd64": "docker build -f docker/Dockerfile --platform linux/amd64 -t elyos/core:latest-amd64 -t elyos/core:0.1.0-amd64 .",
 		"docker:build:arm64": "docker build -f docker/Dockerfile --platform linux/arm64 -t elyos/core:latest-arm64 -t elyos/core:0.1.0-arm64 .",
 		"docker:save:amd64": "docker save -o docker/elyos-core.tar elyos/core:latest-amd64",
-		"docker:save:arm64": "docker save -o docker/elyos-core.tar elyos/core:latest-amd64"
+		"docker:save:arm64": "docker save -o docker/elyos-core.tar elyos/core:latest-arm64",
+		"docker:save:zstd:amd64": "docker save elyos/core:latest-amd64 | zstd -9 > ./docker/elyos-core-amd64.tar.zst",
+		"docker:save:zstd:arm64": "docker save elyos/core:latest-arm64 | zstd -9 > ./docker/elyos-core-arm64.tar.zst"
 	},
 	"devDependencies": {
 		"@types/dompurify": "^3.2.0",

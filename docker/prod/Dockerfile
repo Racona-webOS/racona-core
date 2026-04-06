@@ -10,8 +10,11 @@ COPY .env.example ./.env
 # Copy all workspace member package.json files (needed for frozen lockfile)
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/database/package.json ./packages/database/package.json
-COPY packages/webos-sdk-types/package.json ./packages/webos-sdk-types/package.json
+COPY packages/sdk/package.json ./packages/sdk/package.json
+COPY packages/create-elyos-app/package.json ./packages/create-elyos-app/package.json
 COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/package.json
+COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/package.json
+COPY examples/plugins/weather/package.json ./examples/plugins/weather/package.json
 
 # Install all dependencies (respects workspace structure)
 RUN bun install --frozen-lockfile
@@ -21,12 +24,16 @@ COPY apps/web ./apps/web
 
 # Copy workspace packages (needed for workspace dependencies)
 COPY packages/database ./packages/database
+COPY packages/sdk ./packages/sdk
+
+# Build SDK first (required by SvelteKit build)
+RUN cd packages/sdk && bun run build
 
 # Build the application
 RUN bun run app:build
 
 # Production stage
-FROM oven/bun:1.3.10-alpine AS production
+FROM oven/bun:1-alpine AS production
 
 WORKDIR /app
 
@@ -48,6 +55,13 @@ COPY --from=builder --chown=elyos:nodejs /app/packages/database/drizzle.config.t
 COPY --from=builder --chown=elyos:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=elyos:nodejs /app/packages/database/tsconfig.json ./packages/database/tsconfig.json
 
+# Copy SDK and CLI package.json-ok a workspace feloldáshoz
+COPY --from=builder --chown=elyos:nodejs /app/packages/sdk/package.json ./packages/sdk/package.json
+COPY --from=builder --chown=elyos:nodejs /app/packages/create-elyos-app/package.json ./packages/create-elyos-app/package.json
+COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/package.json
+COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/todo-list/package.json ./examples/plugins/todo-list/package.json
+COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/weather/package.json ./examples/plugins/weather/package.json
+
 # Copy built application
 COPY --from=builder --chown=elyos:nodejs /app/apps/web/package.json ./apps/web/package.json
 COPY --from=builder --chown=elyos:nodejs /app/apps/web/build ./apps/web/build
@@ -58,10 +72,6 @@ COPY --chmod=755 docker/prod/entrypoint.sh /entrypoint.sh
 
 # Copy demo reset cron script
 COPY --chmod=755 docker/prod/demo-reset-cron.sh /app/demo-reset-cron.sh
-
-# Copy hiányzó workspace package.json-ok a workspace feloldáshoz
-COPY --from=builder --chown=elyos:nodejs /app/packages/webos-sdk-types/package.json ./packages/webos-sdk-types/package.json
-COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/hello-world/package.json ./examples/plugins/hello-world/package.json
 
 # Csak production függőségek telepítése
 RUN bun install --production
