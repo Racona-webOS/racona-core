@@ -352,6 +352,23 @@ Place a reverse proxy (nginx, Caddy, Traefik) in front of ElyOS to handle TLS te
 
 ## Docker Configuration
 
+### Deployment modes
+
+ElyOS supports three Docker deployment modes:
+
+| Mode       | Compose file                       | Script                 | Description                                                        |
+| ---------- | ---------------------------------- | ---------------------- | ------------------------------------------------------------------ |
+| Full stack | `docker/docker-compose.yml`        | `bun docker:up`        | postgres + db-init + app. Recommended for most users.              |
+| Bundle     | `docker/docker-compose.bundle.yml` | `bun docker:up:bundle` | postgres + app, initialized from `init.sql`. No db-init container. |
+| App only   | `docker/docker-compose.app.yml`    | `bun docker:up:app`    | App only, connects to an external database.                        |
+
+**Bundle mode** requires generating the init SQL first:
+
+```bash
+bun db:generate-sql   # generates packages/database/init.sql
+bun docker:up:bundle
+```
+
 ### Docker Compose Services
 
 The `docker/docker-compose.yml` defines two services:

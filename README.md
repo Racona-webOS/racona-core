@@ -242,7 +242,9 @@ bun db:studio         # Open Drizzle Studio
 bun db:seed           # Seed database
 bun db:reset          # Reset database
 
-bun docker:up         # Start Docker containers
+bun docker:up         # Start full stack (postgres + db-init + app)
+bun docker:up:bundle  # Start bundle stack (postgres + app, SQL-based init)
+bun docker:up:app     # Start app only (external database)
 bun docker:down       # Stop Docker containers
 bun docker:logs       # Follow container logs
 bun docker:db         # Start only PostgreSQL (for local development)
@@ -275,15 +277,43 @@ elyos-core/
 
 ### Self-hosting
 
+ElyOS offers three Docker deployment modes depending on your needs:
+
+#### Option 1 — Full stack (recommended for most users)
+
 ```bash
 bun docker:up
 ```
 
-This starts the full system in three containers, in order:
+Starts three containers in order:
 
-1. **postgres** — PostgreSQL 18 database (custom image with `postgres-json-schema` extension)
-2. **db-init** — one-time initialization: Drizzle migrations + seed data (only starts once postgres is healthy)
-3. **elyos** — the application itself (only starts after db-init completes successfully)
+1. **postgres** — PostgreSQL 18 with `postgres-json-schema` extension
+2. **db-init** — one-time initialization: Drizzle migrations + seed data
+3. **elyos** — the application (starts after db-init completes)
+
+#### Option 2 — Bundle (postgres + app, SQL-based init)
+
+Ideal when you want a self-contained stack initialized from a pre-generated SQL file instead of running migration scripts at startup.
+
+```bash
+# Generate the init SQL first (only needed once, or after schema changes)
+bun db:generate-sql
+
+# Start postgres + app
+bun docker:up:bundle
+```
+
+The postgres container automatically loads `packages/database/init.sql` on first startup. No `db-init` container needed. To fully reset: `docker compose -f docker/docker-compose.bundle.yml down -v`.
+
+#### Option 3 — App only (external database)
+
+If you manage your own PostgreSQL instance:
+
+```bash
+bun docker:up:app
+```
+
+Only the ElyOS app container starts. Set `DATABASE_URL` in your `.env` to point to your external database. You are responsible for running migrations and seeding separately.
 
 The app will be available at `http://localhost:3000` (configurable via `ELYOS_PORT`), PostgreSQL on port `5432` (configurable via `POSTGRES_PORT`).
 
@@ -386,7 +416,17 @@ See [`.env.example`](./.env.example) for all available configuration options, in
 ### Building the image
 
 ```bash
+# Full image (includes db-init capability)
 docker build -f docker/Dockerfile -t elyos/core:latest .
+
+# App-only image (no db-init, connects to external database)
+docker build -f docker/Dockerfile.app -t elyos/core-app:latest .
+
+# Platform-specific builds
+bun docker:build:amd64        # Full image, linux/amd64
+bun docker:build:arm64        # Full image, linux/arm64
+bun docker:build:app:amd64    # App-only, linux/amd64
+bun docker:build:app:arm64    # App-only, linux/arm64
 ```
 
 ## Plugin Development
