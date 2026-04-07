@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import type {} from '@elyos/sdk/types';
+	import type {} from '@elyos-dev/sdk/types';
 
 	let { pluginId = '__PLUGIN_ID__' }: { pluginId?: string } = $props();
 
