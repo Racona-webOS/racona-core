@@ -1,0 +1,25 @@
+# =============================================================================
+# ElyOS Core — App-only Docker Compose
+# =============================================================================
+# Csak az alkalmazást futtatja, külső adatbázishoz csatlakozik.
+# Az adatbázis migrációt és seed-et kézzel kell elvégezni:
+#   bun db:migrate
+#   bun db:seed
+# =============================================================================
+
+services:
+  elyos:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    container_name: elyos-app
+    ports:
+      - '${ELYOS_PORT:-3000}:3000'
+    env_file:
+      - ../.env
+    environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+    volumes:
+      - ../apps/web/uploads:/app/uploads
+    restart: unless-stopped

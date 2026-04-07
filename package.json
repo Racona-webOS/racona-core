@@ -18,9 +18,12 @@
 		"db:studio": "bun --filter @elyos/database db:studio",
 		"db:seed": "bun --filter @elyos/database db:seed",
 		"db:init": "bun --elide-lines=0 --filter @elyos/database db:init",
+		"db:generate-sql": "bun --filter @elyos/database db:generate-sql",
 		"db:reset": "bun --filter @elyos/database db:reset",
 		"docker:up": "docker compose -f docker/docker-compose.yml --env-file .env up -d --build",
 		"docker:up:ghcr": "docker compose -f docker/docker-compose.ghcr.yml --env-file .env up -d",
+		"docker:up:app": "docker compose -f docker/docker-compose.app.yml --env-file .env.local up -d --build",
+		"docker:up:bundle": "docker compose -f docker/docker-compose.bundle.yml --env-file .env.local up -d --build",
 		"docker:rebuild": "docker compose -f docker/docker-compose.yml --env-file .env build --no-cache && docker compose -f docker/docker-compose.yml --env-file .env up -d",
 		"docker:db": "docker compose -f docker/docker-compose.yml --env-file .env up postgres -d",
 		"docker:down": "docker compose -f docker/docker-compose.yml down",
@@ -33,7 +36,14 @@
 		"docker:save:amd64": "docker save -o docker/elyos-core.tar elyos/core:latest-amd64",
 		"docker:save:arm64": "docker save -o docker/elyos-core.tar elyos/core:latest-arm64",
 		"docker:save:zstd:amd64": "docker save elyos/core:latest-amd64 | zstd -9 > ./docker/elyos-core-amd64.tar.zst",
-		"docker:save:zstd:arm64": "docker save elyos/core:latest-arm64 | zstd -9 > ./docker/elyos-core-arm64.tar.zst"
+		"docker:save:zstd:arm64": "docker save elyos/core:latest-arm64 | zstd -9 > ./docker/elyos-core-arm64.tar.zst",
+		"docker:build:app": "docker build -f docker/Dockerfile.app -t elyos/core-app:latest .",
+		"docker:build:app:amd64": "docker build -f docker/Dockerfile.app --platform linux/amd64 -t elyos/core-app:latest-amd64 -t elyos/core-app:0.1.0-amd64 .",
+		"docker:build:app:arm64": "docker build -f docker/Dockerfile.app --platform linux/arm64 -t elyos/core-app:latest-arm64 -t elyos/core-app:0.1.0-arm64 .",
+		"docker:save:app:amd64": "docker save -o docker/elyos-core-app-amd64.tar elyos/core-app:latest-amd64",
+		"docker:save:app:arm64": "docker save -o docker/elyos-core-app-arm64.tar elyos/core-app:latest-arm64",
+		"docker:save:app:zstd:amd64": "docker save elyos/core-app:latest-amd64 | zstd -9 > ./docker/elyos-core-app-amd64.tar.zst",
+		"docker:save:app:zstd:arm64": "docker save elyos/core-app:latest-arm64 | zstd -9 > ./docker/elyos-core-app-arm64.tar.zst"
 	},
 	"devDependencies": {
 		"@types/dompurify": "^3.2.0",

@@ -25,6 +25,7 @@ apps/web/.svelte-kit
 docker/**
 !docker/prod/entrypoint.sh
 !docker/prod/demo-reset-cron.sh
+!docker/prod/app/entrypoint.sh
 
 # Tests
 tests

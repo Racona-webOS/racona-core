@@ -1,0 +1,79 @@
+# =============================================================================
+# ElyOS Core — Bundle Docker Compose (postgres + app, mindent egyben)
+# =============================================================================
+# Ez a konfiguráció tartalmazza a PostgreSQL adatbázist és az ElyOS appot.
+# Az adatbázis inicializálása az init.sql alapján történik az első indításkor.
+#
+# Előfeltétel: az init.sql fájlnak léteznie kell:
+#   bun db:generate-sql
+#
+# Indítás:
+#   docker compose -f docker/docker-compose.bundle.yml --env-file .env up -d --build
+#
+# Leállítás:
+#   docker compose -f docker/docker-compose.bundle.yml down
+#
+# Teljes reset (adatbázis törlésével):
+#   docker compose -f docker/docker-compose.bundle.yml down -v
+#   docker compose -f docker/docker-compose.bundle.yml --env-file .env up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL adatbázis — init.sql automatikus betöltéssel
+  # ---------------------------------------------------------------------------
+  postgres:
+    build:
+      context: postgres
+      dockerfile: Dockerfile
+    container_name: elyos-bundle-postgres
+    env_file:
+      - ../.env.local
+    volumes:
+      - elyos-bundle-data:/var/lib/postgresql
+      # Az init.sql az első indításkor automatikusan lefut (csak üres adatbázisnál)
+      - ../packages/database/init.sql:/docker-entrypoint-initdb.d/20-init.sql:ro
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    networks:
+      - elyos-bundle-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-elyos} -d ${POSTGRES_DB:-elyos}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # ElyOS webalkalmazás
+  # ---------------------------------------------------------------------------
+  elyos:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    container_name: elyos-bundle-app
+    ports:
+      - '${ELYOS_PORT:-3000}:3000'
+    env_file:
+      - ../.env.local
+    environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID:-}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET:-}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-elyos}:${POSTGRES_PASSWORD:-elyos123}@postgres:5432/${POSTGRES_DB:-elyos}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elyos-bundle-network
+    volumes:
+      - ../apps/web/uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  elyos-bundle-data:
+    driver: local
+
+networks:
+  elyos-bundle-network:
+    driver: bridge

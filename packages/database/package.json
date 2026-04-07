@@ -18,7 +18,8 @@
 		"db:seed:only": "bun --env-file=../../.env.local src/seeds/runner.ts --no-truncate --only",
 		"db:reset": "bun --env-file=../../.env.local src/seeds/reset.ts",
 		"db:demo-reset": "bun --env-file=../../.env.local src/seeds/demo-reset.ts",
-		"db:init": "bun --env-file=../../.env.local src/seeds/init-db.ts"
+		"db:init": "bun --env-file=../../.env.local src/seeds/init-db.ts",
+		"db:generate-sql": "bun src/seeds/generate-init-sql.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
