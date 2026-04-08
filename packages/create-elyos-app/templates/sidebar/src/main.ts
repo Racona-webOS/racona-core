@@ -8,7 +8,24 @@ import App from './App.svelte';
 async function initDevSDK() {
 	if (typeof window !== 'undefined' && !window.webOS) {
 		const { MockWebOSSDK } = await import('@elyos-dev/sdk/dev');
-		MockWebOSSDK.initialize();
+
+		// Locale fájlok betöltése és átadása a MockSDK-nak
+		const localeModules = import.meta.glob<Record<string, string>>('../../locales/*.json', {
+			eager: true,
+			import: 'default'
+		});
+
+		const translations: Record<string, Record<string, string>> = {};
+		for (const [path, data] of Object.entries(localeModules)) {
+			const locale = path.replace('../../locales/', '').replace('.json', '');
+			translations[locale] = data;
+		}
+
+		const defaultLocale = 'hu' in translations ? 'hu' : (Object.keys(translations)[0] ?? 'en');
+
+		MockWebOSSDK.initialize({
+			i18n: { locale: defaultLocale, translations }
+		});
 	}
 }
 

@@ -7,6 +7,17 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.1.6] - 2026-04-08
+
+### Javítva (`@elyos-dev/create-app@0.1.7`)
+
+- **Sidebar template**: standalone dev módban a tartalmi komponensek most helyesen jelenítik meg a fordított szövegeket — a mock SDK egy nem-reaktív `$state` closure-t használt; javítva azzal, hogy a locale fájlok betöltése a `main.ts`-ben történik és átadódik a `MockWebOSSDK.initialize()`-nak
+- **Sidebar template**: locale váltáskor a tartalmi komponensek azonnal frissülnek — a `setLocale()` most szinkron módon hívódik meg a `currentLocale` state változása előtt, így a `{#key}` újramountoláskor már a helyes locale van érvényben
+- **Összes template** (`basic`, `advanced`, `datatable`, `sidebar`): a `main.ts` most dinamikusan tölti be a fordításokat a `locales/*.json` fájlokból hardcoded stringek helyett — a locale fájlok az egyetlen forrás
+- **Sidebar template komponensek** (`Overview`, `Settings`): eltávolítva a `tr` state objektum boilerplate és a `$effect`-alapú i18n betöltés; a komponensek most közvetlenül `sdk.i18n.t(key)`-t használnak, összhangban a többi template-tel
+- **Starter template generátor**: a `generateBlankMainTs` most mindig locale fájl betöltést használ, ha `blankI18n` engedélyezve van, függetlenül a `blankSidebar` opciótól
+- **Starter template generátor**: a `generateBlankOverviewSvelte` most `sdk.i18n.t()` mintával generál komponenseket statikus szöveg helyett
+
 ## [0.1.5] - 2026-04-07
 
 ### Javítva

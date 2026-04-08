@@ -30,7 +30,7 @@
 
 	const componentMap = buildComponentMap();
 
-	// --- Locale-ok ---
+	// --- Locale-ok (sidebar navigáció felirataihoz) ---
 	const localeModules = import.meta.glob<Record<string, string>>(
 		'../locales/*.json',
 		{ eager: true, import: 'default' }
@@ -47,35 +47,13 @@
 	let currentLocale = $state(availableLocales.includes('hu') ? 'hu' : availableLocales[0] ?? 'en');
 	let translations = $derived(getLocaleData(currentLocale));
 
-	// --- Mock SDK (standalone mód) ---
-	if (typeof window !== 'undefined' && !(window as any).webOS) {
-		(window as any).webOS = {
-			i18n: {
-				t: (key: string) => translations[key] ?? key,
-				ready: () => Promise.resolve(),
-				get locale() { return currentLocale; }
-			},
-			ui: {
-				toast: (msg: string, type: string) => console.log(`[Toast/${type}]`, msg),
-				dialog: async (opts: Record<string, unknown>) => {
-					alert(`${opts.title}\n${opts.message}`);
-					return { action: 'confirm', value: '' };
-				}
-			},
-			notifications: {
-				send: async (opts: Record<string, unknown>) =>
-					console.log('[Notification]', opts.title, opts.message)
-			},
-			data: {
-				get: async (key: string) => {
-					try { return JSON.parse(localStorage.getItem(`plugin:${pluginId}:${key}`) ?? 'null'); }
-					catch { return null; }
-				},
-				set: async (key: string, value: unknown) => {
-					localStorage.setItem(`plugin:${pluginId}:${key}`, JSON.stringify(value));
-				}
-			}
-		};
+	// Locale váltás — szinkron módon frissíti a MockSDK-t is
+	function switchLocale(locale: string) {
+		const sdk = (window as any).webOS;
+		if (sdk?.i18n?.setLocale) {
+			sdk.i18n.setLocale(locale);
+		}
+		currentLocale = locale;
 	}
 
 	// --- Menü ---
@@ -86,13 +64,7 @@
 
 	function resolveLabel(labelKey: string): string {
 		if (!labelKey) return '';
-		if (translations[labelKey]) return translations[labelKey];
-		const dotIndex = labelKey.indexOf('.');
-		if (dotIndex !== -1) {
-			const shortKey = labelKey.slice(dotIndex + 1);
-			if (translations[shortKey]) return translations[shortKey];
-		}
-		return labelKey.split('.').pop() ?? '';
+		return translations[labelKey] ?? labelKey.split('.').pop() ?? labelKey;
 	}
 
 	const menuItems: StandaloneMenuItem[] = (menuData as any[])
@@ -102,7 +74,6 @@
 			componentName: item.component
 		}));
 
-	// Label-ek külön derived-ként, hogy nyelvváltáskor frissüljenek
 	let menuLabels = $derived(
 		Object.fromEntries(
 			(menuData as any[])
@@ -142,7 +113,7 @@
 					<button
 						class="locale-btn"
 						class:active={currentLocale === locale}
-						onclick={() => (currentLocale = locale)}
+						onclick={() => switchLocale(locale)}
 					>
 						{locale.toUpperCase()}
 					</button>

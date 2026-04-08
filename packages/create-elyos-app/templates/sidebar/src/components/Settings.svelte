@@ -13,51 +13,37 @@
 
 	let { pluginId = '__PLUGIN_ID__' }: { pluginId?: string } = $props();
 
-	let tr = $state<Record<string, string>>({});
-	let loaded = $state(false);
+	const sdk = $derived(
+		(window as any).__webOS_instances?.get(pluginId) ?? (window as any).webOS
+	);
 
-	$effect(() => {
-		const instances = (window as any).__webOS_instances;
-		const i18n = (instances?.get(pluginId) || (window as any).webOS)?.i18n;
-		if (!i18n) return;
-		i18n.ready().then(() => {
-			tr = {
-				title: i18n.t('settings.title'),
-				name: i18n.t('settings.name'),
-				save: i18n.t('settings.save')
-			};
-			loaded = true;
-		});
-	});
+	function t(key: string): string {
+		return sdk?.i18n?.t(key) ?? key;
+	}
 
 	let name = $state('');
 
 	async function saveName() {
 		if (!name.trim()) {
-			sdk?.ui.toast('Name is required', 'warning');
+			sdk?.ui.toast(t('settings.name_required') || 'Name is required', 'warning');
 			return;
 		}
 		await sdk?.data.set('user-name', name);
-		sdk?.ui.toast((tr.save ?? 'settings.save') + ' ✓', 'success');
+		sdk?.ui.toast(t('settings.save') + ' ✓', 'success');
 	}
-
 </script>
 
-{#if !loaded}
-	<div style="padding: 2rem; text-align: center;">Loading...</div>
-{:else}
-	<section>
-		<h2>{tr.title}</h2>
+<section>
+	<h2>{t('settings.title')}</h2>
 
-		<div class="setting-item">
-			<label>
-				{tr.name}
-				<input type="text" bind:value={name} />
-			</label>
-			<button onclick={saveName}>{tr.save}</button>
-		</div>
-	</section>
-{/if}
+	<div class="setting-item">
+		<label>
+			{t('settings.name')}
+			<input type="text" bind:value={name} />
+		</label>
+		<button onclick={saveName}>{t('settings.save')}</button>
+	</div>
+</section>
 
 <style>
 	section {

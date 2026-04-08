@@ -403,9 +403,23 @@ ${template}
 function generateBlankMainTs(config: PluginConfig): string {
 	const { blankI18n } = config;
 
-	const i18nInit = blankI18n
-		? `\t\t\ti18n: {\n\t\t\t\tlocale: 'en',\n\t\t\t\ttranslations: {\n\t\t\t\t\ten: { title: '${config.displayName}' },\n\t\t\t\t\thu: { title: '${config.displayName}' }\n\t\t\t\t}\n\t\t\t}`
+	const localeLoader = blankI18n
+		? `
+\t\t// Locale fájlok betöltése és átadása a MockSDK-nak
+\t\tconst localeModules = import.meta.glob<Record<string, string>>(
+\t\t\t'../locales/*.json',
+\t\t\t{ eager: true, import: 'default' }
+\t\t);
+\t\tconst translations: Record<string, Record<string, string>> = {};
+\t\tfor (const [path, data] of Object.entries(localeModules)) {
+\t\t\tconst locale = path.replace('../locales/', '').replace('.json', '');
+\t\t\ttranslations[locale] = data;
+\t\t}
+\t\tconst defaultLocale = 'hu' in translations ? 'hu' : Object.keys(translations)[0] ?? 'en';
+`
 		: '';
+
+	const i18nInit = blankI18n ? `\t\t\ti18n: { locale: defaultLocale, translations }` : '';
 
 	return `import { mount } from 'svelte';
 import App from './App.svelte';
@@ -413,7 +427,7 @@ import App from './App.svelte';
 async function initDevSDK() {
 \tif (typeof window !== 'undefined' && !window.webOS) {
 \t\tconst { MockWebOSSDK } = await import('@elyos-dev/sdk/dev');
-\t\tMockWebOSSDK.initialize({${blankI18n ? `\n${i18nInit}\n\t\t` : ''}});
+${localeLoader}\t\tMockWebOSSDK.initialize({${blankI18n ? `\n${i18nInit}\n\t\t` : ''}});
 \t}
 }
 
@@ -430,11 +444,21 @@ export default App;
 
 function generateBlankOverviewSvelte(): string {
 	return `<script lang="ts">
-\tconst sdk = window.webOS;
+\timport type {} from '@elyos-dev/sdk/types';
+
+\tlet { pluginId = 'my-plugin' }: { pluginId?: string } = $props();
+
+\tconst sdk = $derived(
+\t\t(window as any).__webOS_instances?.get(pluginId) ?? (window as any).webOS
+\t);
+
+\tfunction t(key: string): string {
+\t\treturn sdk?.i18n?.t(key) ?? key;
+\t}
 </script>
 
 <div class="page">
-\t<h2>Overview</h2>
+\t<h2>{t('overview.title')}</h2>
 \t<p>Your content here.</p>
 </div>
 

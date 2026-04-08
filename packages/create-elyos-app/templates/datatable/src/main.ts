@@ -1,37 +1,30 @@
-/**
- * Plugin entry point
- *
- * Standalone módban a Mock SDK-t használja,
- * ElyOS módban a runtime SDK-t kapja.
- */
 import { mount } from 'svelte';
 import App from './App.svelte';
 
-// Standalone fejlesztéshez: Mock SDK inicializálás
 async function initDevSDK() {
 	if (typeof window !== 'undefined' && !window.webOS) {
 		const { MockWebOSSDK } = await import('@elyos-dev/sdk/dev');
-		MockWebOSSDK.initialize({
-			i18n: {
-				locale: 'en',
-				translations: {
-					en: { title: 'My Plugin', welcome: 'Welcome!' },
-					hu: { title: 'Plugin', welcome: 'Üdvözöljük!' }
-				}
-			}
+
+		const localeModules = import.meta.glob<Record<string, string>>('../locales/*.json', {
+			eager: true,
+			import: 'default'
 		});
+		const translations: Record<string, Record<string, string>> = {};
+		for (const [path, data] of Object.entries(localeModules)) {
+			const locale = path.replace('../locales/', '').replace('.json', '');
+			translations[locale] = data;
+		}
+		const defaultLocale = 'hu' in translations ? 'hu' : (Object.keys(translations)[0] ?? 'en');
+
+		MockWebOSSDK.initialize({ i18n: { locale: defaultLocale, translations } });
 	}
 }
 
 async function init() {
 	await initDevSDK();
-
 	const target = document.getElementById('app');
-	if (target) {
-		mount(App, { target });
-	}
+	if (target) mount(App, { target });
 }
 
 init();
-
 export default App;

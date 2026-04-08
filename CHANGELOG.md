@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-04-08
+
+### Fixed (`@elyos-dev/create-app@0.1.7`)
+
+- **Sidebar template**: standalone dev mode now correctly displays translated text in content components — the mock SDK was using a closed-over `$state` reference that was not reactive; fixed by loading locale files in `main.ts` and passing them to `MockWebOSSDK.initialize()`
+- **Sidebar template**: locale switching in standalone mode now updates content components immediately — `setLocale()` is now called synchronously before `currentLocale` state changes, ensuring the `{#key}` remount sees the correct locale
+- **All templates** (`basic`, `advanced`, `datatable`, `sidebar`): `main.ts` now loads translations dynamically from `locales/*.json` files instead of hardcoding them — locale files are the single source of truth
+- **Sidebar template components** (`Overview`, `Settings`): removed `tr` state object boilerplate and `$effect`-based i18n loading; components now use `sdk.i18n.t(key)` directly, consistent with other templates
+- **Starter template generator**: `generateBlankMainTs` now always uses locale file loading when `blankI18n` is enabled, regardless of `blankSidebar` option
+- **Starter template generator**: `generateBlankOverviewSvelte` now generates components with `sdk.i18n.t()` pattern instead of static text
+
 ## [0.1.5] - 2026-04-07
 
 ### Fixed

@@ -13,31 +13,19 @@
 
 	let { pluginId = '__PLUGIN_ID__' }: { pluginId?: string } = $props();
 
-	let tr = $state<Record<string, string>>({});
-	let loaded = $state(false);
+	const sdk = $derived(
+		(window as any).__webOS_instances?.get(pluginId) ?? (window as any).webOS
+	);
 
-	$effect(() => {
-		const instances = (window as any).__webOS_instances;
-		const i18n = (instances?.get(pluginId) || (window as any).webOS)?.i18n;
-		if (!i18n) return;
-		i18n.ready().then(() => {
-			tr = {
-				title: i18n.t('overview.title'),
-				description: i18n.t('overview.description')
-			};
-			loaded = true;
-		});
-	});
+	function t(key: string): string {
+		return sdk?.i18n?.t(key) ?? key;
+	}
 </script>
 
-{#if !loaded}
-	<div style="padding: 2rem; text-align: center;">Loading...</div>
-{:else}
-	<section>
-		<h2>{tr.title}</h2>
-		<p>{tr.description}</p>
-	</section>
-{/if}
+<section>
+	<h2>{t('overview.title')}</h2>
+	<p>{t('overview.description')}</p>
+</section>
 
 <style>
 	section {
