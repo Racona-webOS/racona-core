@@ -46,10 +46,6 @@ export const sendWelcomeEmail = command(welcomeEmailSchema, async ({ name, email
 	});
 
 	if (result.success) {
-		console.log(`Welcome email sent successfully to ${email}`, {
-			messageId: result.messageId
-		});
-
 		return {
 			success: true,
 			messageId: result.messageId,

@@ -57,8 +57,6 @@
 				redirectTo: `${window.location.origin}/admin/reset-password`
 			});
 
-			console.log('forgetPassword result:', result);
-
 			// Check for errors in the response
 			if (result.error) {
 				throw new Error(result.error.message || 'Failed to send password reset email');

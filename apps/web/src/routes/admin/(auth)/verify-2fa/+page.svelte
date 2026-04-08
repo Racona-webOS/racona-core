@@ -38,8 +38,6 @@
 				trustDevice: trustDevice
 			});
 
-			console.log('verifyOtp result:', result);
-
 			if (result.error) {
 				const msg = result.error.message?.toLowerCase() || '';
 				if (msg.includes('invalid') || msg.includes('incorrect')) {

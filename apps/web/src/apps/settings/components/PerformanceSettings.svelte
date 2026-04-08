@@ -32,7 +32,6 @@
 			if (result && 'success' in result && result.success) {
 				// Frissítjük az oldalt, hogy a settings újratöltődjön
 				await invalidate('app:settings');
-				console.log('Settings updated successfully');
 				toast.success(t('settings.performance.saved'));
 			} else {
 				toast.error(t('common.errors.saveFailed'));

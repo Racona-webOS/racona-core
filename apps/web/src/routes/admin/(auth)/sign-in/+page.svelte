@@ -47,8 +47,6 @@
 				password: password
 			});
 
-			console.log('signIn result:', result);
-
 			// Először ellenőrizzük a hibát
 			if (result.error) {
 				const error = result.error;

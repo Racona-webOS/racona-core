@@ -163,9 +163,28 @@ WHERE id = (SELECT id FROM auth.users ORDER BY id ASC LIMIT 1);`;
  */
 function generate(): void {
 	const outputArg = process.argv.find((a) => a.startsWith('--output='));
-	const outputPath = outputArg
-		? path.resolve(outputArg.split('=')[1])
-		: path.resolve(import.meta.dir, '../../init.sql');
+	const defaultOutputPath = path.resolve(import.meta.dir, '../../init.sql');
+	const allowedRoot = path.resolve(import.meta.dir, '../..');
+
+	let outputPath: string;
+	if (outputArg) {
+		const rawOutput = outputArg.split('=').slice(1).join('=');
+		// Normalizálás: relatív és abszolút útvonalak egységes kezelése
+		const resolved = path.normalize(path.resolve(rawOutput));
+		const normalizedRoot = path.normalize(allowedRoot);
+		// Ellenőrzés: az útvonal az engedélyezett mappán belül van-e
+		const isWithinRoot =
+			resolved === normalizedRoot || resolved.startsWith(normalizedRoot + path.sep);
+		if (!isWithinRoot) {
+			throw new Error(
+				`Érvénytelen kimeneti útvonal: "${resolved}". Az útvonalnak a(z) "${normalizedRoot}" mappán belül kell lennie.`
+			);
+		}
+		// Csak az ellenőrzött, normalizált útvonalat használjuk
+		outputPath = path.join(normalizedRoot, path.relative(normalizedRoot, resolved));
+	} else {
+		outputPath = defaultOutputPath;
+	}
 
 	console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 	console.log('     ElyOS — Init SQL generálás');

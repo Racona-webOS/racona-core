@@ -112,7 +112,6 @@ async function loadLucideIcon(iconName: string): Promise<unknown> {
  * @returns {Promise<string|null>} SVG tartalom.
  */
 async function loadPrivateSvg(iconName: string, appName?: string) {
-	console.log(iconName, appName);
 	try {
 		let path = '/src/lib/assets/icons/';
 

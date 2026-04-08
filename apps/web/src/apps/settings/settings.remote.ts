@@ -72,8 +72,5 @@ export const updateSettings = command(updateSettingsSchema, async (updates) => {
 
 	// Frissítjük a locals.settings-et is, hogy a jelenlegi request-ben is elérhető legyen
 	locals.settings = result.settings;
-
-	console.log('Settings updated:', result.settings);
-
 	return result;
 });

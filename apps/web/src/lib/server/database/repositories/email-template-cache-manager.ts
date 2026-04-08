@@ -58,7 +58,7 @@ export class TemplateCacheManager {
 
 	/**
 	 * Warm up cache with specific template types.
-	 * @param templatesByType - Map of template types to templates
+	 * @param templatesByType - Map of template types to templates.
 	 */
 	async warmUpByTypes(
 		templatesByType: Map<EmailTemplateType, DatabaseEmailTemplate>

@@ -111,10 +111,6 @@ class NotificationStore {
 				this.state.notifications = [normalizedNotification, ...this.state.notifications];
 				this.state.unreadCount++;
 
-				console.log(
-					'[NotificationStore] About to show toast for notification:',
-					normalizedNotification.id
-				);
 				// Show toast notification with action
 				this.showToastNotification(normalizedNotification);
 

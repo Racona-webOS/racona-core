@@ -66,15 +66,7 @@ export class SMTPClient implements EmailProviderClient {
 					})
 			};
 
-			console.log('Sending mail with options:', mailOptions);
-
 			const result = await this.transporter.sendMail(mailOptions);
-
-			console.log('SMTP email sent successfully:', {
-				messageId: result.messageId,
-				response: result.response
-			});
-
 			return {
 				id: result.messageId || `smtp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 			};
