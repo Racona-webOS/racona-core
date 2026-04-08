@@ -13,6 +13,22 @@ import db from '$lib/server/database';
 import { apps } from '@elyos/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
+import { getEmailManager } from '$lib/server/email/init';
+import type { EmailResult } from '$lib/server/email/types';
+
+/**
+ * Plugin email service interfész
+ * Lehetővé teszi pluginok számára email küldést a core EmailManager rendszeren keresztül.
+ * A template nevet automatikusan prefixeli az alkalmazás ID-val.
+ */
+export interface _PluginEmailService {
+	send(params: {
+		to: string | string[];
+		template: string;
+		data: Record<string, unknown>;
+		locale?: string;
+	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
+}
 
 /**
  * Remote függvény végrehajtása
@@ -70,7 +86,13 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// 5. Remote függvény betöltése és végrehajtása
-		const result = await executeRemoteFunction(pluginId, functionName, functionParams, userId);
+		const result = await executeRemoteFunction(
+			pluginId,
+			functionName,
+			functionParams,
+			userId,
+			permissions
+		);
 
 		// 6. Sikeres válasz
 		return json({
@@ -102,7 +124,8 @@ async function executeRemoteFunction(
 	pluginId: string,
 	functionName: string,
 	params: unknown,
-	userId: string
+	userId: string,
+	permissions: string[]
 ): Promise<unknown> {
 	try {
 		// Plugin server könyvtár útvonala
@@ -119,13 +142,16 @@ async function executeRemoteFunction(
 			);
 		}
 
+		// Email service létrehozása (csak notifications jogosultsággal rendelkező pluginok számára)
+		const emailService = createPluginEmailService(pluginId, permissions);
+
 		// Execution context létrehozása
 		const context = {
 			pluginId,
 			userId,
-			db, // Adatbázis kapcsolat
-			// TODO: További context adatok (permissions, stb.)
-			permissions: []
+			db,
+			permissions,
+			...(emailService ? { email: emailService } : {})
 		};
 
 		// Függvény végrehajtása timeout-tal (30 másodperc)
@@ -151,4 +177,54 @@ async function executeRemoteFunction(
 
 		throw err;
 	}
+}
+
+/**
+ * Email template név prefixelése az alkalmazás ID-val.
+ * Tiszta (pure) függvény, amely a template nevet `${pluginId}:${templateName}` formátumban adja vissza.
+ *
+ * @param pluginId - Az alkalmazás azonosítója
+ * @param templateName - A template neve (prefix nélkül)
+ * @returns A prefixelt template név
+ */
+export function _prefixTemplateName(pluginId: string, templateName: string): string {
+	return `${pluginId}:${templateName}`;
+}
+
+/**
+ * Plugin email service létrehozása
+ * Csak notifications jogosultsággal rendelkező pluginok számára elérhető.
+ * A template nevet automatikusan prefixeli: 'employee_welcome' → 'ely-work:employee_welcome'
+ */
+function createPluginEmailService(
+	pluginId: string,
+	permissions: string[]
+): _PluginEmailService | undefined {
+	if (!permissions.includes('notifications')) {
+		return undefined;
+	}
+
+	return {
+		async send({ to, template, data, locale = 'hu' }): Promise<EmailResult> {
+			try {
+				const emailManager = getEmailManager();
+				if (!emailManager) {
+					return { success: false, error: 'Email service is not available' };
+				}
+
+				const prefixedTemplate = _prefixTemplateName(pluginId, template);
+
+				return await emailManager.sendTemplatedEmail({
+					to,
+					template: prefixedTemplate as any,
+					data,
+					locale
+				});
+			} catch (err) {
+				const errorMessage = err instanceof Error ? err.message : 'Unknown email error';
+				console.error(`[PluginEmailService] Email sending failed for ${pluginId}:`, errorMessage);
+				return { success: false, error: errorMessage };
+			}
+		}
+	};
 }

@@ -10,7 +10,7 @@ import { getPluginDir, ensureDir, removeDir, safeWriteFile, copyDir } from '../u
 import { zipValidator } from '../validation/ZipValidator';
 import db from '$lib/server/database';
 import { apps, pluginLogs } from '@elyos/database';
-import { eq, sql } from 'drizzle-orm';
+import { eq, like, sql } from 'drizzle-orm';
 import AdmZip from 'adm-zip';
 import path from 'path';
 import fs from 'fs/promises';
@@ -50,7 +50,12 @@ export class PluginInstaller {
 				await this.createPluginSchema(pluginId);
 			}
 
-			// 5. Esemény naplózása
+			// 5. Email template-ek regisztrálása (csak ha a plugin igényli az értesítéseket)
+			if (manifest.permissions?.includes('notifications')) {
+				await this.importEmailTemplates(pluginId);
+			}
+
+			// 6. Esemény naplózása
 			await this.logEvent(pluginId, 'install', {
 				version: manifest.version,
 				author: manifest.author
@@ -279,6 +284,97 @@ export class PluginInstaller {
 	}
 
 	/**
+	 * Email template-ek importálása a plugin email-templates/ mappájából.
+	 *
+	 * Minden JSON fájlhoz, minden locale-hoz külön sort hoz létre
+	 * a platform.email_templates táblában.
+	 * A type mező: {appId}:{fájlnév} (pl. ely-work:employee_welcome)
+	 */
+	async importEmailTemplates(pluginId: string): Promise<void> {
+		const pluginDir = getPluginDir(pluginId);
+		const templatesDir = path.join(pluginDir, 'email-templates');
+
+		try {
+			await fs.access(templatesDir);
+		} catch {
+			// Nincs email-templates/ mappa — nem kötelező
+			return;
+		}
+
+		const files = (await fs.readdir(templatesDir)).filter((f) => f.endsWith('.json'));
+
+		if (files.length === 0) return;
+
+		const { emailTemplates } = await import('@elyos/database');
+
+		for (const file of files) {
+			const filePath = path.join(templatesDir, file);
+			const templateName = file.replace('.json', '');
+			const templateType = `${pluginId}:${templateName}`;
+
+			try {
+				const content = await fs.readFile(filePath, 'utf-8');
+				const template = JSON.parse(content);
+
+				if (!template.locales || typeof template.locales !== 'object') {
+					console.warn(`[PluginInstaller] Email template has no locales, skipping: ${file}`);
+					continue;
+				}
+
+				for (const [locale, localeData] of Object.entries(
+					template.locales as Record<string, { subject: string; html: string; text: string }>
+				)) {
+					await db
+						.insert(emailTemplates)
+						.values({
+							type: templateType,
+							locale,
+							name: template.name || templateName,
+							subjectTemplate: localeData.subject,
+							htmlTemplate: localeData.html,
+							textTemplate: localeData.text,
+							requiredData: template.requiredData || [],
+							optionalData: template.optionalData || [],
+							isActive: true
+						})
+						.onConflictDoUpdate({
+							target: [emailTemplates.type, emailTemplates.locale],
+							set: {
+								name: template.name || templateName,
+								subjectTemplate: localeData.subject,
+								htmlTemplate: localeData.html,
+								textTemplate: localeData.text,
+								requiredData: template.requiredData || [],
+								optionalData: template.optionalData || [],
+								updatedAt: new Date()
+							}
+						});
+				}
+
+				console.log(`[PluginInstaller] Registered email template: ${templateType}`);
+			} catch (error) {
+				console.warn(`[PluginInstaller] Failed to import email template ${file}:`, error);
+				// Nem kritikus hiba, folytatjuk a többi template-tel
+			}
+		}
+	}
+
+	/**
+	 * Plugin email template-ek törlése a platform.email_templates táblából.
+	 * Az {appId}: prefixű rekordokat törli.
+	 */
+	async removeEmailTemplates(pluginId: string): Promise<void> {
+		try {
+			const { emailTemplates } = await import('@elyos/database');
+			await db.delete(emailTemplates).where(like(emailTemplates.type, `${pluginId}:%`));
+
+			console.log(`[PluginInstaller] Removed email templates for plugin: ${pluginId}`);
+		} catch (error) {
+			console.warn(`[PluginInstaller] Failed to remove email templates for ${pluginId}:`, error);
+		}
+	}
+
+	/**
 	 * Nested objektum flatten-elése
 	 */
 	private flattenTranslations(
@@ -501,7 +597,10 @@ export class PluginInstaller {
 			await db.execute(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);
 			console.log(`[PluginInstaller] Removed plugin schema`);
 
-			// 5. Rollback esemény naplózása
+			// 5. Email template-ek törlése
+			await this.removeEmailTemplates(pluginId);
+
+			// 6. Rollback esemény naplózása
 			await this.logEvent(pluginId, 'installation_rollback', {
 				reason: 'Installation failed'
 			});

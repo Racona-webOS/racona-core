@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-04-08
+
+### Added
+
+- **Plugin Email Service**: remote function context now includes an `email` service (`context.email.send()`) for plugins with `notifications` permission — template names are automatically prefixed with the plugin ID (e.g. `'employee_welcome'` → `'ely-work:employee_welcome'`)
+- **Plugin Installer — email template registration**: the installer reads `email-templates/*.json` files during plugin installation and registers them in `platform.email_templates` per locale, with `{appId}:{fileName}` type format
+- **Plugin uninstall — email template cleanup**: removing a plugin now deletes its email template records from `platform.email_templates` (matched by `{appId}:%` prefix)
+- **Template Registry — plugin template lookup**: `TemplateRegistry` now resolves `appId:templateName` format names from the database, enabling plugin-registered templates to be used by `EmailManager`
+
+### Tests
+
+- Property-based test for email template name prefixing (Property 10, validates Requirement 12.4)
+- Unit tests for `PluginInstaller.importEmailTemplates()` and `removeEmailTemplates()` (validates Requirements 12.6, 12.10)
+
 ## [0.1.6] - 2026-04-08
 
 ### Fixed (`@elyos-dev/create-app@0.1.7`)

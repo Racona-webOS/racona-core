@@ -156,6 +156,16 @@ export class TemplateRegistry {
 					locale
 				);
 			}
+
+			// Plugin template támogatás: 'appId:templateName' formátumú nevek
+			// Ezek nem szerepelnek az EmailTemplateType enum-ban, de a DB-ben megtalálhatók
+			if (templateName.includes(':')) {
+				return await this.databaseRepository.getTemplateByType(
+					templateName as EmailTemplateType,
+					locale
+				);
+			}
+
 			return null;
 		} catch (error) {
 			this.log('warn', 'Database template lookup failed', {

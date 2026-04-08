@@ -14,6 +14,7 @@ import { apps } from '@elyos/database/schemas';
 import { eq, and } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
+import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése
@@ -51,7 +52,10 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			// Folytatjuk az adatbázis törlésével még ha a fájl törlés sikertelen is
 		}
 
-		// 5. Plugin törlése az adatbázisból
+		// 5. Email template-ek törlése
+		await pluginInstaller.removeEmailTemplates(pluginId);
+
+		// 6. Plugin törlése az adatbázisból
 		await db.delete(apps).where(eq(apps.appId, pluginId));
 
 		console.log(`[PluginManager] Plugin ${pluginId} sikeresen eltávolítva`);

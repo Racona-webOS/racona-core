@@ -7,6 +7,20 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.1.7] - 2026-04-08
+
+### Hozzáadva
+
+- **Plugin Email Service**: a remote function context mostantól tartalmaz egy `email` service-t (`context.email.send()`) a `notifications` jogosultsággal rendelkező pluginok számára — a template nevek automatikusan prefixelődnek a plugin ID-val (pl. `'employee_welcome'` → `'ely-work:employee_welcome'`)
+- **Plugin telepítő — email template regisztráció**: a telepítő beolvassa az `email-templates/*.json` fájlokat telepítéskor, és locale-onként külön sorban regisztrálja őket a `platform.email_templates` táblába, `{appId}:{fájlnév}` type formátummal
+- **Plugin eltávolítás — email template törlés**: plugin eltávolításakor az `{appId}:%` prefixű email template rekordok törlődnek a `platform.email_templates` táblából
+- **Template Registry — plugin template feloldás**: a `TemplateRegistry` mostantól feloldja az `appId:templateName` formátumú neveket az adatbázisból, lehetővé téve a pluginok által regisztrált template-ek használatát az `EmailManager`-en keresztül
+
+### Tesztek
+
+- Property-based teszt az email template név prefixeléshez (Property 10, validálja a 12.4 követelményt)
+- Unit tesztek a `PluginInstaller.importEmailTemplates()` és `removeEmailTemplates()` metódusokhoz (validálja a 12.6, 12.10 követelményeket)
+
 ## [0.1.6] - 2026-04-08
 
 ### Javítva (`@elyos-dev/create-app@0.1.7`)
