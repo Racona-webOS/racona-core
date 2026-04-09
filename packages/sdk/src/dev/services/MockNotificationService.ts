@@ -8,6 +8,9 @@ import type { NotificationService, NotificationOptions } from '../../types/index
 
 /** Mock Notification service — simulates notifications by logging to the console. */
 export class MockNotificationService implements NotificationService {
+	/** Creates a new MockNotificationService instance. */
+	constructor() {}
+
 	/**
 	 * Simulate sending a notification — logs to the console, does not send a real notification.
 	 * @param options - Notification data (userId, title, message, type)

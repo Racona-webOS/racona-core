@@ -19,6 +19,9 @@ import type { SharedLibrariesService as ISharedLibrariesService } from '../../ty
 
 /** Shared Libraries service — access to libraries installed in the ElyOS core */
 export class SharedLibrariesService implements ISharedLibrariesService {
+	/** Creates a new SharedLibrariesService instance. */
+	constructor() {}
+
 	/**
 	 * Get a shared library by name.
 	 * Returns undefined if the library is not available.

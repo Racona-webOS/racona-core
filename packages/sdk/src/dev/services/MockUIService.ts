@@ -16,6 +16,9 @@ import type {
 
 /** Mock UI service — simulates toasts, dialogs, and theme for standalone development. */
 export class MockUIService implements UIService {
+	/** Creates a new MockUIService instance. */
+	constructor() {}
+
 	/**
 	 * Simulate a toast — logs to the console.
 	 * @param message - Text to display

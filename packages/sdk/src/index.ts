@@ -25,21 +25,3 @@ export { AssetService } from './runtime/services/AssetService.js';
 export { SharedLibrariesService } from './runtime/services/SharedLibrariesService.js';
 
 export { PluginErrorCode } from './types/index.js';
-
-// Re-export commonly used types for convenience.
-// Full type definitions are available via '@elyos-dev/sdk/types'.
-export type {
-	DialogOptions,
-	DialogButton,
-	DialogResult,
-	ThemeColors,
-	ToastType,
-	CallOptions,
-	Transaction,
-	UserInfo,
-	WindowControls,
-	WebOSComponents,
-	WebOSSDKInterface,
-	MockSDKConfig,
-	NotificationOptions as SDKNotificationOptions
-} from './types/index.js';
