@@ -72,7 +72,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * Lucide Svelte icons library.
 	 * @returns lucide-svelte exports or undefined
 	 */
-	get lucide() {
+	get lucide(): any {
 		return this.get('lucide-svelte');
 	}
 
@@ -80,7 +80,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * Phosphor Svelte icons library.
 	 * @returns phosphor-svelte exports or undefined
 	 */
-	get phosphor() {
+	get phosphor(): any {
 		return this.get('phosphor-svelte');
 	}
 
@@ -88,7 +88,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * Svelte MapLibre GL library.
 	 * @returns svelte-maplibre-gl exports or undefined
 	 */
-	get maplibre() {
+	get maplibre(): any {
 		return this.get('svelte-maplibre-gl');
 	}
 
@@ -96,7 +96,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * TanStack Table Core library.
 	 * @returns @tanstack/table-core exports or undefined
 	 */
-	get tanstackTable() {
+	get tanstackTable(): any {
 		return this.get('@tanstack/table-core');
 	}
 
@@ -104,7 +104,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * Clsx utility for conditional class names.
 	 * @returns clsx function or undefined
 	 */
-	get clsx() {
+	get clsx(): any {
 		return this.get('clsx');
 	}
 
@@ -112,7 +112,7 @@ export class SharedLibrariesService implements ISharedLibrariesService {
 	 * Tailwind Merge utility.
 	 * @returns tailwind-merge exports or undefined
 	 */
-	get tailwindMerge() {
+	get tailwindMerge(): any {
 		return this.get('tailwind-merge');
 	}
 }
