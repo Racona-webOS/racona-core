@@ -5,6 +5,7 @@ The official SDK for building [ElyOS](https://elyos.hu) apps. Provides runtime s
 <a href="https://www.npmjs.com/package/@elyos-dev/sdk"><img src="https://img.shields.io/npm/v/@elyos-dev/sdk?color=blue" alt="npm version" /></a>
 <a href="https://jsr.io/@elyos-dev/sdk"><img src="https://jsr.io/badges/@elyos-dev/sdk" alt="JSR" /></a>
 <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
+<a href="https://ko-fi.com/H2H11XIQDF"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white" alt="Support on Ko-fi" /></a>
 
 ## Installation
 

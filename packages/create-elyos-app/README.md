@@ -4,6 +4,7 @@ CLI tool to scaffold [ElyOS](https://elyos.hu) app projects. Generates a complet
 
 <a href="https://www.npmjs.com/package/@elyos-dev/create-app"><img src="https://img.shields.io/npm/v/@elyos-dev/create-app?color=blue" alt="npm version" /></a>
 <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
+<a href="https://ko-fi.com/H2H11XIQDF"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white" alt="Support on Ko-fi" /></a>
 
 ## Usage
 
