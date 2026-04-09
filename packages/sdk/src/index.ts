@@ -26,15 +26,9 @@ export { SharedLibrariesService } from './runtime/services/SharedLibrariesServic
 
 export { PluginErrorCode } from './types/index.js';
 
+// Re-export commonly used types for convenience.
+// Full type definitions are available via '@elyos-dev/sdk/types'.
 export type {
-	UIService as IUIService,
-	RemoteService as IRemoteService,
-	DataService as IDataService,
-	I18nService as II18nService,
-	NotificationService as INotificationService,
-	ContextService as IContextService,
-	AssetService as IAssetService,
-	SharedLibrariesService as ISharedLibrariesService,
 	DialogOptions,
 	DialogButton,
 	DialogResult,
@@ -42,10 +36,10 @@ export type {
 	ToastType,
 	CallOptions,
 	Transaction,
-	NotificationOptions as SDKNotificationOptions,
 	UserInfo,
 	WindowControls,
 	WebOSComponents,
 	WebOSSDKInterface,
-	MockSDKConfig
+	MockSDKConfig,
+	NotificationOptions as SDKNotificationOptions
 } from './types/index.js';
