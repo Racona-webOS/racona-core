@@ -5,6 +5,30 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-11
+
+> 🎉 **Teljesen újraírt CLI** — a template-alapú megközelítés helyett funkció-alapú scaffolding lépett. Ez breaking change: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó vezérli a generálást.
+
+### Changed (breaking)
+
+- **Feature-alapú generálás**: a régi fix template-ek helyett a CLI interaktívan kérdezi le a kívánt funkciókat (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) — ezek kombinációjából generálja a projektet
+- **Egyetlen kódút**: `generateProject()` egyetlen függvény `hasFeature()` ellenőrzésekkel — nincs több template-specifikus elágazás
+- **`normalizeFeatures()`**: automatikusan érvényesíti a `database → remote_functions` kényszert
+- **`computePermissions()`**: a feature listából automatikusan számolja ki a `manifest.json` `permissions` tömbjét
+
+### Added
+
+- **Datatable feature**: ha `datatable` + `database` + `remote_functions` be van kapcsolva, a generált `Datatable.svelte` tartalmaz insert formot, sor-szintű Duplicate/Delete akciókat (`createActionsColumn`), és teljes i18n lefedettséget
+- **Insert form**: `name` + `value` mezők, core CSS változókkal stílusozva, dark mode támogatással
+- **Row actions**: Duplicate (elsődleges), Delete (másodlagos, destructive) — törlés `sdk.ui.dialog()` megerősítő modallal
+- **Teljes i18n a datatable sablonban**: minden szöveg `t()` hívással, új fordítási kulcsok (`datatable.columns.*`, `datatable.form.*`, `datatable.delete.*`, `datatable.success.*`, `datatable.error.*`)
+- **Server functions**: generált `server/functions.ts` exportálja az `insertItem`, `deleteItem`, `duplicateItem` függvényeket, helyes `app__${pluginId}` sémanév prefixszel
+- **Gomb stílus**: minden komponens sablon (`Notifications`, `Remote`, `Datatable`) `btn-primary` CSS változó alapú stílust használ natív gombok helyett
+
+### Fixed
+
+- Generated SDK dependency bumped to `^0.2.0`
+
 ## [0.1.11] - 2026-04-10
 
 ### Changed

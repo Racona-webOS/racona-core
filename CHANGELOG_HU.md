@@ -7,6 +7,26 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.2.0] - 2026-04-11
+
+### Javítva
+
+- **Plugin adat endpointok** (`/api/plugins/[pluginId]/data/*`): mind a négy endpoint (`query`, `get`, `set`, `delete`) `plugin_` sémanév prefixet használt a helyes `app__` helyett — javítva, hogy egyezzen a telepítő `sanitizeSchemaName` kimenetével
+- **Plugin adat query endpoint**: kereszt-séma hozzáférés ellenőrzés frissítve `plugin_`-ről `app__` prefix mintára
+
+### Hozzáadva (`@elyos-dev/sdk@0.2.0`)
+
+- Verzió bump az összes csomag `0.2.0`-ra egységesítéséhez
+
+### Hozzáadva (`@elyos-dev/create-app@0.2.0`)
+
+- **Teljesen újraírt CLI — funkció-alapú scaffolding** _(breaking change)_: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) vezérli a generálást — egyetlen `generateProject()` kódút `hasFeature()` ellenőrzésekkel, `normalizeFeatures()` és `computePermissions()` pure helper függvényekkel
+- **Datatable feature — beszúró űrlap**: a generált `Datatable.svelte` tartalmaz "Elem hozzáadása" űrlapot a táblázat alatt (`database` feature esetén), `name` és `value` mezőkkel, core CSS változókkal stílusozva és dark mode támogatással
+- **Datatable feature — sor akciók**: `createActionsColumn` két akcióval soronként: **Duplikálás** (elsődleges) és **Törlés** (másodlagos, destructive/piros) — törlés `sdk.ui.dialog()` megerősítő modallal
+- **Datatable feature — teljes i18n**: minden hardkódolt szöveg `t()` hívásra cserélve; új fordítási kulcsok (`datatable.columns.*`, `datatable.form.*`, `datatable.delete.*`, `datatable.success.*`, `datatable.error.*`, `datatable.duplicate`, `datatable.delete`)
+- **Datatable feature — szerver függvények**: generált `server/functions.ts` exportálja az `insertItem`, `deleteItem` és `duplicateItem` függvényeket, helyes `app__${pluginId}` sémanév prefixszel
+- **Összes komponens sablon — gomb stílus**: `Notifications`, `Remote` és `Datatable` komponensek `btn-primary` CSS változó alapú stílust használnak natív gombok helyett
+
 ## [0.1.9] - 2026-04-10
 
 ### Javítva

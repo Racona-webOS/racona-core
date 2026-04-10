@@ -153,6 +153,18 @@ MIT
 
 ## Changelog
 
+### [0.2.0] - 2026-04-11
+
+### [0.2.0] - 2026-04-11
+
+> 🎉 **Teljesen újraírt CLI** — template-alapú helyett funkció-alapú scaffolding. Breaking change: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) vezérli a generálást.
+
+- **Changed (breaking)**: feature-alapú generálás egyetlen `generateProject()` kódúttal, `hasFeature()` ellenőrzésekkel
+- **Added**: datatable feature — insert form, Duplicate/Delete sor akciók (`createActionsColumn`), teljes i18n
+- **Added**: generált `server/functions.ts` exportálja az `insertItem`, `deleteItem`, `duplicateItem` függvényeket helyes `app__` sémanév prefixszel
+- **Added**: minden komponens sablon `btn-primary` CSS változó alapú stílust használ
+- **Fix**: generated SDK dependency bumped to `^0.2.0`
+
 ### [0.1.11] - 2026-04-10
 
 - **Docs**: changelog added to README (visible on npmjs.com)

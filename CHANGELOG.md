@@ -7,6 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-11
+
+### Fixed
+
+- **Plugin data endpoints** (`/api/plugins/[pluginId]/data/*`): all four endpoints (`query`, `get`, `set`, `delete`) were using `plugin_` schema prefix instead of the correct `app__` prefix — fixed to match the installer's `sanitizeSchemaName` output
+- **Plugin data query endpoint**: cross-schema access check updated from `plugin_` to `app__` prefix pattern
+
+### Added (`@elyos-dev/sdk@0.2.0`)
+
+- Version bump to align all packages at `0.2.0`
+
+### Added (`@elyos-dev/create-app@0.2.0`)
+
+- **Teljesen újraírt CLI — feature-alapú scaffolding** _(breaking change)_: the old fixed templates (`basic`, `advanced`, `datatable`, `sidebar`) are replaced by an interactive feature selector (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) — a single `generateProject()` code path with `hasFeature()` checks, `normalizeFeatures()` and `computePermissions()` pure helpers
+- **Datatable feature — insert form**: generated `Datatable.svelte` now includes an "Add item" form below the table (when `database` feature is enabled) with `name` and `value` fields, styled with core CSS variables and dark mode support
+- **Datatable feature — row actions**: `createActionsColumn` with two actions per row: **Duplicate** (primary) and **Delete** (secondary, destructive/red) — delete uses `sdk.ui.dialog()` confirm modal
+- **Datatable feature — full i18n**: all hardcoded strings replaced with `t()` calls; new translation keys (`datatable.columns.*`, `datatable.form.*`, `datatable.delete.*`, `datatable.success.*`, `datatable.error.*`, `datatable.duplicate`, `datatable.delete`)
+- **Datatable feature — server functions**: generated `server/functions.ts` now exports `insertItem`, `deleteItem`, and `duplicateItem` — all use `app__${pluginId}` schema prefix from `context.pluginId`
+- **All component templates — button styling**: `Notifications`, `Remote`, and `Datatable` components now use `btn-primary` class with CSS variables instead of unstyled native buttons
+
 ## [0.1.9] - 2026-04-10
 
 ### Fixed

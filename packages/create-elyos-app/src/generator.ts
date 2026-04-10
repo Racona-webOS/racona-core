@@ -2167,7 +2167,7 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 				: {})
 		},
 		dependencies: {
-			'@elyos-dev/sdk': '^0.1.23',
+			'@elyos-dev/sdk': '^0.2.0',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^1.0.0'
 		},

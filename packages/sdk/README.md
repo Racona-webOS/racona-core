@@ -194,6 +194,10 @@ MIT
 
 ## Changelog
 
+### [0.2.0] - 2026-04-11
+
+- **Changed**: Version bump to align all ElyOS packages at `0.2.0` — no breaking changes, fully compatible with `0.1.x`
+
 ### [0.1.23] - 2026-04-10
 
 - **Docs**: changelog added to README (visible on npmjs.com and jsr.io)
