@@ -148,3 +148,36 @@ Configured to build your plugin as an IIFE bundle (`dist/index.iife.js`) compati
 ## License
 
 MIT
+
+---
+
+## Changelog
+
+### [0.1.11] - 2026-04-10
+
+- **Docs**: changelog added to README (visible on npmjs.com)
+- **Fix**: `@elyos-dev/sdk` bumped to `^0.1.23` in generated `package.json`
+
+### [0.1.10] - 2026-04-10
+
+- **Fix**: `@lucide/svelte` bumped from `^0.561.0` to `^1.0.0` in generated `package.json`
+- **Fix**: `@elyos-dev/sdk` bumped from `^0.1.16` to `^0.1.22` in generated `package.json`
+
+### [0.1.7] - 2026-04-08
+
+- **Fix**: Sidebar template standalone dev mode i18n — locale files loaded in `main.ts`, passed to `MockWebOSSDK.initialize()`
+- **Fix**: Locale switching in standalone mode now updates components immediately
+- **Fix**: All templates load translations dynamically from `locales/*.json` instead of hardcoding them
+- **Fix**: Generator produces `sdk.i18n.t()` pattern in blank components instead of static text
+
+### [0.1.5] - 2026-03-20
+
+- **Fix**: SDK dependency updated to `@elyos-dev/sdk@^0.1.16`
+
+### [0.1.3] - 2026-03-10
+
+- **Added**: Starter template (`--template starter`) with blank scaffold generator
+
+### [0.1.0] - 2026-03-07
+
+- Initial release — interactive CLI scaffolding for ElyOS plugins

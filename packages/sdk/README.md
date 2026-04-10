@@ -189,3 +189,35 @@ For user documentation, visit [docs.elyos.hu](https://docs.elyos.hu).
 ## License
 
 MIT
+
+---
+
+## Changelog
+
+### [0.1.23] - 2026-04-10
+
+- **Docs**: changelog added to README (visible on npmjs.com and jsr.io)
+
+### [0.1.22] - 2026-04-10
+
+- **Added**: `UIService.navigateTo(component, props?)` — navigate between views in sidebar/menu-based plugins
+- **Added**: `UIService.setActionBar(items)` — set action bar buttons for the current view
+- **Added**: `UIService.clearActionBar()` — clear the action bar
+- **Added**: `ActionBarItem` type — interface for action bar button definitions (`label`, `onClick`, `variant`, `icon`, `disabled`)
+- **Added**: `DialogOptions.confirmLabel` — custom label for the confirm button
+- **Added**: `DialogOptions.confirmVariant` — visual variant (`default` | `destructive`) for the confirm button
+- **Added**: `DialogOptions`, `DialogResult`, `ActionBarItem` exported from main entry point
+
+### [0.1.21] - 2026-04-09
+
+- **Fix**: JSDoc coverage improvements, explicit constructors, explicit return types
+- **Fix**: `MockSharedLibrariesService` exported from `@elyos-dev/sdk/dev`
+- **Fix**: Removed undocumentable `I`-prefixed type aliases from main entry (JSR compatibility)
+
+### [0.1.16] - 2026-03-20
+
+- **Fix**: Package name restored to `@elyos-dev/sdk`; all internal imports updated
+
+### [0.1.1] - 2026-03-08
+
+- Initial release — runtime SDK, mock SDK for dev, full TypeScript types

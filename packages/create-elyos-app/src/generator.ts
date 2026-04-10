@@ -185,7 +185,7 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 			...(isSidebar ? { 'build:all': 'bun build-all.js' } : {})
 		},
 		dependencies: {
-			'@elyos-dev/sdk': '^0.1.22',
+			'@elyos-dev/sdk': '^0.1.23',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^1.0.0'
 		},
