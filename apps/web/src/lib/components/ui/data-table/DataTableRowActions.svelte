@@ -22,7 +22,7 @@
 	<!-- nincs művelet -->
 {:else if actions.length === 1}
 	<Button
-		variant="outline"
+		variant={primaryAction.variant === 'destructive' ? 'destructive' : 'outline'}
 		size="sm"
 		class="h-7 text-xs"
 		onclick={() => primaryAction.onClick(row)}

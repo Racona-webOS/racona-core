@@ -14,6 +14,8 @@
 	import { toast } from 'svelte-sonner';
 	import { getClientAppRegistry } from '$lib/services/client/appRegistry';
 	import { hasPermission } from '$lib/stores/permissionStore.svelte';
+	import { getWindowManager } from '$lib/stores/windowStore.svelte';
+	import { getDesktopStore } from '$lib/stores/desktopStore.svelte';
 
 	interface Props {
 		pluginId: string;
@@ -63,6 +65,20 @@
 				toast.success(t('plugin-manager.detail.uninstallSuccess'));
 				uninstallDialogOpen = false;
 				actionBar.clear();
+
+				// Nyitott ablakok bezárása az eltávolított pluginhoz
+				const windowManager = getWindowManager();
+				const pluginWindows = windowManager.windows.filter((w) => w.appName === plugin!.appId);
+				for (const win of pluginWindows) {
+					windowManager.closeWindow(win.id);
+				}
+
+				// Desktop parancsikonok eltávolítása a store-ból (az adatbázisból a szerver már törölte)
+				const desktopStore = getDesktopStore();
+				const pluginShortcuts = desktopStore.shortcuts.filter((s) => s.appId === plugin!.appId);
+				for (const shortcut of pluginShortcuts) {
+					desktopStore.shortcuts = desktopStore.shortcuts.filter((s) => s.id !== shortcut.id);
+				}
 
 				// App registry frissítése, hogy a plugin eltűnjön a start menüből
 				const appRegistry = getClientAppRegistry();

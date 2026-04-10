@@ -7,6 +7,48 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.1.9] - 2026-04-10
+
+### Javítva
+
+- **Plugin eltávolítás — desktop parancsikonok törlése**: plugin eltávolításakor az összes, az adott pluginra mutató desktop parancsikon törlődik az adatbázisból (minden felhasználónál)
+- **Plugin eltávolítás — nyitott ablakok bezárása**: az eltávolítás után a kliens oldal bezárja az érintett plugin összes nyitott ablakát, mielőtt visszanavigál
+- **Remote függvények**: `query()` → `command()` migráció a `chat.remote.ts`-ben, `appRegistry.remote.ts`-ben és `plugins.remote.ts`-ben
+- **Plugin telepítő**: sémanév prefix `plugin_`-ről `app__`-re változott; `pool.query()` használata `db.execute()` helyett; `prefixMigrationSchema` regex javítva
+- **Plugin telepítő**: érvénytelen JSON email template fájlok mostantól figyelmeztetéssel kihagyódnak telepítési hiba helyett
+- **Email manager**: plugin template névvalidáció mostantól elfogadja az `appId:templateName` formátumot regex-szel
+- **Remote function handler**: üzleti logika hibák mostantól HTTP 200-as `{ success: false }` választ adnak HTTP 500 helyett, hogy a kliens kezelni tudja őket
+- **Remote function handler**: a szerver függvények mostantól `pluginDb` pg-pool-kompatibilis interfészt kapnak (`query`, `connect`) a Drizzle ORM példány helyett
+- **Remote function handler**: `.ts` fallback a `server/functions` útvonalhoz (dev mód támogatás)
+- **Plugin menu API**: mostantól beolvassa a `layout` mezőt a `manifest.json`-ból és visszaadja a menü adatokkal együtt
+- **PluginDialog**: `confirmLabel` és `confirmVariant` opciók támogatása a `DialogOptions`-ból
+- **Vite config**: `uploads/plugins/**` és `uploads/plugins-temp/**` kizárva a fájlfigyelőből
+
+### Hozzáadva
+
+- **Plugin layout**: a `PluginLayoutWrapper` mostantól regisztrálja az SDK `navigateTo`, `setActionBar` és `clearActionBar` handlereket — a pluginok az SDK-n keresztül navigálhatnak nézetek között és kezelhetik az action bart
+- **Plugin layout**: `maxWidthClass` prop a `PluginLayoutWrapper`-en és `AppLayout`-on a plugin-specifikus layout szélesség vezérléséhez (a `manifest.json` `layout` mezőjéből olvasva)
+- **Plugin layout**: a plugin által `sdk.ui.setActionBar()`-ral beállított action bar elemek megjelennek a layout fejlécében; komponens navigációkor automatikusan törlődnek
+
+### Hozzáadva (`@elyos-dev/sdk@0.1.22`)
+
+- **`UIService.navigateTo(component, props?)`**: navigálás egy névvel ellátott komponensre a plugin layouton belül
+- **`UIService.setActionBar(items)`**: action bar gombok beállítása az aktuális nézethez
+- **`UIService.clearActionBar()`**: action bar törlése
+- **`ActionBarItem` típus**: új interfész action bar gomb definíciókhoz (label, onClick, variant, icon, disabled)
+- **`DialogOptions.confirmLabel`**: egyéni felirat a megerősítő gombhoz
+- **`DialogOptions.confirmVariant`**: vizuális variáns (`default` | `destructive`) a megerősítő gombhoz
+- **Exportok**: `DialogOptions`, `DialogResult`, `ActionBarItem` mostantól exportálva az SDK fő belépési pontjából
+
+### Javítva (`@elyos-dev/create-app@0.1.10`)
+
+- **Generált projekt függőségek**: `@lucide/svelte` frissítve `^0.561.0`-ról `^1.0.0`-ra a generált `package.json`-ban
+- **Generált projekt függőségek**: `@elyos-dev/sdk` frissítve `^0.1.16`-ról `^0.1.22`-re a generált `package.json`-ban
+
+## [0.1.8] - 2026-04-09
+
+- **Kisebb hibajavítások**
+
 ## [0.1.7] - 2026-04-08
 
 ### Hozzáadva

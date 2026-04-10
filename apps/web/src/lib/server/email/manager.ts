@@ -75,9 +75,10 @@ const sendEmailParamsSchema = v.object({
 
 const templatedEmailParamsSchema = v.object({
 	to: v.union([emailSchema, emailArraySchema]),
-	template: v.picklist(
-		Object.values(EmailTemplateType) as [EmailTemplateType, ...EmailTemplateType[]]
-	),
+	template: v.union([
+		v.picklist(Object.values(EmailTemplateType) as [EmailTemplateType, ...EmailTemplateType[]]),
+		v.pipe(v.string(), v.regex(/^[\w-]+:[\w-]+$/, 'Plugin template format: appId:templateName'))
+	]),
 	data: v.record(v.string(), v.unknown()),
 	from: v.optional(emailSchema),
 	replyTo: v.optional(emailSchema),

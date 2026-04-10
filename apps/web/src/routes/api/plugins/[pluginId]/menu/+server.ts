@@ -1,7 +1,7 @@
 /**
  * Plugin Menu API
  *
- * Betölti egy plugin menu.json fájlját.
+ * Betölti egy plugin menu.json fájlját és a manifest layout beállításait.
  */
 
 import { json, error as svelteError } from '@sveltejs/kit';
@@ -13,23 +13,37 @@ export const GET: RequestHandler = async ({ params }) => {
 	const { pluginId } = params;
 
 	try {
-		// Plugin menu.json fájl elérési útja
-		const menuPath = join(process.cwd(), 'uploads', 'plugins', pluginId, 'menu.json');
+		const pluginDir = join(process.cwd(), 'uploads', 'plugins', pluginId);
 
 		// Menu fájl beolvasása
-		const menuContent = await readFile(menuPath, 'utf-8');
-		const menuData = JSON.parse(menuContent);
+		let menuData: any[] = [];
+		try {
+			const menuContent = await readFile(join(pluginDir, 'menu.json'), 'utf-8');
+			menuData = JSON.parse(menuContent);
+		} catch {
+			// nincs menu.json
+		}
+
+		// Manifest layout beállítások beolvasása
+		let layout: Record<string, string> = {};
+		try {
+			const manifestContent = await readFile(join(pluginDir, 'manifest.json'), 'utf-8');
+			const manifest = JSON.parse(manifestContent);
+			layout = manifest.layout ?? {};
+		} catch {
+			// nincs manifest vagy layout mező
+		}
 
 		return json({
 			success: true,
-			menu: menuData
+			menu: menuData,
+			layout
 		});
 	} catch (error) {
-		// Ha nincs menu.json, üres menüt adunk vissza
-		console.warn(`No menu.json found for plugin ${pluginId}`);
 		return json({
 			success: true,
-			menu: []
+			menu: [],
+			layout: {}
 		});
 	}
 };

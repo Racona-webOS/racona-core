@@ -7,6 +7,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-04-10
+
+### Fixed
+
+- **Plugin uninstall — desktop shortcut cleanup**: uninstalling a plugin now deletes all desktop shortcuts pointing to that plugin from the database (for all users)
+- **Plugin uninstall — open window cleanup**: the client-side uninstall flow now closes any open windows belonging to the uninstalled plugin before navigating back
+- **Remote functions**: `query()` → `command()` migration for `chat.remote.ts` (getChatUsers, getConversations, getUnreadCount, getOnlineUsers, getCurrentUserId), `appRegistry.remote.ts` (getUserApps), and `plugins.remote.ts` (fetchPlugins, fetchPluginDetail)
+- **Plugin Installer**: schema name prefix changed from `plugin_` to `app__`; `pool.query()` used instead of `db.execute()`; `prefixMigrationSchema` regex fixed
+- **Plugin Installer**: invalid JSON email template files are now skipped with a warning instead of crashing the install
+- **Email manager**: plugin template name validation now accepts `appId:templateName` format via regex
+- **Remote function handler**: business logic errors now return HTTP 200 with `{ success: false }` instead of HTTP 500, so clients can handle them gracefully
+- **Remote function handler**: server functions now receive a `pluginDb` pg-pool-compatible interface (`query`, `connect`) instead of the Drizzle ORM instance
+- **Remote function handler**: `.ts` fallback for `server/functions` path (dev mode support)
+- **Plugin menu API**: now also reads `layout` field from `manifest.json` and returns it alongside the menu data
+- **PluginDialog**: supports `confirmLabel` and `confirmVariant` options from `DialogOptions`
+- **Vite config**: `uploads/plugins/**` and `uploads/plugins-temp/**` excluded from file watcher
+
+### Added
+
+- **Plugin layout**: `PluginLayoutWrapper` now registers SDK `navigateTo`, `setActionBar`, and `clearActionBar` handlers — plugins can navigate between views and control the action bar via the SDK
+- **Plugin layout**: `maxWidthClass` prop on `PluginLayoutWrapper` and `AppLayout` for per-plugin layout width control (read from `manifest.json` `layout` field)
+- **Plugin layout**: action bar items set by the plugin via `sdk.ui.setActionBar()` are rendered in the layout header; cleared automatically on component navigation
+
+### Added (`@elyos-dev/sdk@0.1.22`)
+
+- **`UIService.navigateTo(component, props?)`**: navigate to a named component within the plugin layout
+- **`UIService.setActionBar(items)`**: set action bar buttons for the current view
+- **`UIService.clearActionBar()`**: clear the action bar
+- **`ActionBarItem` type**: new interface for action bar button definitions (label, onClick, variant, icon, disabled)
+- **`DialogOptions.confirmLabel`**: custom label for the confirm button
+- **`DialogOptions.confirmVariant`**: visual variant (`default` | `destructive`) for the confirm button
+- **Exports**: `DialogOptions`, `DialogResult`, `ActionBarItem` now exported from the main SDK entry point
+
+### Fixed (`@elyos-dev/create-app@0.1.10`)
+
+- **Generated project dependencies**: `@lucide/svelte` bumped from `^0.561.0` to `^1.0.0` in scaffolded `package.json`
+- **Generated project dependencies**: `@elyos-dev/sdk` bumped from `^0.1.16` to `^0.1.22` in scaffolded `package.json`
+
+## [0.1.8] - 2026-04-09
+
+- **Minor bug fixes**
+
 ## [0.1.7] - 2026-04-08
 
 ### Added

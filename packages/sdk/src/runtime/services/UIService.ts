@@ -11,7 +11,8 @@ import type {
 	DialogResult,
 	ThemeColors,
 	ToastType,
-	WebOSComponents
+	WebOSComponents,
+	ActionBarItem
 } from '../../types/index.js';
 
 /** UI service — toast notifications, dialogs, theme colors, and UI component access. */
@@ -22,6 +23,13 @@ export class UIService implements IUIService {
 	private dialogFn: ((options: DialogOptions) => Promise<DialogResult>) | null = null;
 	/** Registered components, set by the ElyOS core */
 	private _components: WebOSComponents = {};
+	/** Registered navigateTo function, set by the ElyOS core */
+	private navigateToFn: ((component: string, props?: Record<string, unknown>) => void) | null =
+		null;
+	/** Registered setActionBar function, set by the ElyOS core */
+	private setActionBarFn: ((items: ActionBarItem[]) => void) | null = null;
+	/** Registered clearActionBar function, set by the ElyOS core */
+	private clearActionBarFn: (() => void) | null = null;
 
 	/**
 	 * Register the components (called by the ElyOS core).
@@ -45,6 +53,52 @@ export class UIService implements IUIService {
 	 */
 	_setDialogHandler(fn: (options: DialogOptions) => Promise<DialogResult>): void {
 		this.dialogFn = fn;
+	}
+
+	/**
+	 * Register the navigateTo handler (called by the ElyOS core).
+	 * @param fn - Function that navigates to a component
+	 */
+	_setNavigateToHandler(fn: (component: string, props?: Record<string, unknown>) => void): void {
+		this.navigateToFn = fn;
+	}
+
+	/**
+	 * Navigate to a component within the plugin layout.
+	 * @param component - Component name (from menu.json)
+	 * @param props - Optional props to pass to the component
+	 */
+	navigateTo(component: string, props?: Record<string, unknown>): void {
+		if (this.navigateToFn) {
+			this.navigateToFn(component, props);
+		} else {
+			console.warn(
+				`[UIService] navigateTo called but no handler registered. component: ${component}`
+			);
+		}
+	}
+
+	/**
+	 * Register the setActionBar handler (called by the ElyOS core).
+	 */
+	_setActionBarHandler(setFn: (items: ActionBarItem[]) => void, clearFn: () => void): void {
+		this.setActionBarFn = setFn;
+		this.clearActionBarFn = clearFn;
+	}
+
+	/**
+	 * Set action bar items for the current view.
+	 * @param items - Array of action bar items (buttons)
+	 */
+	setActionBar(items: ActionBarItem[]): void {
+		this.setActionBarFn?.(items);
+	}
+
+	/**
+	 * Clear the action bar.
+	 */
+	clearActionBar(): void {
+		this.clearActionBarFn?.();
 	}
 
 	/**

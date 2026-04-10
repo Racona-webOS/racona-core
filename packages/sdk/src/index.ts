@@ -25,3 +25,4 @@ export { AssetService } from './runtime/services/AssetService.js';
 export { SharedLibrariesService } from './runtime/services/SharedLibrariesService.js';
 
 export { PluginErrorCode } from './types/index.js';
+export type { DialogOptions, DialogResult, ActionBarItem } from './types/index.js';

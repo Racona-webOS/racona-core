@@ -16,6 +16,22 @@
 /** Toast notification type */
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
+// ─── Action Bar ─────────────────────────────────────────────────
+
+/** An action bar button item */
+export interface ActionBarItem {
+	/** Button label */
+	label: string;
+	/** Click handler */
+	onClick: () => void;
+	/** Visual variant */
+	variant?: 'default' | 'outline' | 'destructive' | 'ghost';
+	/** Optional icon name (lucide) */
+	icon?: string;
+	/** Whether the button is disabled */
+	disabled?: boolean;
+}
+
 /** Options for showing a dialog */
 export interface DialogOptions {
 	/** Dialog title */
@@ -26,6 +42,10 @@ export interface DialogOptions {
 	type?: 'info' | 'confirm' | 'prompt';
 	/** Default value pre-filled in a `prompt` dialog */
 	defaultValue?: string;
+	/** Custom label for the confirm button (default: 'Megerősítés') */
+	confirmLabel?: string;
+	/** Visual variant for the confirm button */
+	confirmVariant?: 'default' | 'destructive';
 	/** Custom buttons to show instead of the defaults */
 	buttons?: DialogButton[];
 }

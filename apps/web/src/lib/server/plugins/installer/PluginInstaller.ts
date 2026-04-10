@@ -313,7 +313,13 @@ export class PluginInstaller {
 			const templateType = `${pluginId}:${templateName}`;
 
 			try {
-				const content = await fs.readFile(filePath, 'utf-8');
+				const content = (await fs.readFile(filePath, 'utf-8')).trim();
+				if (!content.startsWith('{')) {
+					console.warn(
+						`[PluginInstaller] Email template is not valid JSON (starts with '${content[0]}'), skipping: ${file}`
+					);
+					continue;
+				}
 				const template = JSON.parse(content);
 
 				if (!template.locales || typeof template.locales !== 'object') {

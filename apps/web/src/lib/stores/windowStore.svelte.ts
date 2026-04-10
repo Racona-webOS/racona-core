@@ -272,7 +272,14 @@ export class WindowManager {
 
 			if (hasMenu) {
 				// Ha van menü, használjuk az AppLayout-ot
-				await this.loadPluginWithLayout(id, pluginId, window_obj, appData, menuData.menu);
+				await this.loadPluginWithLayout(
+					id,
+					pluginId,
+					window_obj,
+					appData,
+					menuData.menu,
+					menuData.layout ?? {}
+				);
 			} else {
 				// Ha nincs menü, használjuk a Web Component módot
 				await this.loadPluginAsWebComponent(id, pluginId, window_obj, appData);
@@ -291,7 +298,8 @@ export class WindowManager {
 		pluginId: string,
 		window_obj: WindowState,
 		appData: any,
-		menuData: any[]
+		menuData: any[],
+		layout: Record<string, string> = {}
 	) {
 		try {
 			// WebOS SDK inicializálása
@@ -363,6 +371,7 @@ export class WindowManager {
 			// Store the menu data and wrapper component
 			(window_obj as any).pluginMenuData = menuData;
 			(window_obj as any).pluginId = pluginId;
+			(window_obj as any).pluginLayout = layout;
 			(window_obj as any).isPluginWithLayout = true;
 			window_obj.component = PluginLayoutWrapper.default as any;
 			window_obj.isLoading = false;

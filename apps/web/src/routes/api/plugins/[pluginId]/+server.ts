@@ -10,11 +10,13 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import db from '$lib/server/database';
+import { client as pool } from '$lib/server/database';
 import { apps } from '@elyos/database/schemas';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
+import { desktopShortcuts } from '@elyos/database/schemas';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése
@@ -55,7 +57,31 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		// 5. Email template-ek törlése
 		await pluginInstaller.removeEmailTemplates(pluginId);
 
-		// 6. Plugin törlése az adatbázisból
+		// 6. Plugin séma törlése (app__<plugin_id> és benne minden tábla)
+		const schemaName = `app__${pluginId.replace(/-/g, '_').replace(/[^a-z0-9_]/g, '')}`;
+		try {
+			await pool.query(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);
+			console.log(`[PluginManager] Plugin séma törölve: ${schemaName}`);
+		} catch (schemaError) {
+			console.error(`[PluginManager] Hiba a plugin séma törlésekor:`, schemaError);
+		}
+
+		// 7. Desktop parancsikonok törlése az adatbázisból (minden felhasználónál)
+		try {
+			const deleted = await db
+				.delete(desktopShortcuts)
+				.where(eq(desktopShortcuts.appId, pluginId))
+				.returning({ id: desktopShortcuts.id });
+			if (deleted.length > 0) {
+				console.log(
+					`[PluginManager] ${deleted.length} desktop parancsikon törölve a(z) ${pluginId} pluginhoz`
+				);
+			}
+		} catch (shortcutError) {
+			console.error(`[PluginManager] Hiba a desktop parancsikonok törlésekor:`, shortcutError);
+		}
+
+		// 8. Plugin törlése az adatbázisból
 		await db.delete(apps).where(eq(apps.appId, pluginId));
 
 		console.log(`[PluginManager] Plugin ${pluginId} sikeresen eltávolítva`);

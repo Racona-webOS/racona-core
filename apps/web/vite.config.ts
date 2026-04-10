@@ -39,7 +39,10 @@ export default defineConfig({
 	],
 	envDir: '../..',
 	server: {
-		port: 3000
+		port: 3000,
+		watch: {
+			ignored: ['**/uploads/plugins/**', '**/uploads/plugins-temp/**']
+		}
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}', 'src/**/*.svelte.{test,spec}.{js,ts}'],

@@ -760,8 +760,9 @@
 			{:else if (windowState as any).isPluginWithLayout}
 				{@const menuData = (windowState as any).pluginMenuData}
 				{@const pluginId = (windowState as any).pluginId}
+				{@const pluginLayout = (windowState as any).pluginLayout ?? {}}
 				{@const Component = windowState.component}
-				<Component {pluginId} {menuData} />
+				<Component {pluginId} {menuData} maxWidthClass={pluginLayout.maxWidthClass} />
 			{:else if (windowState as any).customElementTag}
 				{@const tagName = (windowState as any).customElementTag}
 				{@const props = (windowState as any).pluginProps || {}}

@@ -13,6 +13,7 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { untrack } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import { type AppShellReturn, APP_SHELL_CONTEXT_KEY } from '$lib/apps/appShell.svelte';
 	import { createActionBar } from '$lib/apps/actionBar.svelte';
 	import { I18nProvider } from '$lib/i18n/components';
@@ -33,6 +34,8 @@
 		searchable?: boolean;
 		/** Plugin mód - komponensek API-n keresztül töltődnek. */
 		isPlugin?: boolean;
+		/** Külső action bar snippet (plugin módban használatos). */
+		externalActionBar?: Snippet;
 	}
 
 	let {
@@ -41,7 +44,8 @@
 		maxWidthClass = 'max-w-3xl',
 		sidebarWidth = 230,
 		searchable = false,
-		isPlugin = false
+		isPlugin = false,
+		externalActionBar
 	}: Props = $props();
 
 	// Shell context beállítása, hogy a dinamikusan betöltött komponensek is elérhessék
@@ -95,9 +99,13 @@
 					/>
 				</div>
 			</div>
-			{#if actionBar.content}
+			{#if actionBar.content || externalActionBar}
 				<div class="app-action-bar">
-					{@render actionBar.content()}
+					{#if actionBar.content}
+						{@render actionBar.content()}
+					{:else if externalActionBar}
+						{@render externalActionBar()}
+					{/if}
 				</div>
 			{/if}
 		</div>

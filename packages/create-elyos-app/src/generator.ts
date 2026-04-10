@@ -157,9 +157,9 @@ function writeManifest(dir: string, config: PluginConfig): void {
 		sortOrder: 100,
 		dependencies: {
 			svelte: '^5.0.0',
-			'@lucide/svelte': '^0.561.0'
+			'@lucide/svelte': '^1.0.0'
 		},
-		minWebOSVersion: '2.0.0',
+		minWebOSVersion: '1.0.0',
 		locales: ['hu', 'en']
 	};
 
@@ -185,9 +185,9 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 			...(isSidebar ? { 'build:all': 'bun build-all.js' } : {})
 		},
 		dependencies: {
-			'@elyos-dev/sdk': '^0.1.16',
+			'@elyos-dev/sdk': '^0.1.22',
 			svelte: '^5.0.0',
-			'@lucide/svelte': '^0.561.0'
+			'@lucide/svelte': '^1.0.0'
 		},
 		devDependencies: {
 			'@sveltejs/vite-plugin-svelte': '^5.0.0',

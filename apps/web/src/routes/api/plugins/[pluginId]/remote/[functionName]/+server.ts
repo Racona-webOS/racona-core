@@ -10,6 +10,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PluginErrorCode } from '@elyos/database';
 import db from '$lib/server/database';
+import { client as pool } from '$lib/server/database';
 import { apps } from '@elyos/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
@@ -102,18 +103,16 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	} catch (err) {
 		console.error(`[RemoteFunctionHandler] Error executing ${functionName}:`, err);
 
-		// Hiba kezelés
+		// SvelteKit error (404, 403 stb.) — ezeket továbbadjuk
 		if (err && typeof err === 'object' && 'status' in err) {
-			throw err; // SvelteKit error
+			throw err;
 		}
 
-		return json(
-			{
-				success: false,
-				error: err instanceof Error ? err.message : 'Remote function execution failed'
-			},
-			{ status: 500 }
-		);
+		// Üzleti logika hiba (pl. "nincs szabadságkeret") — 200-as válasz, kliens kezeli
+		return json({
+			success: false,
+			error: err instanceof Error ? err.message : 'Remote function execution failed'
+		});
 	}
 };
 
@@ -130,9 +129,17 @@ async function executeRemoteFunction(
 	try {
 		// Plugin server könyvtár útvonala
 		const pluginDir = path.join(process.cwd(), 'uploads', 'plugins', pluginId);
-		const serverFunctionsPath = path.join(pluginDir, 'server', 'functions.js');
+		const serverFunctionsPathJs = path.join(pluginDir, 'server', 'functions.js');
+		const serverFunctionsPathTs = path.join(pluginDir, 'server', 'functions.ts');
+
+		// .js preferált, fallback .ts (dev módban)
+		const { existsSync } = await import('fs');
+		const serverFunctionsPath = existsSync(serverFunctionsPathJs)
+			? serverFunctionsPathJs
+			: serverFunctionsPathTs;
 
 		// Dinamikus import a server függvényekhez
+		/* @vite-ignore */
 		const serverModule = await import(serverFunctionsPath);
 
 		// Függvény ellenőrzés
@@ -145,11 +152,20 @@ async function executeRemoteFunction(
 		// Email service létrehozása (csak notifications jogosultsággal rendelkező pluginok számára)
 		const emailService = createPluginEmailService(pluginId, permissions);
 
+		// pg Pool-kompatibilis DB interfész a pluginok számára
+		// A Drizzle ORM mögötti pg Pool-t használjuk, így a pluginok
+		// natív .query(sql, params) hívásokat használhatnak
+		// A pool.connect() is elérhető tranzakciókhoz (BEGIN/COMMIT/ROLLBACK)
+		const pluginDb = {
+			query: pool.query.bind(pool),
+			connect: pool.connect.bind(pool)
+		};
+
 		// Execution context létrehozása
 		const context = {
 			pluginId,
 			userId,
-			db,
+			db: pluginDb,
 			permissions,
 			...(emailService ? { email: emailService } : {})
 		};

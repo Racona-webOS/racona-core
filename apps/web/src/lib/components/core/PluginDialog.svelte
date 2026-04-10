@@ -18,6 +18,8 @@
 	let message = $state('');
 	let type = $state<'info' | 'confirm' | 'prompt'>('info');
 	let promptValue = $state('');
+	let confirmLabel = $state('');
+	let confirmVariant = $state<'default' | 'destructive'>('default');
 	let resolveFn: ((result: DialogResult) => void) | null = null;
 
 	/**
@@ -28,6 +30,8 @@
 		message = options.message;
 		type = options.type ?? 'info';
 		promptValue = '';
+		confirmLabel = options.confirmLabel ?? '';
+		confirmVariant = options.confirmVariant ?? 'default';
 		open = true;
 
 		return new Promise<DialogResult>((resolve) => {
@@ -88,7 +92,9 @@
 				<Button onclick={handleOk}>OK</Button>
 			{:else if type === 'confirm'}
 				<Button variant="outline" onclick={handleCancel}>{t('common.pluginDialog.cancel')}</Button>
-				<Button onclick={handleConfirm}>{t('common.pluginDialog.confirm')}</Button>
+				<Button variant={confirmVariant} onclick={handleConfirm}>
+					{confirmLabel || t('common.pluginDialog.confirm')}
+				</Button>
 			{:else if type === 'prompt'}
 				<Button variant="outline" onclick={handleCancel}>{t('common.pluginDialog.cancel')}</Button>
 				<Button onclick={handleSubmit}>{t('common.pluginDialog.send')}</Button>
