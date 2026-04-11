@@ -5,6 +5,13 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-04-11
+
+### Added
+
+- **Wizard — default values**: `description` and `author` fields now have pre-filled defaults (`An ElyOS application` / `ElyOS Developer <dev@example.com>`) — pressing Enter accepts the default without typing
+- **Wizard — cleaner feature descriptions**: removed parenthetical technical details from feature choice descriptions
+
 ## [0.2.0] - 2026-04-11
 
 > 🎉 **Teljesen újraírt CLI** — a template-alapú megközelítés helyett funkció-alapú scaffolding lépett. Ez breaking change: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó vezérli a generálást.

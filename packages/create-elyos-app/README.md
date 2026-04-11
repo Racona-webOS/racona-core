@@ -15,105 +15,103 @@ bunx @elyos-dev/create-app
 # With a name
 bunx @elyos-dev/create-app my-app
 
-# With a name and template
-bunx @elyos-dev/create-app my-app --template advanced
-
 # Skip dependency installation
 bunx @elyos-dev/create-app my-app --no-install
 ```
 
-## Templates
+## Feature-based scaffolding
 
-### `basic`
+Instead of fixed templates, the CLI lets you compose your project from individual features. The wizard asks which features to enable — the project is generated based on your selection.
 
-A minimal plugin with a single Svelte component and SDK integration. Good starting point for simple UI plugins.
+| Feature            | What it adds                                                                    |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `sidebar`          | Sidebar navigation (`menu.json`, `AppLayout` mode, multiple page components)    |
+| `database`         | SQL migrations, `sdk.data.query()` support, local dev database via Docker       |
+| `remote_functions` | `server/functions.ts`, `sdk.remote.call()`, local dev server                    |
+| `notifications`    | `sdk.notifications.send()` support                                              |
+| `i18n`             | `locales/hu.json` + `locales/en.json`, `sdk.i18n.t()` support                   |
+| `datatable`        | DataTable component with insert form, row actions (duplicate/delete), full i18n |
 
-```
-my-plugin/
-├── src/
-│   ├── App.svelte          # Main component
-│   └── main.ts             # Entry point with SDK init
-├── locales/
-│   ├── en.json             # English translations
-│   └── hu.json             # Hungarian translations
-├── assets/
-│   └── icon.svg            # Plugin icon
-├── manifest.json           # Plugin metadata
-├── package.json            # Dependencies (@elyos/sdk)
-├── vite.config.ts          # Build configuration
-└── .gitignore
-```
-
-### `advanced`
-
-Includes server-side functions and a settings component. Use this when your plugin needs backend logic.
-
-```
-my-plugin/
-├── src/
-│   ├── App.svelte
-│   ├── main.ts
-│   └── components/
-│       └── Settings.svelte # Settings panel
-├── server/
-│   └── functions.ts        # Server-side remote functions
-├── locales/
-├── assets/
-├── manifest.json
-├── package.json
-├── vite.config.ts
-└── .gitignore
-```
-
-### `datatable`
-
-Full CRUD application with DataTable integration and server functions. Ideal for data-driven plugins.
-
-```
-my-plugin/
-├── src/
-│   ├── App.svelte
-│   ├── main.ts
-│   └── components/
-│       ├── DataTableView.svelte  # DataTable with sorting/filtering
-│       └── columns.ts            # Column definitions
-├── server/
-│   └── functions.ts              # CRUD operations
-├── locales/
-├── assets/
-├── manifest.json
-├── package.json
-├── vite.config.ts
-└── .gitignore
-```
-
-## Options
-
-| Flag                        | Description                                | Default    |
-| --------------------------- | ------------------------------------------ | ---------- |
-| `[plugin-name]`             | Plugin ID in kebab-case                    | (prompted) |
-| `-t, --template <template>` | Template: `basic`, `advanced`, `datatable` | (prompted) |
-| `--no-install`              | Skip `bun install` after generation        | `false`    |
-| `-V, --version`             | Show CLI version                           |            |
-| `-h, --help`                | Show help                                  |            |
+> `database` requires `remote_functions` — selecting `database` automatically enables `remote_functions`.
 
 ## Interactive Wizard
 
 When run without flags, the CLI walks you through an interactive setup:
 
-1. **Plugin ID** — kebab-case identifier (e.g., `my-plugin`)
+1. **App ID** — kebab-case identifier (e.g. `my-app`)
 2. **Display Name** — human-readable name shown in ElyOS
-3. **Description** — short description of the plugin
+3. **Description** — short description
 4. **Author** — your name and email
-5. **Template** — choose from basic, advanced, or datatable
-6. **Permissions** — select required permissions (database, notifications, remote functions)
+5. **Features** — pick what you need (see table above)
+6. **Install dependencies?** — runs `bun install` automatically
+
+## Generated Structure
+
+The structure depends on selected features. Example with all features enabled:
+
+```
+my-app/
+├── manifest.json          # App metadata and permissions
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── menu.json              # (if sidebar)
+├── build-all.js           # (if sidebar)
+├── dev-server.ts          # (if remote_functions)
+├── docker-compose.dev.yml # (if database)
+├── .env.example           # (if database)
+├── src/
+│   ├── App.svelte
+│   ├── main.ts
+│   ├── plugin.ts
+│   └── components/        # (if sidebar)
+│       ├── Overview.svelte
+│       ├── Settings.svelte
+│       ├── Datatable.svelte     # (if datatable)
+│       ├── Notifications.svelte # (if notifications)
+│       └── Remote.svelte        # (if remote_functions)
+├── server/                # (if remote_functions)
+│   └── functions.ts
+├── migrations/            # (if database)
+│   ├── 001_init.sql
+│   └── dev/
+│       └── 000_auth_seed.sql
+├── locales/               # (if i18n)
+│   ├── hu.json
+│   └── en.json
+└── assets/
+    └── icon.svg
+```
+
+## Datatable Feature
+
+When `datatable` + `database` + `remote_functions` are all enabled, the generated `Datatable.svelte` includes:
+
+- A data table loaded via `sdk.data.query()`
+- An **insert form** below the table (`name` + `value` fields), styled with core CSS variables
+- **Row actions**: Duplicate (primary) and Delete (secondary, destructive) — delete uses `sdk.ui.dialog()` confirm modal
+- Full i18n support — all strings use `t()` with translation keys in `locales/`
+
+The generated `server/functions.ts` exports `example`, `insertItem`, `deleteItem`, and `duplicateItem` — all scoped to the plugin's own `app__<id>` database schema.
+
+## Database Feature
+
+When `database` is enabled:
+
+```bash
+cp .env.example .env
+bun db:up          # Start local Postgres (Docker)
+bun dev:server     # Start dev server (runs migrations automatically)
+bun dev            # Start Vite dev server (separate terminal)
+
+# Or in one step:
+bun dev:full
+```
 
 ## Development Workflow
 
-After scaffolding:
-
 ```bash
-cd my-plugin
+cd my-app
 
 # Start standalone dev server (uses mock SDK)
 bun dev
@@ -123,7 +121,7 @@ bun run build
 
 # Test inside ElyOS (requires Docker)
 # 1. Start ElyOS: docker compose up -d
-# 2. Open Plugin Manager → "Load Dev Plugin"
+# 2. Open Plugin Manager → Dev Plugins tab
 # 3. Enter: http://localhost:5174
 ```
 
@@ -131,11 +129,11 @@ bun run build
 
 ### `manifest.json`
 
-Plugin metadata used by ElyOS to register and display your plugin. Includes name, description, permissions, window size constraints, supported locales, and more.
+Plugin metadata used by ElyOS to register and display your app. Includes name, description, permissions (auto-computed from selected features), window size constraints, supported locales, and more.
 
 ### `package.json`
 
-Pre-configured with `@elyos/sdk` as a dependency and Vite build scripts.
+Pre-configured with `@elyos-dev/sdk` as a dependency and Vite build scripts. Includes `db:up`, `dev:server`, `dev:full` scripts when `database` is enabled.
 
 ### `vite.config.ts`
 
@@ -143,7 +141,7 @@ Configured to build your plugin as an IIFE bundle (`dist/index.iife.js`) compati
 
 ## Further Reading
 
-- [ElyOS Documentation for users](https://docs.elyos.hu)
+- [ElyOS Documentation for developers](https://docs.elyos.hu)
 
 ## License
 
@@ -153,16 +151,19 @@ MIT
 
 ## Changelog
 
-### [0.2.0] - 2026-04-11
+### [0.2.1] - 2026-04-11
+
+- **Added**: wizard `description` and `author` fields now have pre-filled defaults — pressing Enter accepts without typing
+- **Added**: feature choice descriptions cleaned up, parenthetical technical details removed
 
 ### [0.2.0] - 2026-04-11
 
-> 🎉 **Teljesen újraírt CLI** — template-alapú helyett funkció-alapú scaffolding. Breaking change: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) vezérli a generálást.
+> 🎉 **Completely rewritten CLI** — feature-based scaffolding replaces fixed templates. Breaking change: the old fixed templates (`basic`, `advanced`, `datatable`, `sidebar`) are replaced by an interactive feature selector.
 
-- **Changed (breaking)**: feature-alapú generálás egyetlen `generateProject()` kódúttal, `hasFeature()` ellenőrzésekkel
-- **Added**: datatable feature — insert form, Duplicate/Delete sor akciók (`createActionsColumn`), teljes i18n
-- **Added**: generált `server/functions.ts` exportálja az `insertItem`, `deleteItem`, `duplicateItem` függvényeket helyes `app__` sémanév prefixszel
-- **Added**: minden komponens sablon `btn-primary` CSS változó alapú stílust használ
+- **Changed (breaking)**: feature-based generation with a single `generateProject()` code path and `hasFeature()` checks — `normalizeFeatures()` and `computePermissions()` pure helpers
+- **Added**: datatable feature — insert form, Duplicate/Delete row actions (`createActionsColumn`), full i18n
+- **Added**: generated `server/functions.ts` exports `insertItem`, `deleteItem`, `duplicateItem` with correct `app__` schema prefix
+- **Added**: all component templates use `btn-primary` CSS variable-based styling
 - **Fix**: generated SDK dependency bumped to `^0.2.0`
 
 ### [0.1.11] - 2026-04-10
@@ -180,15 +181,6 @@ MIT
 - **Fix**: Sidebar template standalone dev mode i18n — locale files loaded in `main.ts`, passed to `MockWebOSSDK.initialize()`
 - **Fix**: Locale switching in standalone mode now updates components immediately
 - **Fix**: All templates load translations dynamically from `locales/*.json` instead of hardcoding them
-- **Fix**: Generator produces `sdk.i18n.t()` pattern in blank components instead of static text
-
-### [0.1.5] - 2026-03-20
-
-- **Fix**: SDK dependency updated to `@elyos-dev/sdk@^0.1.16`
-
-### [0.1.3] - 2026-03-10
-
-- **Added**: Starter template (`--template starter`) with blank scaffold generator
 
 ### [0.1.0] - 2026-03-07
 

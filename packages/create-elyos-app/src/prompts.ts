@@ -53,12 +53,14 @@ export async function runInteractiveWizard(
 		{
 			type: 'text',
 			name: 'description',
-			message: 'Description:'
+			message: 'Description:',
+			initial: 'An ElyOS application'
 		},
 		{
 			type: 'text',
 			name: 'author',
-			message: 'Author (Name <email>):'
+			message: 'Author (Name <email>):',
+			initial: 'ElyOS Developer <dev@example.com>'
 		}
 	);
 
@@ -73,7 +75,7 @@ export async function runInteractiveWizard(
 					title: 'Sidebar',
 					value: 'sidebar',
 					selected: false,
-					description: 'Sidebar menu navigation (menu.json + components/)'
+					description: 'Sidebar menu navigation'
 				},
 				{
 					title: 'Database',
@@ -85,7 +87,7 @@ export async function runInteractiveWizard(
 					title: 'Remote Functions',
 					value: 'remote_functions',
 					selected: false,
-					description: 'Server-side functions (server/functions.ts)'
+					description: 'Server-side functions'
 				},
 				{
 					title: 'DataTable',
@@ -103,7 +105,7 @@ export async function runInteractiveWizard(
 					title: 'i18n',
 					value: 'i18n',
 					selected: true,
-					description: 'Internationalization (locales/)'
+					description: 'Internationalization'
 				}
 			]
 		});
@@ -122,8 +124,8 @@ export async function runInteractiveWizard(
 	return {
 		pluginId: initialName ?? answers.pluginId,
 		displayName: answers.displayName || toTitleCase(initialName ?? answers.pluginId ?? ''),
-		description: answers.description || '',
-		author: answers.author || '',
+		description: answers.description || 'An ElyOS application',
+		author: answers.author || 'ElyOS Developer <dev@example.com>',
 		features: selectedFeatures,
 		install: options?.install !== false
 	};
