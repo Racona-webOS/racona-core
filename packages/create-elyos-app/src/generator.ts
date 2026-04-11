@@ -878,12 +878,13 @@ function generateMainTs(config: PluginConfig): string {
 
 	return `import { mount } from 'svelte';
 import App from './App.svelte';
+import SimpleDataTable from '@elyos-dev/sdk/dev/components/SimpleDataTable.svelte';
 
 async function initDevSDK() {
 \tif (typeof window !== 'undefined' && !(window as any).webOS) {
 \t\tconst { MockWebOSSDK } = await import('@elyos-dev/sdk/dev');
 ${localeBlock}
-\t\tMockWebOSSDK.initialize(${sdkInitArgs});
+\t\tMockWebOSSDK.initialize(${sdkInitArgs}, { DataTable: SimpleDataTable });
 ${remoteBlock}\t}
 }
 
@@ -1492,9 +1493,7 @@ function generateDatatableSvelte(config: PluginConfig): string {
 	const titleExpr = hasI18n ? `{t('datatable.title')}` : 'Data Table';
 	const i18nBlock = hasI18n
 		? `
-\tlet ready = $state(false);
-\tonMount(async () => { await sdk?.i18n?.ready?.(); ready = true; });
-\tfunction t(key: string): string { if (!ready) return ''; return sdk?.i18n?.t(key) ?? key; }`
+\tfunction t(key: string): string { return sdk?.i18n?.t(key) ?? key; }`
 		: `
 \tfunction t(key: string): string { return key; }`;
 
@@ -1504,8 +1503,14 @@ function generateDatatableSvelte(config: PluginConfig): string {
 		? `\tasync function loadData() {
 \t\tloading = true;
 \t\ttry {
-\t\t\tdata = await sdk?.data?.query<Row>('SELECT id, name, value FROM items ORDER BY created_at DESC LIMIT 50') ?? [];
-\t\t\tpaginationInfo = { page: 1, pageSize: data.length, totalCount: data.length, totalPages: 1 };
+\t\t\tconst result = await sdk?.remote?.call<{ data: Row[]; pagination: typeof paginationInfo }>('getItems', {
+\t\t\t\tpage: tableState.page,
+\t\t\t\tpageSize: tableState.pageSize,
+\t\t\t\tsortBy: tableState.sortBy,
+\t\t\t\tsortOrder: tableState.sortOrder
+\t\t\t});
+\t\t\tdata = result?.data ?? [];
+\t\t\tpaginationInfo = result?.pagination ?? { page: 1, pageSize: data.length, totalCount: data.length, totalPages: 1 };
 \t\t} catch (err: any) {
 \t\t\tsdk?.ui?.toast(${col('datatable.error.loadFailed', 'Failed to load data')}, 'error');
 \t\t} finally { loading = false; }
@@ -1580,18 +1585,23 @@ function generateDatatableSvelte(config: PluginConfig): string {
 
 <script lang="ts">
 \timport { onMount, createRawSnippet } from 'svelte';
+\timport SimpleDataTable from '@elyos-dev/sdk/dev/components/SimpleDataTable.svelte';
 ${i18nBlock}
 \tlet { pluginId = 'my-plugin' }: { pluginId?: string } = $props();
 \tconst sdk = $derived(
 \t\t(window as any).__webOS_instances?.get(pluginId) ?? (window as any).webOS
 \t);
 
-\t// SDK DataTable komponensek — csak telepített módban érhetők el
+\t// SDK DataTable komponensek
 \tconst DataTable = $derived(sdk?.components?.DataTable);
 \tconst DataTableColumnHeader = $derived(sdk?.components?.DataTableColumnHeader);
 \tconst renderComponent = $derived(sdk?.components?.renderComponent);
 \tconst renderSnippet = $derived(sdk?.components?.renderSnippet);
 \tconst createActionsColumn = $derived(sdk?.components?.createActionsColumn);
+
+\t// Standalone módban SimpleDataTable-t használunk közvetlenül (reaktív prop frissítés)
+\t// Core módban a valódi DataTable-t (svelte:component)
+\tconst CoreDataTable = $derived(DataTable !== SimpleDataTable ? DataTable : null);
 
 \tinterface Row { id: number; name: string; value: string; }
 
@@ -1605,10 +1615,11 @@ ${dataLoadFn}
 
 \tfunction handleStateChange(state: any) {
 \t\ttableState = state;
+\t\tloadData();
 \t}
 
 \tfunction buildColumns() {
-\t\tif (!DataTableColumnHeader || !renderComponent || !renderSnippet) return;
+\t\tif (!renderComponent || !renderSnippet) return;
 
 \t\tconst handleSort = (columnId: string, desc: boolean) => {
 \t\t\ttableState = { ...tableState, sortBy: columnId, sortOrder: desc ? 'desc' : 'asc', page: 1 };
@@ -1682,30 +1693,38 @@ ${
 
 \tonMount(() => {
 \t\tbuildColumns();
-\t\tif (sdk?.data && DataTable) loadData();
+\t\tloadData();
 \t});
 </script>
 
 <div class="page">
 \t<h2>${titleExpr}</h2>
 
-\t{#if DataTable && columns.length > 0}
-\t\t{#key data}
+\t{#if columns.length > 0}
+\t\t{#if CoreDataTable}
+\t\t\t<!-- Core módban: valódi DataTable -->
 \t\t\t<!-- svelte-ignore svelte_component_deprecated -->
 \t\t\t<svelte:component
-\t\t\t\tthis={DataTable}
+\t\t\t\tthis={CoreDataTable}
 \t\t\t\t{columns}
 \t\t\t\t{data}
 \t\t\t\tpagination={paginationInfo}
 \t\t\t\t{loading}
 \t\t\t\tonStateChange={handleStateChange}
 \t\t\t/>
-\t\t{/key}
+\t\t{:else}
+\t\t\t<!-- Standalone módban: SimpleDataTable közvetlenül -->
+\t\t\t<SimpleDataTable
+\t\t\t\t{columns}
+\t\t\t\t{data}
+\t\t\t\tpagination={paginationInfo}
+\t\t\t\t{loading}
+\t\t\t\tonStateChange={handleStateChange}
+\t\t\t/>
+\t\t{/if}
 \t{:else}
-\t\t<div class="dev-notice">
-\t\t\t<p class="dev-notice-title">⚠ Not available in standalone mode</p>
-\t\t\t<p>The DataTable component is only available when the plugin is installed in ElyOS (<code>sdk.components.DataTable</code>).</p>
-\t\t\t<p>Once installed, data will be loaded via the <code>sdk.data</code> service.</p>
+\t\t<div class="loading-state">
+\t\t\t<div class="spinner"></div>
 \t\t</div>
 \t{/if}
 ${
@@ -1735,17 +1754,21 @@ ${
 
 <style>
 \t.page { padding: 2rem; font-family: system-ui, sans-serif; }
-\t.dev-notice {
-\t\tborder: 1px solid #f59e0b;
-\t\tbackground: #fffbeb;
-\t\tborder-radius: 0.5rem;
-\t\tpadding: 1.25rem 1.5rem;
-\t\tcolor: #92400e;
-\t\tmax-width: 520px;
+\t.loading-state {
+\t\tdisplay: flex;
+\t\talign-items: center;
+\t\tjustify-content: center;
+\t\tpadding: 3rem;
 \t}
-\t.dev-notice-title { font-weight: 700; margin: 0 0 0.5rem; }
-\t.dev-notice p { margin: 0.25rem 0; font-size: 0.875rem; }
-\t.dev-notice code { background: #fef3c7; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-size: 0.8rem; }
+\t.spinner {
+\t\twidth: 1.5rem;
+\t\theight: 1.5rem;
+\t\tborder: 2px solid #e2e8f0;
+\t\tborder-top-color: #6366f1;
+\t\tborder-radius: 50%;
+\t\tanimation: spin 0.7s linear infinite;
+\t}
+\t@keyframes spin { to { transform: rotate(360deg); } }
 \t.insert-form {
 \t\tmargin-top: 1.5rem;
 \t\tpadding-top: 1.5rem;
@@ -2064,6 +2087,36 @@ export async function example(
 \t_context: RemoteContext
 ): Promise<{ result: string }> {
 \treturn { result: 'Hello from server!' };
+}
+
+export async function getItems(
+\tparams: { page?: number; pageSize?: number; sortBy?: string; sortOrder?: string },
+\tcontext: RemoteContext
+): Promise<{ data: Array<{ id: number; name: string; value: string }>; pagination: { page: number; pageSize: number; totalCount: number; totalPages: number } }> {
+\tconst schema = \`app__\${context.pluginId.replace(/-/g, '_')}\`;
+\tconst page = params.page ?? 1;
+\tconst pageSize = params.pageSize ?? 20;
+\tconst offset = (page - 1) * pageSize;
+\tconst sortBy = ['id', 'name', 'value'].includes(params.sortBy ?? '') ? params.sortBy : 'id';
+\tconst sortOrder = params.sortOrder === 'asc' ? 'ASC' : 'DESC';
+
+\tconst countResult = await context.db.query(\`SELECT COUNT(*) as count FROM \${schema}.items\`);
+\tconst totalCount = parseInt(String((countResult.rows[0] as any).count), 10);
+
+\tconst result = await context.db.query(
+\t\t\`SELECT id, name, value#>>'{}' as value FROM \${schema}.items ORDER BY \${sortBy} \${sortOrder} LIMIT $1 OFFSET $2\`,
+\t\t[pageSize, offset]
+\t);
+
+\treturn {
+\t\tdata: result.rows as Array<{ id: number; name: string; value: string }>,
+\t\tpagination: {
+\t\t\tpage,
+\t\t\tpageSize,
+\t\t\ttotalCount,
+\t\t\ttotalPages: Math.max(1, Math.ceil(totalCount / pageSize))
+\t\t}
+\t};
 }
 
 export async function insertItem(

@@ -14,12 +14,21 @@
 			"types": "./dist/dev/index.d.ts",
 			"import": "./dist/dev/index.js"
 		},
+		"./dev/components/SimpleDataTable.svelte": {
+			"svelte": "./src/dev/components/SimpleDataTable.svelte",
+			"default": "./src/dev/components/SimpleDataTable.svelte"
+		},
+		"./dev/components/SimpleRowActions.svelte": {
+			"svelte": "./src/dev/components/SimpleRowActions.svelte",
+			"default": "./src/dev/components/SimpleRowActions.svelte"
+		},
 		"./types": {
 			"types": "./dist/types/index.d.ts"
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"src/dev/components"
 	],
 	"scripts": {
 		"build": "tsc -p tsconfig.json && tsc -p tsconfig.dev.json",

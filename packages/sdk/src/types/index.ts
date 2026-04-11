@@ -254,7 +254,56 @@ export interface SharedLibrariesService {
 
 /** ElyOS UI components exposed to apps */
 export interface WebOSComponents {
-	/** Component registry — keyed by component name */
+	/**
+	 * DataTable komponens — server-side pagination, sorting, toolbar snippet.
+	 * Core módban: a teljes TanStack-alapú DataTable.
+	 * Standalone módban: SimpleDataTable (pure HTML, tanstack nélkül).
+	 */
+	DataTable?: unknown;
+	/**
+	 * DataTableColumnHeader komponens — rendezési fejléc gomb.
+	 * Standalone módban: mock wrapper, a SimpleDataTable közvetlenül kezeli.
+	 */
+	DataTableColumnHeader?: unknown;
+	/**
+	 * renderComponent — Svelte komponens renderelése TanStack cell contextben.
+	 * Standalone módban: marker objektumot ad vissza.
+	 */
+	renderComponent?: (component: unknown, props: Record<string, unknown>) => unknown;
+	/**
+	 * renderSnippet — Svelte snippet renderelése TanStack cell contextben.
+	 * Standalone módban: a snippet render() függvényét hívja meg.
+	 */
+	renderSnippet?: (snippet: unknown, props: unknown) => unknown;
+	/**
+	 * createActionsColumn — akció oszlop factory függvény.
+	 * Primary + dropdown gomb csoport minden sorban.
+	 * Standalone módban: SimpleRowActions-t használ.
+	 */
+	createActionsColumn?: <TData>(
+		actions:
+			| Array<{
+					label: string;
+					onClick: (row: TData) => void;
+					variant?: 'default' | 'destructive';
+					separator?: boolean;
+					primary?: boolean;
+					icon?: string;
+			  }>
+			| ((row: TData) => Array<{
+					label: string;
+					onClick: (row: TData) => void;
+					variant?: 'default' | 'destructive';
+					separator?: boolean;
+					primary?: boolean;
+					icon?: string;
+			  }>)
+	) => unknown;
+	/** Input komponens */
+	Input?: unknown;
+	/** Button komponens */
+	Button?: unknown;
+	/** Component registry — egyéb komponensek */
 	[key: string]: unknown;
 }
 

@@ -14,23 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - 2026-04-11
 
-> 🎉 **Teljesen újraírt CLI** — a template-alapú megközelítés helyett funkció-alapú scaffolding lépett. Ez breaking change: a régi fix template-ek (`basic`, `advanced`, `datatable`, `sidebar`) helyett interaktív feature-választó vezérli a generálást.
+> 🎉 **Fully rewritten CLI** — the template-based approach has been replaced with feature-based scaffolding. This is a breaking change: instead of fixed templates (`basic`, `advanced`, `datatable`, `sidebar`), an interactive feature selector now drives project generation.
 
 ### Changed (breaking)
 
-- **Feature-alapú generálás**: a régi fix template-ek helyett a CLI interaktívan kérdezi le a kívánt funkciókat (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) — ezek kombinációjából generálja a projektet
-- **Egyetlen kódút**: `generateProject()` egyetlen függvény `hasFeature()` ellenőrzésekkel — nincs több template-specifikus elágazás
-- **`normalizeFeatures()`**: automatikusan érvényesíti a `database → remote_functions` kényszert
-- **`computePermissions()`**: a feature listából automatikusan számolja ki a `manifest.json` `permissions` tömbjét
+- **Feature-based generation**: instead of fixed templates, the CLI interactively prompts for desired features (`sidebar`, `database`, `remote_functions`, `notifications`, `i18n`, `datatable`) and generates the project from their combination
+- **Single code path**: `generateProject()` is a single function with `hasFeature()` checks — no more template-specific branching
+- **`normalizeFeatures()`**: automatically enforces the `database → remote_functions` constraint
+- **`computePermissions()`**: automatically computes the `manifest.json` `permissions` array from the feature list
 
 ### Added
 
-- **Datatable feature**: ha `datatable` + `database` + `remote_functions` be van kapcsolva, a generált `Datatable.svelte` tartalmaz insert formot, sor-szintű Duplicate/Delete akciókat (`createActionsColumn`), és teljes i18n lefedettséget
-- **Insert form**: `name` + `value` mezők, core CSS változókkal stílusozva, dark mode támogatással
-- **Row actions**: Duplicate (elsődleges), Delete (másodlagos, destructive) — törlés `sdk.ui.dialog()` megerősítő modallal
-- **Teljes i18n a datatable sablonban**: minden szöveg `t()` hívással, új fordítási kulcsok (`datatable.columns.*`, `datatable.form.*`, `datatable.delete.*`, `datatable.success.*`, `datatable.error.*`)
-- **Server functions**: generált `server/functions.ts` exportálja az `insertItem`, `deleteItem`, `duplicateItem` függvényeket, helyes `app__${pluginId}` sémanév prefixszel
-- **Gomb stílus**: minden komponens sablon (`Notifications`, `Remote`, `Datatable`) `btn-primary` CSS változó alapú stílust használ natív gombok helyett
+- **Datatable feature**: when `datatable` + `database` + `remote_functions` are enabled, the generated `Datatable.svelte` includes an insert form, row-level Duplicate/Delete actions (`createActionsColumn`), and full i18n coverage
+- **Insert form**: `name` + `value` fields, styled with core CSS variables, with dark mode support
+- **Row actions**: Duplicate (primary), Delete (secondary, destructive) — deletion uses `sdk.ui.dialog()` confirmation modal
+- **Full i18n in datatable template**: all text via `t()` calls, new translation keys (`datatable.columns.*`, `datatable.form.*`, `datatable.delete.*`, `datatable.success.*`, `datatable.error.*`)
+- **Server functions**: generated `server/functions.ts` exports `insertItem`, `deleteItem`, `duplicateItem` with the correct `app__${pluginId}` schema name prefix
+- **Button style**: all component templates (`Notifications`, `Remote`, `Datatable`) use `btn-primary` CSS variable-based styling instead of native buttons
 
 ### Fixed
 

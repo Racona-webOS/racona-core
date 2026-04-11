@@ -30,6 +30,15 @@ export { MockContextService } from './services/MockContextService.js';
 export { MockAssetService } from './services/MockAssetService.js';
 export { MockSharedLibrariesService } from './services/MockSharedLibrariesService.js';
 
+// Mock DataTable segédfüggvények
+export {
+	createActionsColumn,
+	renderComponent,
+	renderSnippet,
+	DataTableColumnHeader
+} from './components/mockDataTableHelpers.js';
+export type { MockRowAction } from './components/mockDataTableHelpers.js';
+
 export type { MockRemoteConfig } from './services/MockRemoteService.js';
 export type { MockDataConfig } from './services/MockDataService.js';
 export type { MockContextConfig } from './services/MockContextService.js';

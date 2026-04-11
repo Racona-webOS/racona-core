@@ -4,19 +4,19 @@
  * Mock SDK for standalone plugin development.
  * Console-based feedback, localStorage-based storage.
  *
+ * A components property tartalmazza a SimpleDataTable és segédfüggvényeket,
+ * amelyek standalone módban szimulálják a core UI komponenseket.
+ *
  * @example
  * ```ts
+ * import SimpleDataTable from '@elyos-dev/sdk/dev/components/SimpleDataTable.svelte';
  * import { MockWebOSSDK } from '@elyos-dev/sdk/dev';
  *
  * if (!window.webOS) {
- *   MockWebOSSDK.initialize({
- *     i18n: {
- *       locale: 'en',
- *       translations: {
- *         en: { title: 'Hello World' }
- *       }
- *     }
- *   });
+ *   MockWebOSSDK.initialize(
+ *     { i18n: { locale: 'hu', translations } },
+ *     { DataTable: SimpleDataTable }
+ *   );
  * }
  * ```
  */
@@ -49,12 +49,15 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 	readonly assets: MockAssetService;
 	/** Mock Shared Libraries service */
 	readonly libs: MockSharedLibrariesService;
-	/** Mock UI components — empty object in dev mode */
-	readonly components: WebOSSDKInterface['components'];
+
+	/** Mock UI components — DataTable és segédfüggvények standalone módban */
+	get components(): WebOSSDKInterface['components'] {
+		return this.ui.components;
+	}
 
 	/** @param config - Optional mock SDK configuration */
-	constructor(config?: MockSDKConfig) {
-		this.ui = new MockUIService();
+	constructor(config?: MockSDKConfig, extraComponents?: Record<string, unknown>) {
+		this.ui = new MockUIService(extraComponents);
 		this.remote = new MockRemoteService(config?.remote);
 		this.data = new MockDataService(config?.data);
 		this.i18n = new MockI18nService(config?.i18n);
@@ -64,26 +67,33 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 		);
 		this.assets = new MockAssetService(config?.assets);
 		this.libs = new MockSharedLibrariesService(config?.libs?.mockLibraries);
-		this.components = {};
 	}
 
 	/**
 	 * Initialize the mock SDK and attach it to `window.webOS`.
 	 *
+	 * A plugin a `SimpleDataTable`-t szinkron importálja és átadja `extraComponents`-ként,
+	 * így a komponens azonnal elérhető lesz az App mountolása előtt.
+	 *
 	 * @param config - Optional mock SDK configuration
+	 * @param extraComponents - Előre betöltött komponensek (pl. `{ DataTable: SimpleDataTable }`)
 	 * @returns The initialized MockWebOSSDK instance
 	 *
 	 * @example
 	 * ```ts
-	 * if (!window.webOS) {
-	 *   MockWebOSSDK.initialize({
-	 *     context: { pluginId: 'my-app' }
-	 *   });
-	 * }
+	 * import SimpleDataTable from '@elyos-dev/sdk/dev/components/SimpleDataTable.svelte';
+	 *
+	 * MockWebOSSDK.initialize(
+	 *   { i18n: { locale: 'hu', translations } },
+	 *   { DataTable: SimpleDataTable }
+	 * );
 	 * ```
 	 */
-	static initialize(config?: MockSDKConfig): MockWebOSSDK {
-		const sdk = new MockWebOSSDK(config);
+	static initialize(
+		config?: MockSDKConfig,
+		extraComponents?: Record<string, unknown>
+	): MockWebOSSDK {
+		const sdk = new MockWebOSSDK(config, extraComponents);
 
 		if (typeof window !== 'undefined') {
 			(window as Window).webOS = sdk;
