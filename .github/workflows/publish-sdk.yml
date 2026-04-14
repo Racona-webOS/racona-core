@@ -41,7 +41,7 @@ jobs:
         working-directory: packages/sdk
         run: |
           CURRENT=$(node -p "require('./package.json').version")
-          PUBLISHED=$(npm view @elyos-dev/sdk version 2>/dev/null || echo "none")
+          PUBLISHED=$(npm view @racona/sdk version 2>/dev/null || echo "none")
           if [ "$CURRENT" != "$PUBLISHED" ]; then
             npm publish --access public --provenance
           else

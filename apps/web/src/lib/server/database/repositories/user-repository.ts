@@ -12,10 +12,10 @@ import {
 	ilike,
 	or
 } from 'drizzle-orm';
-import { users, accounts, userGroups, groups, userRoles, roles } from '@elyos/database/schemas';
+import { users, accounts, userGroups, groups, userRoles, roles } from '@racona/database/schemas';
 import type { UserSettings } from '$lib/types/settings';
 import { DEFAULT_USER_SETTINGS } from '$lib/types/settings';
-import type { UserSelectModel, GroupSelectModel, RoleSelectModel } from '@elyos/database/schemas';
+import type { UserSelectModel, GroupSelectModel, RoleSelectModel } from '@racona/database/schemas';
 
 /**
  * Profil adatok típusa, amely tartalmazza az OAuth információkat is

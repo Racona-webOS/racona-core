@@ -12,7 +12,7 @@
 	import { getNotificationStore } from '$lib/stores/notificationStore.svelte';
 	import { getWindowManager } from '$lib/stores';
 	import { getAppByName } from '$lib/services/client/appRegistry';
-	import type { Notification } from '@elyos/database';
+	import type { Notification } from '@racona/database';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

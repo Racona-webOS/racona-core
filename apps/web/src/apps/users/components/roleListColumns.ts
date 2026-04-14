@@ -7,7 +7,7 @@ import {
 	createActionsColumn
 } from '$lib/components/ui/data-table';
 import type { ColumnDeps } from '$lib/components/ui/data-table';
-import type { RoleSelectModel } from '@elyos/database/schemas';
+import type { RoleSelectModel } from '@racona/database/schemas';
 
 interface RoleColumnDeps extends ColumnDeps {
 	locale: string;

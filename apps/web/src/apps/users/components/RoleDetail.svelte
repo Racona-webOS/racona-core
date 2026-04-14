@@ -40,7 +40,7 @@
 		addAppToRole,
 		removeAppFromRole
 	} from '../roles.remote';
-	import type { RoleSelectModel, UserSelectModel } from '@elyos/database/schemas';
+	import type { RoleSelectModel, UserSelectModel } from '@racona/database/schemas';
 	import type { RolePermissionRow, RoleAppRow } from '$lib/server/database/repositories';
 	import type { DataTableState } from '$lib/components/ui/data-table';
 	import { createColumns as createPermissionColumns } from './roleDetailPermissionColumns';

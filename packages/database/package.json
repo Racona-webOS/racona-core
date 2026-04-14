@@ -1,5 +1,5 @@
 {
-	"name": "@elyos/database",
+	"name": "@racona/database",
 	"version": "0.1.0",
 	"type": "module",
 	"exports": {

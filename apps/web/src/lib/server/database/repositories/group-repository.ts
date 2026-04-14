@@ -8,8 +8,8 @@ import {
 	permissions,
 	groupAppAccess,
 	apps
-} from '@elyos/database/schemas';
-import type { GroupSelectModel, UserSelectModel } from '@elyos/database/schemas';
+} from '@racona/database/schemas';
+import type { GroupSelectModel, UserSelectModel } from '@racona/database/schemas';
 
 export interface GroupListParams {
 	limit: number;

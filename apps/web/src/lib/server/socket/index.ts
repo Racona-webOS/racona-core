@@ -1,10 +1,10 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { notificationRepository } from '$lib/server/database/repositories';
-import type { NewNotification } from '@elyos/database';
+import type { NewNotification } from '@racona/database';
 import { logger } from '$lib/server/logging';
 import db from '$lib/server/database';
-import { users } from '@elyos/database/schemas';
+import { users } from '@racona/database/schemas';
 
 let io: SocketIOServer | null = null;
 

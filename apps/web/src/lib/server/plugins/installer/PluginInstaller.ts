@@ -4,12 +4,12 @@
  * Validált pluginok telepítésének kezelése.
  */
 
-import type { InstallResult, PluginManifest } from '@elyos/database';
-import { PluginErrorCode } from '@elyos/database';
+import type { InstallResult, PluginManifest } from '@racona/database';
+import { PluginErrorCode } from '@racona/database';
 import { getPluginDir, ensureDir, removeDir, safeWriteFile, copyDir } from '../utils/filesystem';
 import { zipValidator } from '../validation/ZipValidator';
 import db, { client as pool } from '$lib/server/database';
-import { apps, pluginLogs } from '@elyos/database';
+import { apps, pluginLogs } from '@racona/database';
 import { eq, like, sql } from 'drizzle-orm';
 import AdmZip from 'adm-zip';
 import path from 'path';
@@ -259,7 +259,7 @@ export class PluginInstaller {
 		locale: string,
 		translations: Record<string, string>
 	): Promise<void> {
-		const { translations: translationsTable } = await import('@elyos/database');
+		const { translations: translationsTable } = await import('@racona/database');
 
 		// Flatten nested translations
 		const flatTranslations = this.flattenTranslations(translations);
@@ -305,7 +305,7 @@ export class PluginInstaller {
 
 		if (files.length === 0) return;
 
-		const { emailTemplates } = await import('@elyos/database');
+		const { emailTemplates } = await import('@racona/database');
 
 		for (const file of files) {
 			const filePath = path.join(templatesDir, file);
@@ -371,7 +371,7 @@ export class PluginInstaller {
 	 */
 	async removeEmailTemplates(pluginId: string): Promise<void> {
 		try {
-			const { emailTemplates } = await import('@elyos/database');
+			const { emailTemplates } = await import('@racona/database');
 			await db.delete(emailTemplates).where(like(emailTemplates.type, `${pluginId}:%`));
 
 			console.log(`[PluginInstaller] Removed email templates for plugin: ${pluginId}`);
@@ -596,7 +596,7 @@ export class PluginInstaller {
 			console.log(`[PluginInstaller] Removed app registry entry`);
 
 			// 3. Fordítások törlése
-			const { translations: translationsTable } = await import('@elyos/database');
+			const { translations: translationsTable } = await import('@racona/database');
 			await db
 				.delete(translationsTable)
 				.where(eq(translationsTable.namespace, `plugin:${pluginId}`));

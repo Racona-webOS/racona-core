@@ -7,6 +7,16 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.3.0] - 2026-04-14
+
+### Változtatva — Racona brand-átállás (2026-04-14)
+
+- **Projekt átnevezve**: ElyOS → Racona
+- **`create-elyos-app`** → **`@racona/cli`** — CLI eszköz plugin generáláshoz
+- **`@elyos/sdk`** / **`@elyos-dev/sdk`** → **`@racona/sdk`** — plugin SDK
+- Minden UI szöveg, dokumentáció és konfigurációs hivatkozás frissítve ElyOS-ról Raconára
+- Domain frissítve: `elyos.hu` → `racona.hu` (301-es átirányítások érvényben)
+
 ## [0.2.2] - 2026-04-12
 
 ### Javítva

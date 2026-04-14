@@ -4,8 +4,8 @@
  * manifest.json fájl validálása.
  */
 
-import type { PluginManifest, ValidationError } from '@elyos/database';
-import { PluginErrorCode } from '@elyos/database';
+import type { PluginManifest, ValidationError } from '@racona/database';
+import { PluginErrorCode } from '@racona/database';
 import * as v from 'valibot';
 
 /**

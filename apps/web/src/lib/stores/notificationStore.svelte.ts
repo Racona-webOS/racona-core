@@ -1,6 +1,6 @@
 import { io, type Socket } from 'socket.io-client';
 import { browser } from '$app/environment';
-import type { Notification } from '@elyos/database';
+import type { Notification } from '@racona/database';
 
 export interface NotificationState {
 	notifications: Notification[];

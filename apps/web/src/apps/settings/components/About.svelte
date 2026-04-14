@@ -7,8 +7,8 @@
 	const { t } = useI18n();
 
 	const version = '0.1.1';
-	const contactEmail = 'hello@elyos.hu';
-	const website = 'https://elyos.hu';
+	const contactEmail = 'hello@racona.hu';
+	const website = 'https://racona.hu';
 	const year = new Date().getFullYear();
 
 	const changelog = [
@@ -29,7 +29,7 @@
 	<div class="flex flex-1 flex-col items-center justify-center space-y-8 text-center">
 		<!-- Logo -->
 		<div class="flex justify-center">
-			<enhanced:img src={Logo} alt="ElyOS Logo" width="220" />
+			<enhanced:img src={Logo} alt="Racona Logo" width="220" />
 		</div>
 
 		<!-- Verzió -->
@@ -62,7 +62,7 @@
 				class="flex items-center gap-2 rounded-lg bg-black/5 px-4 py-2 text-sm transition-colors hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10"
 			>
 				<Globe class="h-4 w-4" />
-				<span>elyos.hu</span>
+				<span>racona.hu</span>
 			</a>
 		</div>
 

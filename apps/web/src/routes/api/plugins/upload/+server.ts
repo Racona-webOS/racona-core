@@ -10,7 +10,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PluginValidator } from '$lib/server/plugins/validation/PluginValidator';
 import { PluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
-import { PluginErrorCode } from '@elyos/database';
+import { PluginErrorCode } from '@racona/database';
 import fs from 'fs/promises';
 import path from 'path';
 import { writeFile } from 'fs/promises';

@@ -9,7 +9,7 @@
 
 import db from '$lib/server/database';
 import { eq, and, like } from 'drizzle-orm';
-import { translations } from '@elyos/database/schemas';
+import { translations } from '@racona/database/schemas';
 import type { CreateTranslationInput, TranslationEntry } from '$lib/i18n/types';
 
 /**

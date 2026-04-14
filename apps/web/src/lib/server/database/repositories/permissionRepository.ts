@@ -13,7 +13,7 @@ import {
 	groupPermissions,
 	userRoles,
 	userGroups
-} from '@elyos/database/schemas';
+} from '@racona/database/schemas';
 
 /**
  * Egy jogosultság resource.permission formátumban.

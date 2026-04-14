@@ -22,7 +22,7 @@ COPY package.json bun.lock ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/create-elyos-app/package.json ./packages/create-elyos-app/
+COPY packages/cli/package.json ./packages/cli/
 COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY examples/plugins/weather/package.json ./examples/plugins/weather/
@@ -55,7 +55,7 @@ COPY .env.example ./.env
 COPY apps/web ./apps/web
 COPY packages/database ./packages/database
 COPY packages/sdk ./packages/sdk
-COPY packages/create-elyos-app ./packages/create-elyos-app
+COPY packages/cli ./packages/cli
 COPY examples/plugins/sdk-demo ./examples/plugins/sdk-demo
 COPY examples/plugins/todo-list ./examples/plugins/todo-list
 COPY examples/plugins/weather ./examples/plugins/weather
@@ -76,37 +76,37 @@ WORKDIR /app
 
 # Nem-root felhasználó létrehozása a biztonságért
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S elyos -u 1001 -G nodejs && \
+    adduser -S racona -u 1001 -G nodejs && \
     mkdir -p /app/uploads && \
-    chown -R elyos:nodejs /app/uploads
+    chown -R racona:nodejs /app/uploads
 
 # Workspace konfiguráció (szükséges a production install-hoz)
-COPY --from=builder --chown=elyos:nodejs /app/package.json ./
-COPY --from=builder --chown=elyos:nodejs /app/bun.lock ./
+COPY --from=builder --chown=racona:nodejs /app/package.json ./
+COPY --from=builder --chown=racona:nodejs /app/bun.lock ./
 
 # Workspace package.json fájlok a workspace feloldáshoz
-COPY --from=builder --chown=elyos:nodejs /app/apps/web/package.json ./apps/web/
-COPY --from=builder --chown=elyos:nodejs /app/packages/database/package.json ./packages/database/
-COPY --from=builder --chown=elyos:nodejs /app/packages/sdk/package.json ./packages/sdk/
-COPY --from=builder --chown=elyos:nodejs /app/packages/create-elyos-app/package.json ./packages/create-elyos-app/
-COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
-COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
-COPY --from=builder --chown=elyos:nodejs /app/examples/plugins/weather/package.json ./examples/plugins/weather/
+COPY --from=builder --chown=racona:nodejs /app/apps/web/package.json ./apps/web/
+COPY --from=builder --chown=racona:nodejs /app/packages/database/package.json ./packages/database/
+COPY --from=builder --chown=racona:nodejs /app/packages/sdk/package.json ./packages/sdk/
+COPY --from=builder --chown=racona:nodejs /app/packages/cli/package.json ./packages/cli/
+COPY --from=builder --chown=racona:nodejs /app/examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
+COPY --from=builder --chown=racona:nodejs /app/examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
+COPY --from=builder --chown=racona:nodejs /app/examples/plugins/weather/package.json ./examples/plugins/weather/
 
 # Build kimenet — SvelteKit adapter-node output
-COPY --from=builder --chown=elyos:nodejs /app/apps/web/build ./apps/web/build
+COPY --from=builder --chown=racona:nodejs /app/apps/web/build ./apps/web/build
 
 # Express + Socket.IO szerver
-COPY --from=builder --chown=elyos:nodejs /app/apps/web/server.js ./apps/web/server.js
+COPY --from=builder --chown=racona:nodejs /app/apps/web/server.js ./apps/web/server.js
 
 # Demo reset cron script
 COPY --chmod=755 docker/prod/demo-reset-cron.sh /app/demo-reset-cron.sh
 
 # Database package — migrációk és séma (szükséges runtime-ban a Drizzle-nek)
-COPY --from=builder --chown=elyos:nodejs /app/packages/database/drizzle ./packages/database/drizzle
-COPY --from=builder --chown=elyos:nodejs /app/packages/database/src ./packages/database/src
-COPY --from=builder --chown=elyos:nodejs /app/packages/database/drizzle.config.ts ./packages/database/drizzle.config.ts
-COPY --from=builder --chown=elyos:nodejs /app/packages/database/tsconfig.json ./packages/database/tsconfig.json
+COPY --from=builder --chown=racona:nodejs /app/packages/database/drizzle ./packages/database/drizzle
+COPY --from=builder --chown=racona:nodejs /app/packages/database/src ./packages/database/src
+COPY --from=builder --chown=racona:nodejs /app/packages/database/drizzle.config.ts ./packages/database/drizzle.config.ts
+COPY --from=builder --chown=racona:nodejs /app/packages/database/tsconfig.json ./packages/database/tsconfig.json
 
 # Csak production függőségek telepítése (dev dependencies nélkül)
 RUN bun install --production --frozen-lockfile
@@ -126,7 +126,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 # Nem-root felhasználóra váltás
-USER elyos
+USER racona
 
 # Alkalmazás indítása Varlock-on keresztül (secrets betöltése indításkor, majd Express + Socket.IO szerver)
 CMD ["./apps/web/node_modules/.bin/varlock", "run", "--", "bun", "run", "apps/web/server.js"]

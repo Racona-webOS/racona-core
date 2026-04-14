@@ -1,5 +1,5 @@
 # =============================================================================
-# ElyOS Core — Docker Compose konfiguráció GitHub Container Registry image-dzsel
+# Racona Core — Docker Compose konfiguráció GitHub Container Registry image-dzsel
 # =============================================================================
 # Ez a konfiguráció a GitHub Container Registry-ből publikált image-et használja,
 # így nem kell helyben buildelni.
@@ -17,19 +17,19 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:18-alpine
-    container_name: elyos-postgres
+    container_name: racona-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-elyos}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-elyos123}
-      POSTGRES_DB: ${POSTGRES_DB:-elyos}
+      POSTGRES_USER: ${POSTGRES_USER:-racona}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-racona123}
+      POSTGRES_DB: ${POSTGRES_DB:-racona}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - '${POSTGRES_PORT:-5432}:5432'
     networks:
-      - elyos-network
+      - racona-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-elyos} -d ${POSTGRES_DB:-elyos}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-racona} -d ${POSTGRES_DB:-racona}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,28 +40,28 @@ services:
   # Adatbázis inicializálás (migráció + seed) — egyszeri futás
   # ---------------------------------------------------------------------------
   db-init:
-    image: ghcr.io/elyos-webos/elyos-core:latest
-    container_name: elyos-db-init
+    image: ghcr.io/racona/racona-core:latest
+    container_name: racona-db-init
     command: >
-      sh -c 'bun --filter @elyos/database db:init ${RESET:+-- --reset}'
+      sh -c 'bun --filter @racona/database db:init ${RESET:+-- --reset}'
     env_file:
       - ../.env
     environment:
       - RESET=${RESET:-}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-elyos}:${POSTGRES_PASSWORD:-elyos123}@postgres:5432/${POSTGRES_DB:-elyos}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-racona}:${POSTGRES_PASSWORD:-racona123}@postgres:5432/${POSTGRES_DB:-racona}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - elyos-network
+      - racona-network
     restart: 'no'
 
   # ---------------------------------------------------------------------------
-  # ElyOS webalkalmazás
+  # Racona webalkalmazás
   # ---------------------------------------------------------------------------
   app:
-    image: ghcr.io/elyos-webos/elyos-core:latest
-    container_name: elyos-app
+    image: ghcr.io/racona/racona-core:latest
+    container_name: racona-app
     ports:
       - '${ELYOS_PORT:-3000}:3000'
     env_file:
@@ -73,7 +73,7 @@ services:
       db-init:
         condition: service_completed_successfully
     networks:
-      - elyos-network
+      - racona-network
     volumes:
       - ../apps/web/uploads:/app/uploads
     restart: unless-stopped
@@ -83,5 +83,5 @@ volumes:
     driver: local
 
 networks:
-  elyos-network:
+  racona-network:
     driver: bridge

@@ -4,7 +4,7 @@
  * Függőségek fehérlista alapú validálása.
  */
 
-import type { DependencyValidationResult } from '@elyos/database';
+import type { DependencyValidationResult } from '@racona/database';
 
 /**
  * Engedélyezett függőségek fehérlistája

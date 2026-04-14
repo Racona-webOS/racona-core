@@ -19,7 +19,7 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 		locale: locals.locale,
 		supportedLocales: supportedLocaleCodes,
 		user: locals.user,
-		appName: env.APP_NAME ?? 'ElyOS',
+		appName: env.APP_NAME ?? 'Racona',
 		devMode: env.DEV_MODE === true
 	};
 };

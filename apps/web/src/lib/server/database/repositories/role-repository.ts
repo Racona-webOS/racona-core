@@ -8,8 +8,8 @@ import {
 	users,
 	roleAppAccess,
 	apps
-} from '@elyos/database/schemas';
-import type { RoleSelectModel, UserSelectModel } from '@elyos/database/schemas';
+} from '@racona/database/schemas';
+import type { RoleSelectModel, UserSelectModel } from '@racona/database/schemas';
 
 interface RoleListParams {
 	limit: number;

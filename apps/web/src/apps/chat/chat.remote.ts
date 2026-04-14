@@ -3,7 +3,7 @@ import * as v from 'valibot';
 import { chatRepository } from '$lib/server/database/repositories/chatRepository';
 import db from '$lib/server/database';
 import { ne } from 'drizzle-orm';
-import { users } from '@elyos/database/schemas';
+import { users } from '@racona/database/schemas';
 
 const emptySchema = v.object({});
 

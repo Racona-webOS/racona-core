@@ -30,7 +30,7 @@ while true; do
   sleep "$sleep_secs"
 
   echo "=== Starting demo reset at $(date -u) ==="
-  bun --filter @elyos/database db:demo-reset
+  bun --filter @racona/database db:demo-reset
   echo "=== Demo reset finished at $(date -u) ==="
 
   # Sleep 60s to avoid double-trigger if we land exactly on the target second

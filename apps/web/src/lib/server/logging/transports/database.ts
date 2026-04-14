@@ -1,5 +1,5 @@
 import db from '$lib/server/database';
-import { errorLogs } from '@elyos/database/schemas';
+import { errorLogs } from '@racona/database/schemas';
 import type { LogEntry, LogTransport } from '../types';
 
 export class DatabaseTransport implements LogTransport {

@@ -40,7 +40,7 @@
 		addAppToGroup,
 		removeAppFromGroup
 	} from '../groups.remote';
-	import type { GroupSelectModel, UserSelectModel } from '@elyos/database/schemas';
+	import type { GroupSelectModel, UserSelectModel } from '@racona/database/schemas';
 	import type { GroupPermissionRow, GroupAppRow } from '$lib/server/database/repositories';
 	import type { DataTableState } from '$lib/components/ui/data-table';
 	import { createColumns as createUserColumns } from './groupDetailUserColumns';

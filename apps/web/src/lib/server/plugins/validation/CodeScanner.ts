@@ -4,7 +4,7 @@
  * Veszélyes kódminták detektálása plugin fájlokban.
  */
 
-import type { CodeScanResult, DangerousPattern } from '@elyos/database';
+import type { CodeScanResult, DangerousPattern } from '@racona/database';
 
 /**
  * Veszélyes minták definíciója

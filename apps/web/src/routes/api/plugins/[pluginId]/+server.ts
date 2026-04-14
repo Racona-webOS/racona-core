@@ -11,12 +11,12 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import db from '$lib/server/database';
 import { client as pool } from '$lib/server/database';
-import { apps } from '@elyos/database/schemas';
+import { apps } from '@racona/database/schemas';
 import { eq, and, inArray } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
-import { desktopShortcuts } from '@elyos/database/schemas';
+import { desktopShortcuts } from '@racona/database/schemas';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése

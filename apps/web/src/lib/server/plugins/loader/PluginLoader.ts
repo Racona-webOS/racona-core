@@ -4,11 +4,11 @@
  * Pluginok dinamikus betöltése futásidőben.
  */
 
-import type { LoadResult, PluginModule, PluginStatus } from '@elyos/database';
-import { PluginErrorCode } from '@elyos/database';
+import type { LoadResult, PluginModule, PluginStatus } from '@racona/database';
+import { PluginErrorCode } from '@racona/database';
 import { getPluginDir } from '../utils/filesystem';
 import db from '$lib/server/database';
-import { apps, pluginLogs } from '@elyos/database';
+import { apps, pluginLogs } from '@racona/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
 
@@ -204,13 +204,13 @@ export class PluginLoader {
 		userId: string,
 		pluginId: string
 	): Promise<{
-		user: import('@elyos/database').UserInfo;
+		user: import('@racona/database').UserInfo;
 		permissions: string[];
 	}> {
 		try {
 			// Felhasználó adatok lekérdezése
 			// TODO: Integrálni a meglévő auth rendszerrel
-			const user: import('@elyos/database').UserInfo = {
+			const user: import('@racona/database').UserInfo = {
 				id: userId,
 				name: 'User', // TODO: Valós név lekérdezése
 				email: 'user@example.com', // TODO: Valós email lekérdezése
@@ -342,7 +342,7 @@ export class PluginLoader {
 		metadata?: Record<string, unknown>
 	): Promise<void> {
 		try {
-			const { pluginMetrics } = await import('@elyos/database');
+			const { pluginMetrics } = await import('@racona/database');
 
 			await db.insert(pluginMetrics).values({
 				pluginId,

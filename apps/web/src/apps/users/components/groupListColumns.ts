@@ -7,7 +7,7 @@ import {
 	createActionsColumn
 } from '$lib/components/ui/data-table';
 import type { ColumnDeps } from '$lib/components/ui/data-table';
-import type { GroupSelectModel } from '@elyos/database/schemas';
+import type { GroupSelectModel } from '@racona/database/schemas';
 
 interface GroupColumnDeps extends ColumnDeps {
 	locale: string;

@@ -1,7 +1,7 @@
 import { command } from '$app/server';
 import * as v from 'valibot';
 import db from '$lib/server/database';
-import { users } from '@elyos/database/schemas';
+import { users } from '@racona/database/schemas';
 import { eq } from 'drizzle-orm';
 
 /**

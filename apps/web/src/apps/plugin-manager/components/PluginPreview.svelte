@@ -8,7 +8,7 @@
 	import { useI18n } from '$lib/i18n/hooks';
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
-	import type { PluginManifest } from '@elyos/database';
+	import type { PluginManifest } from '@racona/database';
 	import { toast } from 'svelte-sonner';
 	import { getClientAppRegistry } from '$lib/services/client/appRegistry';
 	import { onDestroy } from 'svelte';

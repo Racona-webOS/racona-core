@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://elyos.hu/logo.webp" alt="ElyOS Logo" width="120" />
+  <img src="https://racona.hu/logo.webp" alt="Racona Logo" width="120" />
 </p>
 
-<!-- <h1 align="center">ElyOS</h1> -->
+<!-- <h1 align="center">Racona</h1> -->
 
 <p align="center">
   A full desktop experience built with web technologies. Open source, free, and accessible from anywhere.
@@ -10,27 +10,27 @@
 
 <p align="center">
 <a href="https://github.com/ElyOS-webOS/elyos-core/releases"><img src="https://img.shields.io/github/package-json/v/ElyOS-webOS/elyos-core" alt="Version" /></a>
-  <a href="https://www.npmjs.com/package/@elyos-dev/sdk"><img src="https://img.shields.io/npm/v/@elyos-dev/sdk?label=%40elyos-dev%2Fsdk&color=blue" alt="SDK npm version" /></a>
-  <a href="https://www.npmjs.com/package/@elyos-dev/create-app"><img src="https://img.shields.io/npm/v/@elyos-dev/create-app?label=%40elyos-dev%2Fcreate-app&color=blue" alt="CLI npm version" /></a>
+  <a href="https://www.npmjs.com/package/@racona/sdk"><img src="https://img.shields.io/npm/v/@racona/sdk?label=%40racona%2Fsdk&color=blue" alt="SDK npm version" /></a>
+  <a href="https://www.npmjs.com/package/@racona/cli"><img src="https://img.shields.io/npm/v/@racona/cli?label=%40racona%2Fcli&color=blue" alt="CLI npm version" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
   <a href="https://ko-fi.com/H2H11XIQDF"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white" alt="Support on Ko-fi" /></a>
 
 </p>
 
 <p align="center">
-  <a href="https://elyos.hu/en">Website</a> · <a href="https://docs.elyos.hu/en/">Documentation (user)</a> ·<!-- <a href="./docs/PLUGIN_DEVELOPMENT.md">Plugin Development</a> ·--> <a href="./docs/CONTRIBUTING.md">Contributing</a> · <a href="./docs/TROUBLESHOOTING.md">Troubleshooting</a> · <a href="./CHANGELOG.md">Changelog</a> · <a href="./README_HU.md">🇭🇺 Magyar</a>
+  <a href="https://racona.hu/en">Website</a> · <a href="https://docs.racona.hu/en/">Documentation (user)</a> ·<!-- <a href="./docs/PLUGIN_DEVELOPMENT.md">Plugin Development</a> ·--> <a href="./docs/CONTRIBUTING.md">Contributing</a> · <a href="./docs/TROUBLESHOOTING.md">Troubleshooting</a> · <a href="./CHANGELOG.md">Changelog</a> · <a href="./README_HU.md">🇭🇺 Magyar</a>
 </p>
 
 ---
 
 <!-- Screenshot placeholder -->
-<!-- <p align="center"><img src="https://elyos.hu/screenshots/desktop.png" alt="ElyOS Desktop" width="800" /></p> -->
+<!-- <p align="center"><img src="https://racona.hu/screenshots/desktop.png" alt="Racona Desktop" width="800" /></p> -->
 
 > **Note:** Code comments in this codebase may be written in Hungarian, but all code — variable names, function names, UI strings, and other identifiers — is in English.
 
 ## Table of Contents
 
-- [What is ElyOS?](#what-is-elyos)
+- [What is Racona?](#what-is-racona)
 - [Features](#features)
 - [Built-in Applications](#built-in-applications)
 - [Tech Stack](#tech-stack)
@@ -54,9 +54,9 @@
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
-## What is ElyOS?
+## What is Racona?
 
-ElyOS combines the functionality of a traditional desktop OS with the flexibility of modern web technologies. Users access a full desktop environment — window management, taskbar, start menu, desktop shortcuts, context menus — entirely through the browser.
+Racona combines the functionality of a traditional desktop OS with the flexibility of modern web technologies. Users access a full desktop environment — window management, taskbar, start menu, desktop shortcuts, context menus — entirely through the browser.
 
 It's modular and extensible: build your own apps as plugins using the SDK, or self-host the entire platform with Docker.
 
@@ -65,7 +65,7 @@ It's modular and extensible: build your own apps as plugins using the SDK, or se
 - **Window Management** — drag, resize, minimize, maximize, snap
 - **Taskbar & Start Menu** — customizable position, grid/list view, search
 - **Desktop Shortcuts** — drag-and-drop, right-click context menu
-- **Plugin System** — install third-party apps or build your own with `@elyos/sdk`
+- **Plugin System** — install third-party apps or build your own with `@racona/sdk`
 - **Authentication** — email/password, email OTP, Google sign-in, 2FA (TOTP)
 - **Internationalization** — database-backed i18n with runtime locale switching
 - **Real-time Chat** — built-in messaging via Socket.IO
@@ -164,7 +164,7 @@ VARLOCK_FALLBACK=local
 
 ### Using Docker (recommended)
 
-This method creates a fully self-contained, runnable system in Docker containers. Both ElyOS and the database run in containers, so **no local Node.js, Bun, or PostgreSQL installation is required** — Docker is all you need.
+This method creates a fully self-contained, runnable system in Docker containers. Both Racona and the database run in containers, so **no local Node.js, Bun, or PostgreSQL installation is required** — Docker is all you need.
 
 **With Bun (if installed):**
 
@@ -176,7 +176,7 @@ cd elyos-core
 # Copy and configure environment variables (see section above)
 cp .env.example .env
 
-# Start ElyOS + PostgreSQL
+# Start Racona + PostgreSQL
 bun docker:up
 
 # Open in browser
@@ -193,7 +193,7 @@ cd elyos-core
 # Copy and configure environment variables (see section above)
 cp .env.example .env
 
-# Start ElyOS + PostgreSQL
+# Start Racona + PostgreSQL
 docker compose -f docker/docker-compose.yml up -d
 
 # Open in browser
@@ -266,7 +266,7 @@ elyos-core/
 │       └── lib/                  # Shared libraries, components, stores
 ├── packages/
 │   ├── database/                 # Drizzle ORM schemas, migrations, seeds
-│   ├── sdk/                      # @elyos/sdk — plugin SDK (npm)
+│   ├── sdk/                      # @racona/sdk — plugin SDK (npm)
 │   └── create-elyos-app/      # CLI tool for scaffolding plugins (npm)
 ├── examples/plugins/             # Example plugin implementations
 ├── docker/                       # Dockerfile and docker-compose.yml
@@ -432,15 +432,15 @@ bun docker:build:app:arm64    # App-only, linux/arm64
 
 ## Plugin Development
 
-ElyOS comes with a complete plugin ecosystem. Create plugins with the CLI, develop with the mock SDK, then load them into a running ElyOS instance.
+Racona comes with a complete plugin ecosystem. Create plugins with the CLI, develop with the mock SDK, then load them into a running Racona instance.
 
 > **Coming soon...** Detailed documentation and guides for plugin development.
 
 ## Documentation
 
-- [User Documentation](https://docs.elyos.hu/en/) — comprehensive guide for users
-- [Developer Documentation](https://docs-dev.elyos.hu/en/) — API reference and developer guides
-- [Application Development](https://docs-dev.elyos.hu/en/plugins/) — building custom applications for ElyOS
+- [User Documentation](https://docs.racona.hu/en/) — comprehensive guide for users
+- [Developer Documentation](https://docs-dev.racona.hu/en/) — API reference and developer guides
+- [Application Development](https://docs-dev.racona.hu/en/plugins/) — building custom applications for Racona
 - [Contributing Guide](./docs/CONTRIBUTING.md) — development setup, code style, PR process
 - [Troubleshooting](./docs/TROUBLESHOOTING.md) — common setup issues and how to fix them
 - [Disclaimer](./docs/hu/DISCLAIMER.md) — liability and warranty information
@@ -461,7 +461,7 @@ If you find it useful or simply like what I'm doing, even a small contribution h
 
 ## Disclaimer
 
-ElyOS is provided **"as is"**, without warranty of any kind, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+Racona is provided **"as is"**, without warranty of any kind, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
 
 The authors and contributors of this software **accept no liability** for any direct, indirect, incidental, special, consequential, or punitive damages arising from the use, misconfiguration, operation of, or inability to use the software — even if advised of the possibility of such damages.
 

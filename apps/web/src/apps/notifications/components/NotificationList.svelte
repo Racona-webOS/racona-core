@@ -5,7 +5,7 @@
 	import { useI18n } from '$lib/i18n/hooks';
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { fetchNotifications } from '../notifications.remote';
-	import type { Notification } from '@elyos/database';
+	import type { Notification } from '@racona/database';
 	import { createColumns } from './notificationListColumns';
 	import { getNotificationStore } from '$lib/stores/notificationStore.svelte';
 	import { toast } from 'svelte-sonner';

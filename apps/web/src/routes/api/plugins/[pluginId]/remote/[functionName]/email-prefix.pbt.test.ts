@@ -23,7 +23,7 @@ vi.mock('$lib/server/database', () => ({
 	default: {}
 }));
 
-vi.mock('@elyos/database', () => ({
+vi.mock('@racona/database', () => ({
 	PluginErrorCode: {
 		PLUGIN_NOT_FOUND: 'PLUGIN_NOT_FOUND',
 		PLUGIN_INACTIVE: 'PLUGIN_INACTIVE',

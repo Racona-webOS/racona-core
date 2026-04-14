@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          sparse-checkout: packages/create-elyos-app
+          sparse-checkout: packages/cli
           sparse-checkout-cone-mode: true
 
       - uses: oven-sh/setup-bun@v2
@@ -29,18 +29,18 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        working-directory: packages/create-elyos-app
+        working-directory: packages/cli
         run: bun install
 
       - name: Build
-        working-directory: packages/create-elyos-app
+        working-directory: packages/cli
         run: bun run prepublishOnly
 
       - name: Publish to npm
-        working-directory: packages/create-elyos-app
+        working-directory: packages/cli
         run: |
           CURRENT=$(node -p "require('./package.json').version")
-          PUBLISHED=$(npm view @elyos-dev/create-app version 2>/dev/null || echo "none")
+          PUBLISHED=$(npm view @racona/cli version 2>/dev/null || echo "none")
           if [ "$CURRENT" != "$PUBLISHED" ]; then
             npm publish --access public
           else

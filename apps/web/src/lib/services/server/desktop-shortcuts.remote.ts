@@ -1,7 +1,7 @@
 import { command, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
 import db from '$lib/server/database';
-import { desktopShortcuts } from '@elyos/database';
+import { desktopShortcuts } from '@racona/database';
 import { eq, and } from 'drizzle-orm';
 import type { DesktopShortcut } from '$lib/types/desktop';
 

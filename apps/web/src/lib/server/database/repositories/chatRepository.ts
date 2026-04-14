@@ -1,7 +1,7 @@
 import db from '$lib/server/database';
 import { eq, and, or, desc, sql } from 'drizzle-orm';
-import { conversations, messages } from '@elyos/database/schemas';
-import type { Conversation, Message } from '@elyos/database/schemas';
+import { conversations, messages } from '@racona/database/schemas';
+import type { Conversation, Message } from '@racona/database/schemas';
 
 export interface ConversationWithLastMessage extends Conversation {
 	lastMessage?: Message;

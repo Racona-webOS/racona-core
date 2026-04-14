@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://elyos.hu/logo.webp" alt="ElyOS Logo" width="120" />
+  <img src="https://racona.hu/logo.webp" alt="Racona Logo" width="120" />
 </p>
 
-<!-- <h1 align="center">ElyOS</h1> -->
+<!-- <h1 align="center">Racona</h1> -->
 
 <p align="center">
   Teljes értékű asztali élmény webes technológiákkal. Nyílt forráskódú, ingyenes, bárhonnan elérhető.
@@ -10,24 +10,24 @@
 
 <p align="center">
 <a href="https://github.com/ElyOS-webOS/elyos-core/releases"><img src="https://img.shields.io/github/package-json/v/ElyOS-webOS/elyos-core" alt="Verzió" /></a>
-  <a href="https://www.npmjs.com/package/@elyos-dev/sdk"><img src="https://img.shields.io/npm/v/@elyos-dev/sdk?label=%40elyos-dev%2Fsdk&color=blue" alt="SDK npm version" /></a>
-    <a href="https://www.npmjs.com/package/@elyos-dev/create-app"><img src="https://img.shields.io/npm/v/@elyos-dev/create-app?label=%40elyos-dev%2Fcreate-app&color=blue" alt="CLI npm version" /></a>
+  <a href="https://www.npmjs.com/package/@racona/sdk"><img src="https://img.shields.io/npm/v/@racona/sdk?label=%40racona%2Fsdk&color=blue" alt="SDK npm version" /></a>
+    <a href="https://www.npmjs.com/package/@racona/cli"><img src="https://img.shields.io/npm/v/@racona/cli?label=%40racona%2Fcli&color=blue" alt="CLI npm version" /></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
   <a href="https://ko-fi.com/H2H11XIQDF"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white" alt="Támogass Ko-fi-on" /></a>
 </p>
 
 <p align="center">
-  <a href="https://elyos.hu">Weboldal</a> · <a href="https://docs.elyos.hu">Dokumentáció (felhasználói)</a> · <!-- <a href="./docs/hu/PLUGIN_DEVELOPMENT.md">Plugin fejlesztés</a> ·--> <a href="./docs/hu/CONTRIBUTING.md">Közreműködés</a> · <a href="./docs/hu/TROUBLESHOOTING.md">Hibaelhárítás</a> · <a href="./CHANGELOG_HU.md">Változásnapló</a> · <a href="./README.md">🇬🇧 English</a>
+  <a href="https://racona.hu">Weboldal</a> · <a href="https://docs.racona.hu">Dokumentáció (felhasználói)</a> · <!-- <a href="./docs/hu/PLUGIN_DEVELOPMENT.md">Plugin fejlesztés</a> ·--> <a href="./docs/hu/CONTRIBUTING.md">Közreműködés</a> · <a href="./docs/hu/TROUBLESHOOTING.md">Hibaelhárítás</a> · <a href="./CHANGELOG_HU.md">Változásnapló</a> · <a href="./README.md">🇬🇧 English</a>
 </p>
 
 ---
 
 <!-- Screenshot placeholder -->
-<!-- <p align="center"><img src="https://elyos.hu/screenshots/desktop.png" alt="ElyOS Asztal" width="800" /></p> -->
+<!-- <p align="center"><img src="https://racona.hu/screenshots/desktop.png" alt="Racona Asztal" width="800" /></p> -->
 
 ## Tartalomjegyzék
 
-- [Mi az ElyOS?](#mi-az-elyos)
+- [Mi az Racona?](#mi-az-racona)
 - [Funkciók](#funkciók)
 - [Beépített alkalmazások](#beépített-alkalmazások)
 - [Tech Stack](#tech-stack)
@@ -51,9 +51,9 @@
 - [Felelősség kizárása](#felelősség-kizárása)
 - [Licenc](#licenc)
 
-## Mi az ElyOS?
+## Mi az Racona?
 
-Az ElyOS ötvözi a hagyományos asztali operációs rendszerek funkcionalitását a modern webtechnológiák rugalmasságával. A felhasználók teljes asztali környezetet érnek el — ablakkezelés, tálca, start menü, asztali parancsikonok, helyi menü — kizárólag a böngészőn keresztül.
+A Racona ötvözi a hagyományos asztali operációs rendszerek funkcionalitását a modern webtechnológiák rugalmasságával. A felhasználók teljes asztali környezetet érnek el — ablakkezelés, tálca, start menü, asztali parancsikonok, helyi menü — kizárólag a böngészőn keresztül.
 
 Moduláris és bővíthető: készíts saját alkalmazásokat pluginként az SDK segítségével, vagy futtasd az egész platformot önállóan Dockerrel.
 
@@ -62,7 +62,7 @@ Moduláris és bővíthető: készíts saját alkalmazásokat pluginként az SDK
 - **Ablakkezelés** — húzás, átméretezés, minimalizálás, maximalizálás, illesztés
 - **Tálca és Start menü** — testreszabható pozíció, rács/lista nézet, keresés
 - **Asztali parancsikonok** — drag-and-drop, jobb kattintásos helyi menü
-- **Plugin rendszer** — telepíts harmadik féltől származó alkalmazásokat, vagy készíts sajátot az `@elyos/sdk`-val
+- **Plugin rendszer** — telepíts harmadik féltől származó alkalmazásokat, vagy készíts sajátot az `@racona/sdk`-val
 - **Hitelesítés** — email/jelszó, email OTP, Google bejelentkezés, 2FA (TOTP)
 - **Többnyelvűség** — adatbázis-alapú i18n, futásidejű nyelvváltással
 - **Valós idejű chat** — beépített üzenetküldés Socket.IO-n keresztül
@@ -161,7 +161,7 @@ VARLOCK_FALLBACK=local
 
 ### Docker segítségével (ajánlott)
 
-Ez a módszer egy teljesen önálló, futtatható rendszert hoz létre Docker konténerekben. Az ElyOS és az adatbázis egyaránt konténerben fut, így **nincs szükség Node.js, Bun vagy PostgreSQL helyi telepítésére** — elegendő a Docker megléte.
+Ez a módszer egy teljesen önálló, futtatható rendszert hoz létre Docker konténerekben. A Racona és az adatbázis egyaránt konténerben fut, így **nincs szükség Node.js, Bun vagy PostgreSQL helyi telepítésére** — elegendő a Docker megléte.
 
 **Bun segítségével (ha telepítve van):**
 
@@ -173,7 +173,7 @@ cd elyos-core
 # Környezeti változók másolása és konfigurálása (lásd fenti szakasz)
 cp .env.example .env
 
-# ElyOS + PostgreSQL indítása
+# Racona + PostgreSQL indítása
 bun docker:up
 
 # Megnyitás böngészőben
@@ -190,7 +190,7 @@ cd elyos-core
 # Környezeti változók másolása és konfigurálása (lásd fenti szakasz)
 cp .env.example .env
 
-# ElyOS + PostgreSQL indítása
+# Racona + PostgreSQL indítása
 docker compose -f docker/docker-compose.yml up -d
 
 # Megnyitás böngészőben
@@ -261,7 +261,7 @@ elyos-core/
 │       └── lib/                  # Megosztott könyvtárak, komponensek, store-ok
 ├── packages/
 │   ├── database/                 # Drizzle ORM sémák, migrációk, seed-ek
-│   ├── sdk/                      # @elyos/sdk — plugin SDK (npm)
+│   ├── sdk/                      # @racona/sdk — plugin SDK (npm)
 │   └── create-elyos-app/      # CLI eszköz plugin generáláshoz (npm)
 ├── examples/plugins/             # Példa plugin implementációk
 ├── docker/                       # Dockerfile és docker-compose.yml
@@ -271,7 +271,7 @@ elyos-core/
 
 ## Plugin fejlesztés
 
-Az ElyOS teljes plugin ökoszisztémával rendelkezik. Hozz létre pluginokat a CLI-vel, fejlessz a mock SDK-val, majd töltsd be őket egy futó ElyOS példányba.
+A Racona teljes plugin ökoszisztémával rendelkezik. Hozz létre pluginokat a CLI-vel, fejlessz a mock SDK-val, majd töltsd be őket egy futó Racona példányba.
 
 > **Hamarosan...** Részletes dokumentáció és útmutatók a plugin fejlesztéshez.
 
@@ -287,7 +287,7 @@ Ez elindítja a teljes rendszert három konténerben, sorban:
 
 1. **postgres** — PostgreSQL 18 adatbázis (egyedi image, `postgres-json-schema` extensionnel)
 2. **db-init** — egyszeri inicializálás: Drizzle migrációk + seed adatok betöltése (csak akkor indul, ha a postgres egészséges)
-3. **elyos** — maga az alkalmazás (csak akkor indul, ha a db-init sikeresen lefutott)
+3. **racona** — maga az alkalmazás (csak akkor indul, ha a db-init sikeresen lefutott)
 
 Az alkalmazás elérhető lesz a `http://localhost:3000` címen (konfigurálható: `ELYOS_PORT`), a PostgreSQL az `5432`-es porton (konfigurálható: `POSTGRES_PORT`).
 
@@ -395,9 +395,9 @@ docker build -f docker/Dockerfile -t elyos/core:latest .
 
 ## Dokumentáció
 
-- [Felhasználói dokumentáció](https://docs.elyos.hu) — teljes körű útmutató a felhasználók számára
-- [Fejlesztői dokumentáció](https://docs-dev.elyos.hu) — API referencia és fejlesztői útmutatók
-- [Alkalmazás fejlesztés](https://docs-dev.elyos.hu/hu/plugins/) — saját alkalmazások készítése ElyOS-hoz
+- [Felhasználói dokumentáció](https://docs.racona.hu) — teljes körű útmutató a felhasználók számára
+- [Fejlesztői dokumentáció](https://docs-dev.racona.hu) — API referencia és fejlesztői útmutatók
+- [Alkalmazás fejlesztés](https://docs-dev.racona.hu/hu/plugins/) — saját alkalmazások készítése Raconához
 - [Közreműködési útmutató](./docs/hu/CONTRIBUTING.md) — fejlesztői beállítás, kódstílus, PR folyamat
 - [Hibaelhárítás](./docs/hu/TROUBLESHOOTING.md) — gyakori telepítési problémák és megoldásaik
 - [Felelősség kizárása](./docs/hu/DISCLAIMER.md) — felelősségkizárás és garancia
@@ -410,7 +410,7 @@ Kérjük, olvasd el a [Közreműködési útmutatót](./docs/hu/CONTRIBUTING.md)
 
 ## Támogatás
 
-Több éves tapasztalattal rendelkező szoftverfejlesztő vagyok Magyarországról, és az ElyOS-t szabadidőmben fejlesztem (egyelőre egyedül) – egy AI-jal közösen, akit szintén etetni kell. 🤑
+Több éves tapasztalattal rendelkező szoftverfejlesztő vagyok Magyarországról, és a Raconát szabadidőmben fejlesztem (egyelőre egyedül) – egy AI-jal közösen, akit szintén etetni kell. 🤑
 
 Ha hasznosnak találod, vagy csak tetszik, amit csinálok, egy kávé árával is sokat segíthetsz abban, hogy folytathassam.
 
@@ -418,7 +418,7 @@ Ha hasznosnak találod, vagy csak tetszik, amit csinálok, egy kávé árával i
 
 ## Felelősség kizárása
 
-Az ElyOS szoftvert **"ahogy van" (as-is)** alapon bocsátjuk rendelkezésre, mindenféle kifejezett vagy hallgatólagos garancia nélkül — beleértve, de nem kizárólagosan az eladhatóságra, adott célra való alkalmasságra vagy jogsértésmentességre vonatkozó garanciákat.
+A Racona szoftvert **"ahogy van" (as-is)** alapon bocsátjuk rendelkezésre, mindenféle kifejezett vagy hallgatólagos garancia nélkül — beleértve, de nem kizárólagosan az eladhatóságra, adott célra való alkalmasságra vagy jogsértésmentességre vonatkozó garanciákat.
 
 A szoftver készítői és közreműködői **semmilyen felelősséget nem vállalnak** semmilyen közvetlen, közvetett, véletlenszerű, különleges, következményes vagy büntető jellegű kárért, amely a szoftver használatából, helytelen konfigurálásából, üzemeltetéséből vagy az arra való képtelenségből ered — még akkor sem, ha a kár lehetőségéről előzetesen tájékoztatást kaptak.
 

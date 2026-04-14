@@ -4,7 +4,7 @@
  */
 import db from '$lib/server/database';
 import { eq, and } from 'drizzle-orm';
-import { files, type FileInsertModel, type FileSelectModel } from '@elyos/database/schemas';
+import { files, type FileInsertModel, type FileSelectModel } from '@racona/database/schemas';
 import type { StoredFile, FileScope } from './types';
 
 /**

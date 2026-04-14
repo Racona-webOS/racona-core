@@ -9,7 +9,7 @@
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
 	import { fetchGroups, createGroup, deleteGroup } from '../groups.remote';
-	import type { GroupSelectModel } from '@elyos/database/schemas';
+	import type { GroupSelectModel } from '@racona/database/schemas';
 	import { createColumns } from './groupListColumns';
 	import { toast } from 'svelte-sonner';
 	import Plus from 'lucide-svelte/icons/plus';

@@ -8,7 +8,7 @@ import {
 	userGroups,
 	type AppSelectModel,
 	type LocalizedText
-} from '@elyos/database/schemas';
+} from '@racona/database/schemas';
 
 /**
  * AppEntity interface representing an app from the database

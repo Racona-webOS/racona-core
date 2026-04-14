@@ -9,7 +9,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import db from '$lib/server/database';
-import { apps } from '@elyos/database';
+import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ params }) => {

@@ -32,7 +32,7 @@
 		removeUserFromRole,
 		setUserActiveStatus
 	} from '../users.remote';
-	import type { UserSelectModel, GroupSelectModel, RoleSelectModel } from '@elyos/database/schemas';
+	import type { UserSelectModel, GroupSelectModel, RoleSelectModel } from '@racona/database/schemas';
 	import { toast } from 'svelte-sonner';
 	import { ConfirmDialog } from '$lib/components/ui';
 

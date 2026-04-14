@@ -9,7 +9,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
-import type { PluginManifest } from '@elyos/database';
+import type { PluginManifest } from '@racona/database';
 import fs from 'fs/promises';
 import path from 'path';
 import { PLUGIN_TEMP_DIR } from '$lib/server/plugins/config';

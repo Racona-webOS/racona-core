@@ -5,8 +5,8 @@
  */
 
 import AdmZip from 'adm-zip';
-import type { ValidationError } from '@elyos/database';
-import { PluginErrorCode } from '@elyos/database';
+import type { ValidationError } from '@racona/database';
+import { PluginErrorCode } from '@racona/database';
 import path from 'path';
 
 /**

@@ -4,14 +4,14 @@
  * Összes validátor koordinálása és teljes plugin csomag validálása.
  */
 
-import type { ValidationReport, PluginManifest } from '@elyos/database';
-import { PluginErrorCode } from '@elyos/database';
+import type { ValidationReport, PluginManifest } from '@racona/database';
+import { PluginErrorCode } from '@racona/database';
 import { zipValidator } from './ZipValidator';
 import { manifestValidator } from './ManifestValidator';
 import { codeScanner } from './CodeScanner';
 import { dependencyValidator } from './DependencyValidator';
 import db from '$lib/server/database';
-import { apps } from '@elyos/database';
+import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 
 /**

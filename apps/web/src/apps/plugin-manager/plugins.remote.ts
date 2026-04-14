@@ -1,7 +1,7 @@
 import { command, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
 import db from '$lib/server/database';
-import { apps } from '@elyos/database/schemas';
+import { apps } from '@racona/database/schemas';
 import { eq, and, desc, asc, sql, like, or } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';

@@ -8,10 +8,10 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { PluginErrorCode } from '@elyos/database';
+import { PluginErrorCode } from '@racona/database';
 import db from '$lib/server/database';
 import { client as pool } from '$lib/server/database';
-import { apps } from '@elyos/database';
+import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
 import { getEmailManager } from '$lib/server/email/init';

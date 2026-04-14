@@ -1,6 +1,6 @@
 import { eq, and, inArray } from 'drizzle-orm';
 import db from '../index';
-import { emailTemplates } from '@elyos/database/schemas';
+import { emailTemplates } from '@racona/database/schemas';
 import type {
 	DatabaseEmailTemplate,
 	CreateTemplateData,

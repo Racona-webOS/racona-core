@@ -1,10 +1,10 @@
 {
-	"name": "@elyos-dev/create-app",
-	"version": "0.2.4",
-	"description": "CLI tool to scaffold ElyOS app projects",
+	"name": "@racona/cli",
+	"version": "0.3.0",
+	"description": "CLI tool to scaffold Racona app projects",
 	"type": "module",
 	"bin": {
-		"create-elyos-app": "./dist/cli.js"
+		"create-racona-app": "./dist/cli.js"
 	},
 	"main": "./dist/cli.js",
 	"files": [
@@ -20,20 +20,20 @@
 		"prepublishOnly": "bun run clean && bun run build"
 	},
 	"keywords": [
-		"elyos",
-		"webos",
+		"racona",
 		"plugin",
 		"cli",
 		"scaffold",
 		"generator"
 	],
-	"author": "ElyOS Team",
+	"author": "Racona Team",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ElyOS-webOS/elyos-core",
-		"directory": "packages/create-elyos-app"
+		"url": "https://github.com/racona/racona-core",
+		"directory": "packages/cli"
 	},
+	"homepage": "https://racona.hu",
 	"dependencies": {
 		"commander": "^13.0.0",
 		"prompts": "^2.4.2",

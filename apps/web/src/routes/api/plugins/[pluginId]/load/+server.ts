@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		console.log(`[API] Loading plugin: ${pluginId}`);
 
 		// 1. Plugin ellenőrzés az adatbázisban
-		const { apps } = await import('@elyos/database');
+		const { apps } = await import('@racona/database');
 		const { eq } = await import('drizzle-orm');
 		const db = (await import('$lib/server/database')).default;
 

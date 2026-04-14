@@ -1,5 +1,5 @@
 import db from '$lib/server/database';
-import { notifications, type Notification, type NewNotification } from '@elyos/database/schemas';
+import { notifications, type Notification, type NewNotification } from '@racona/database/schemas';
 import { eq, and, desc, asc, count } from 'drizzle-orm';
 
 export const notificationRepository = {

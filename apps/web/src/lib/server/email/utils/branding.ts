@@ -45,7 +45,7 @@ export function getBrandingConfig(requestUrl?: string | URL): BrandingConfig {
 	const baseUrl = getBaseUrl(requestUrl);
 
 	return {
-		appName: env.APP_NAME || 'Elyos',
+		appName: env.APP_NAME || 'Racona',
 		appUrl: baseUrl,
 		logoUrl: env.APP_LOGO_URL,
 		useLogo: env.EMAIL_USE_LOGO || false

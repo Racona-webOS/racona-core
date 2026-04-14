@@ -1,6 +1,6 @@
 import { and, eq, gte, lte, desc, asc, count } from 'drizzle-orm';
 import db from '$lib/server/database';
-import { activityLogs, translations } from '@elyos/database/schemas';
+import { activityLogs, translations } from '@racona/database/schemas';
 import type { ActivityEntry, ActivityLogFilters, ActivityLogInput } from './types';
 
 export class ActivityLogRepository {

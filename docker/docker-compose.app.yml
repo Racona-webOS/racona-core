@@ -1,5 +1,5 @@
 # =============================================================================
-# ElyOS Core — App-only Docker Compose
+# Racona Core — App-only Docker Compose
 # =============================================================================
 # Csak az alkalmazást futtatja, külső adatbázishoz csatlakozik.
 # Az adatbázis migrációt és seed-et kézzel kell elvégezni:
@@ -8,11 +8,11 @@
 # =============================================================================
 
 services:
-  elyos:
+  racona:
     build:
       context: ..
       dockerfile: docker/Dockerfile.app
-    container_name: elyos-app
+    container_name: racona-app
     ports:
       - '${ELYOS_PORT:-3000}:3000'
     env_file:

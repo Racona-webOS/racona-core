@@ -5,9 +5,9 @@
  * Integráció a meglévő file-uploader rendszerrel.
  */
 
-import type { UploadResult } from '@elyos/database';
+import type { UploadResult } from '@racona/database';
 import { getTempPath, ensureDir, PLUGIN_DIRS, getFileSize } from '../utils/filesystem';
-import { PluginErrorCode } from '@elyos/database';
+import { PluginErrorCode } from '@racona/database';
 import {
 	validateExtension,
 	validateFileSize,

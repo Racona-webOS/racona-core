@@ -1,7 +1,7 @@
 {
-	"name": "@elyos-dev/sdk",
-	"version": "0.2.3",
-	"description": "ElyOS SDK — runtime and development SDK for ElyOS plugin development",
+	"name": "@racona/sdk",
+	"version": "0.3.0",
+	"description": "Racona SDK — runtime and development SDK for Racona plugin development",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -43,19 +43,19 @@
 		"jsr:publish:dry": "bunx jsr publish --dry-run"
 	},
 	"keywords": [
-		"elyos",
-		"webos",
+		"racona",
 		"sdk",
 		"plugin",
 		"typescript"
 	],
-	"author": "ElyOS Team",
+	"author": "Racona Team",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ElyOS-webOS/elyos-core",
+		"url": "https://github.com/racona/racona-core",
 		"directory": "packages/sdk"
 	},
+	"homepage": "https://racona.hu",
 	"devDependencies": {
 		"typescript": "^5.7.0",
 		"vitest": "^3.1.0"

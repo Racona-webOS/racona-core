@@ -9,7 +9,7 @@
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
 	import { fetchRoles, createRole, deleteRole } from '../roles.remote';
-	import type { RoleSelectModel } from '@elyos/database/schemas';
+	import type { RoleSelectModel } from '@racona/database/schemas';
 	import { createColumns } from './roleListColumns';
 	import { toast } from 'svelte-sonner';
 	import Plus from 'lucide-svelte/icons/plus';

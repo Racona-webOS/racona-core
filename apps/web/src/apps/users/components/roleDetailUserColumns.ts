@@ -7,7 +7,7 @@ import {
 } from '$lib/components/ui/data-table';
 import type { ColumnDeps } from '$lib/components/ui/data-table';
 import { createActionsColumn } from '$lib/components/ui/data-table';
-import type { UserSelectModel } from '@elyos/database/schemas';
+import type { UserSelectModel } from '@racona/database/schemas';
 
 /** Szerepkör részletek felhasználó lista oszlopok függőségei. */
 export interface RoleDetailUserColumnDeps extends ColumnDeps {

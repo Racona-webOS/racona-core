@@ -2222,7 +2222,7 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 				: {})
 		},
 		dependencies: {
-			'@elyos-dev/sdk': '^0.2.3',
+			'@racona/sdk': '^0.3.0',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^1.0.0'
 		},

@@ -49,7 +49,7 @@ const fakeEmailTemplates = vi.hoisted(() => ({
 	locale: 'locale_col'
 }));
 
-vi.mock('@elyos/database', () => ({
+vi.mock('@racona/database', () => ({
 	emailTemplates: fakeEmailTemplates,
 	PluginErrorCode: {}
 }));

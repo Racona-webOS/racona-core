@@ -1,5 +1,5 @@
 import db from '../index';
-import { themePresets } from '@elyos/database/schemas';
+import { themePresets } from '@racona/database/schemas';
 import { eq, and, asc } from 'drizzle-orm';
 
 export const themePresetsRepository = {

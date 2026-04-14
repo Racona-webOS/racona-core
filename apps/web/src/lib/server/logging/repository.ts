@@ -1,6 +1,6 @@
 import { and, eq, gte, lte, desc, asc, count, inArray, ilike } from 'drizzle-orm';
 import db from '$lib/server/database';
-import { errorLogs } from '@elyos/database/schemas';
+import { errorLogs } from '@racona/database/schemas';
 import type { LogLevel, LogEntry } from './types';
 
 export interface LogFilters {

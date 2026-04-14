@@ -1,5 +1,5 @@
 import db from '$lib/server/database';
-import { emailLogs } from '@elyos/database/schemas';
+import { emailLogs } from '@racona/database/schemas';
 import { eq, and, gte, lte, desc, count } from 'drizzle-orm';
 import type {
 	EmailLogParams,

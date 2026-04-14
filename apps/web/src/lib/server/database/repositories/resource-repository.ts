@@ -1,6 +1,6 @@
 import db from '$lib/server/database';
 import { asc, desc, count } from 'drizzle-orm';
-import { resources } from '@elyos/database/schemas';
+import { resources } from '@racona/database/schemas';
 
 export interface ResourceListParams {
 	limit: number;

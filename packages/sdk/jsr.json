@@ -1,6 +1,6 @@
 {
-	"name": "@elyos-dev/sdk",
-	"version": "0.2.3",
+	"name": "@racona/sdk",
+	"version": "0.3.0",
 	"exports": {
 		".": "./src/index.ts",
 		"./dev": "./src/dev/index.ts",

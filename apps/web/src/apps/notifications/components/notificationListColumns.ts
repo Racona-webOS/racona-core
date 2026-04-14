@@ -7,7 +7,7 @@ import {
 	createActionsColumn
 } from '$lib/components/ui/data-table';
 import type { ColumnDeps } from '$lib/components/ui/data-table';
-import type { Notification } from '@elyos/database';
+import type { Notification } from '@racona/database';
 
 interface NotificationColumnDeps extends ColumnDeps {
 	locale: string;

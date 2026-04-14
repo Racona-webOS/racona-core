@@ -1,7 +1,7 @@
 import type { BetterAuthOptions } from 'better-auth';
 import db from '$lib/server/database';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import * as schema from '@elyos/database/schemas';
+import * as schema from '@racona/database/schemas';
 import { config } from '$lib/config';
 import { eq } from 'drizzle-orm';
 import { customSession } from 'better-auth/plugins';

@@ -17,7 +17,7 @@
 	import { formatDistanceToNow } from '$lib/utils/date';
 	import { getWindowManager } from '$lib/stores';
 	import { getAppByName } from '$lib/services/client/appRegistry';
-	import type { Notification } from '@elyos/database';
+	import type { Notification } from '@racona/database';
 	import { onMount } from 'svelte';
 	import type { ComponentType } from 'svelte';
 	import { useI18n } from '$lib/i18n/hooks';

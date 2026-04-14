@@ -1,13 +1,13 @@
 # =============================================================================
-# ElyOS Core — Docker Compose konfiguráció
+# Racona Core — Docker Compose konfiguráció
 # =============================================================================
 # Szolgáltatások:
 #   - postgres:  PostgreSQL adatbázis
 #   - db-init:   Adatbázis inicializálás (migráció + seed), egyszeri futás
-#   - elyos:     ElyOS webalkalmazás (SvelteKit + Express + Socket.IO)
+#   - racona:    Racona webalkalmazás (SvelteKit + Express + Socket.IO)
 #
 # Indítási sorrend:
-#   postgres (healthy) → db-init (completed) → elyos
+#   postgres (healthy) → db-init (completed) → racona
 #
 # Használat:
 #   docker compose up -d          # Indítás háttérben
@@ -27,17 +27,17 @@ services:
     build:
       context: postgres
       dockerfile: Dockerfile
-    container_name: elyos-postgres
+    container_name: racona-postgres
     env_file:
       - ../.env.local
     volumes:
-      - elyos-data:/var/lib/postgresql
+      - racona-data:/var/lib/postgresql
     ports:
       - '${POSTGRES_PORT:-5432}:5432'
     networks:
-      - elyos-network
+      - racona-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-elyos} -d ${POSTGRES_DB:-elyos}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-racona} -d ${POSTGRES_DB:-racona}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -51,29 +51,29 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: elyos-db-init
+    container_name: racona-db-init
     command: >
-      sh -c 'bun --filter @elyos/database db:init ${RESET:+-- --reset}'
+      sh -c 'bun --filter @racona/database db:init ${RESET:+-- --reset}'
     env_file:
       - ../.env.local
     environment:
       - RESET=${RESET:-}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-elyos}:${POSTGRES_PASSWORD:-elyos123}@postgres:5432/${POSTGRES_DB:-elyos}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-racona}:${POSTGRES_PASSWORD:-racona123}@postgres:5432/${POSTGRES_DB:-racona}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - elyos-network
+      - racona-network
     restart: 'no'
 
   # ---------------------------------------------------------------------------
-  # ElyOS webalkalmazás
+  # Racona webalkalmazás
   # ---------------------------------------------------------------------------
-  elyos:
+  racona:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: elyos-app
+    container_name: racona-app
     ports:
       - '${ELYOS_PORT:-3000}:3000'
     env_file:
@@ -86,7 +86,7 @@ services:
       db-init:
         condition: service_completed_successfully
     networks:
-      - elyos-network
+      - racona-network
     volumes:
       - ../apps/web/uploads:/app/uploads
       - ../.env.local:/app/.env:ro
@@ -94,10 +94,10 @@ services:
 
 # Megnevezett kötet a PostgreSQL adatok perzisztálásához
 volumes:
-  elyos-data:
+  racona-data:
     driver: local
 
 # Belső hálózat a szolgáltatások közötti kommunikációhoz
 networks:
-  elyos-network:
+  racona-network:
     driver: bridge

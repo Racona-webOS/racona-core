@@ -89,7 +89,7 @@
 	},
 	"dependencies": {
 		"@better-auth/drizzle-adapter": "^1.6.0",
-		"@elyos/database": "workspace:*",
+		"@racona/database": "workspace:*",
 		"@elyos-dev/sdk": "workspace:*",
 		"@sentry/node": "^10.47.0",
 		"@sentry/sveltekit": "^10.47.0",
