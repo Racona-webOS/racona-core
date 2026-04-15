@@ -4,7 +4,14 @@ import { translationRepository } from '$lib/server/database/repositories';
 
 export const load: LayoutServerLoad = async ({ locals, depends }) => {
 	depends('i18n:locale');
-	const supportedLocaleCodes = env.SUPPORTED_LOCALES || ['hu', 'en'];
+	const rawLocales = env.SUPPORTED_LOCALES || 'hu,en';
+	const supportedLocaleCodes =
+		typeof rawLocales === 'string'
+			? rawLocales
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean)
+			: rawLocales;
 	const locale = locals.locale || env.DEFAULT_LOCALE;
 
 	const demoMode = env.DEMO_MODE ?? false;
