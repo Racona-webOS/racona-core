@@ -9,7 +9,6 @@
 	import * as THREE from 'three';
 	import { onMount } from 'svelte';
 	import type { AvatarRendererProps } from './AvatarRenderer.js';
-	import type { EmotionState } from '../types/index.js';
 	import RaccoonScene from './RaccoonScene.svelte';
 
 	let {
@@ -17,8 +16,9 @@
 		theme = 'light',
 		enableMouseTracking = true,
 		panelRef,
-		headAnimationMode = 'idle'
-	}: AvatarRendererProps = $props();
+		headAnimationMode = 'idle',
+		filename = 'ai_head_01.glb'
+	}: AvatarRendererProps & { filename?: string } = $props();
 
 	// GLB modell állapot
 	let gltfScene: THREE.Group | null = $state(null);
@@ -35,13 +35,17 @@
 			try {
 				const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
 				const loader = new GLTFLoader();
-				const gltf = await loader.loadAsync('/logos/head3d.glb');
+				const gltf = await loader.loadAsync(`/logos/${filename}`);
 				gltfScene = gltf.scene;
 
 				// Ellenőrizzük, hogy vannak-e morph targets
 				gltf.scene.traverse((child) => {
-					if (child.isMesh && child.morphTargetInfluences) {
-						console.log('🎭 Morph targets found:', child.name, child.morphTargetDictionary);
+					if ((child as any).isMesh && (child as any).morphTargetInfluences) {
+						console.log(
+							'🎭 Morph targets found:',
+							child.name,
+							(child as any).morphTargetDictionary
+						);
 					}
 				});
 			} catch (e) {

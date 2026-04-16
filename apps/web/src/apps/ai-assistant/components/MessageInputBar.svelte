@@ -26,6 +26,7 @@
 
 	let inputValue = $state('');
 	let validationError = $state<string | null>(null);
+	let textareaRef: HTMLTextAreaElement | undefined = $state();
 
 	/** Az aktuális karakter szám */
 	const charCount = $derived(inputValue.length);
@@ -35,6 +36,13 @@
 	const isEmpty = $derived(inputValue.trim().length === 0);
 	/** A send gomb aktív-e */
 	const canSubmit = $derived(!disabled && !isEmpty && !isTooLong);
+
+	// Focus visszaállítása amikor a disabled false-ra vált
+	$effect(() => {
+		if (!disabled && textareaRef) {
+			textareaRef.focus();
+		}
+	});
 
 	/** Validálja a bevitelt és frissíti a hibaüzenetet */
 	function validate(): boolean {
@@ -104,13 +112,14 @@
 	<div class="input-wrapper">
 		<!-- Szövegbeviteli mező -->
 		<textarea
+			bind:this={textareaRef}
 			bind:value={inputValue}
 			onkeydown={handleKeydown}
 			oninput={handleInput}
 			{disabled}
 			rows={1}
 			class="input-field"
-			placeholder={t('ai-assistant.input.placeholder') ?? 'Kérdezz valamit...'}
+			placeholder={t('ai-assistant.input.placeholder') ?? 'Mi a helyzet?'}
 			aria-label={t('ai-assistant.input.label') ?? 'Kérdés beviteli mező'}
 			aria-describedby={validationError ? 'input-error' : undefined}
 			aria-invalid={isTooLong}
@@ -149,6 +158,7 @@
 		outline: none;
 		border: none;
 		background: transparent;
+		padding-top: 0.375rem; /* Placeholder vizuálisan középre igazítása */
 		min-height: 36px;
 		max-height: 120px;
 		resize: none;

@@ -8,6 +8,8 @@
 	} from '$lib/components/file-uploader/types.js';
 	import { listFiles } from '$lib/storage/list-files.remote.js';
 	import { deleteFile } from '$lib/storage/delete-file.remote.js';
+	import AiAvatarCanvas from '$apps/ai-assistant/components/AiAvatarCanvas.svelte';
+	import type { EmotionState } from '$apps/ai-assistant/types/index.js';
 
 	// State
 	let uploadedFiles = $state<
@@ -24,6 +26,13 @@
 		url: string;
 		thumbnailUrl?: string;
 	} | null>(null);
+
+	// Avatar teszt állapotok
+	let emotionState = $state<EmotionState>('neutral');
+	let theme = $state<'light' | 'dark'>('light');
+
+	// Modell fájlnevek tömbje
+	let modelFilenames = $state<string[]>(['h1.glb', 'h3_2k.glb', 'h4_2k.glb', 'h5.glb']);
 
 	// Feltöltött fájlok listájának frissítése
 	async function refreshFileList() {
@@ -146,6 +155,55 @@
 			<p class="text-muted-foreground">
 				Teszteld a fájlfeltöltő komponenst instant és standard módban különböző beállításokkal.
 			</p>
+		</div>
+
+		<!-- Avatar Összehasonlítás -->
+		<div class="bg-card text-card-foreground rounded-lg border p-6 shadow-sm">
+			<h2 class="mb-1 text-lg font-semibold">🦝 Avatar Összehasonlítás</h2>
+			<p class="text-muted-foreground mb-4 text-sm">
+				Két különböző 3D modell összehasonlítása egymás mellett
+			</p>
+
+			<!-- Vezérlők -->
+			<div class="mb-4 flex flex-wrap gap-4">
+				<div>
+					<label for="emotion-select" class="mb-1 block text-sm font-medium">Érzelem</label>
+					<select
+						id="emotion-select"
+						bind:value={emotionState}
+						class="border-input bg-background rounded-md border px-3 py-2"
+					>
+						<option value="neutral">Neutral</option>
+						<option value="happy">Happy</option>
+						<option value="sad">Sad</option>
+						<option value="thinking">Thinking</option>
+						<option value="excited">Excited</option>
+					</select>
+				</div>
+				<div>
+					<label for="theme-select" class="mb-1 block text-sm font-medium">Téma</label>
+					<select
+						id="theme-select"
+						bind:value={theme}
+						class="border-input bg-background rounded-md border px-3 py-2"
+					>
+						<option value="light">Light</option>
+						<option value="dark">Dark</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Avatar párok -->
+			<div class="grid gap-6 md:grid-cols-2">
+				{#each modelFilenames as filename}
+					<div>
+						<h3 class="mb-2 text-center text-sm font-medium">{filename}</h3>
+						<div class="bg-muted rounded-lg p-4" style="height: 300px;">
+							<AiAvatarCanvas {emotionState} {theme} {filename} />
+						</div>
+					</div>
+				{/each}
+			</div>
 		</div>
 
 		<!-- Beállítások -->

@@ -95,16 +95,25 @@
 		display: flex;
 		position: fixed;
 		right: 300px;
-		bottom: 9rem;
+		bottom: 12rem;
 		flex-direction: column;
 		gap: 0.75rem;
 		z-index: 9997;
 		animation: bubble-fade-in 0.3s ease;
 		padding: 1rem;
+		padding-bottom: 0.5rem;
 		width: 400px;
 		max-width: calc(100vw - 320px);
 		max-height: 50vh;
 		overflow-y: auto;
+		/* Scrollbar elrejtése */
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* IE és Edge */
+	}
+
+	/* Scrollbar elrejtése Webkit böngészőkben (Chrome, Safari) */
+	.ai-chat-bubbles::-webkit-scrollbar {
+		display: none;
 	}
 
 	@keyframes bubble-fade-in {

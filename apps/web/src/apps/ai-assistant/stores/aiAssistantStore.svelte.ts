@@ -106,7 +106,7 @@ class AiAssistantStore {
 	loading = $state(false);
 	error = $state<string | null>(null);
 	isTyping = $state(false); // Felhasználó gépel-e
-	headAnimationMode = $state<'idle' | 'typing' | 'breathing'>('idle'); // Fej animáció állapot
+	headAnimationMode = $state<'idle' | 'idle2' | 'typing' | 'breathing'>('idle'); // Fej animáció állapot
 
 	// --- Derived értékek ---
 	readonly hasMessages = $derived(this.messages.length > 0);
@@ -139,6 +139,7 @@ class AiAssistantStore {
 
 	#typingTimeout: ReturnType<typeof setTimeout> | null = null;
 	#breathingTimeout: ReturnType<typeof setTimeout> | null = null;
+	#idleTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	/** Jelzi, hogy a felhasználó gépel */
 	startTyping(): void {
@@ -152,14 +153,19 @@ class AiAssistantStore {
 		if (this.#breathingTimeout) {
 			clearTimeout(this.#breathingTimeout);
 		}
+		if (this.#idleTimeout) {
+			clearTimeout(this.#idleTimeout);
+		}
 
 		// 3 másodperc után visszaállunk középre (breathing előkészítés)
 		this.#typingTimeout = setTimeout(() => {
 			this.isTyping = false;
 			this.headAnimationMode = 'breathing';
 
-			// 0.5-1 másodperc után kezdődik a lélegzés animáció
-			// (a breathing mode már aktív, csak jelezzük hogy kész az átmenet)
+			// 4-5 másodperc után idle2 módba váltunk (természetes nézelődés)
+			this.#idleTimeout = setTimeout(() => {
+				this.headAnimationMode = 'idle2';
+			}, 4500); // 4.5 másodperc
 		}, 3000);
 	}
 
@@ -174,10 +180,19 @@ class AiAssistantStore {
 			clearTimeout(this.#breathingTimeout);
 			this.#breathingTimeout = null;
 		}
+		if (this.#idleTimeout) {
+			clearTimeout(this.#idleTimeout);
+			this.#idleTimeout = null;
+		}
 		// Küldés után maradjon typing módban, DE indítsunk egy timeout-ot
 		// ami 3mp után breathing módba állítja (ha nem kezd el újra gépelni)
 		this.#typingTimeout = setTimeout(() => {
 			this.headAnimationMode = 'breathing';
+
+			// 4-5 másodperc után idle2 módba váltunk (természetes nézelődés)
+			this.#idleTimeout = setTimeout(() => {
+				this.headAnimationMode = 'idle2';
+			}, 4500); // 4.5 másodperc
 		}, 3000);
 	}
 

@@ -34,7 +34,7 @@ export interface AvatarRendererProps {
 	/** Opcionális: a panel referencia az egérkövetéshez */
 	panelRef?: HTMLDivElement;
 	/** Opcionális: fej animáció mód (alapértelmezett: 'idle') */
-	headAnimationMode?: 'idle' | 'typing' | 'breathing';
+	headAnimationMode?: 'idle' | 'idle2' | 'typing' | 'breathing';
 }
 
 /**

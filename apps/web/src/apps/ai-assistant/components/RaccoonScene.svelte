@@ -12,7 +12,7 @@
 		canvasWrapper?: HTMLDivElement;
 		enableMouseTracking?: boolean;
 		panelRef?: HTMLDivElement;
-		headAnimationMode?: 'idle' | 'typing' | 'breathing'; // Fej animáció mód
+		headAnimationMode?: 'idle' | 'idle2' | 'typing' | 'breathing'; // Fej animáció mód
 	}
 
 	let {
@@ -56,7 +56,7 @@
 	let currentTypingRotY = 0;
 	let currentTypingRotX = 0;
 	let breathingStartTime = 0; // Mikor kezdődött a breathing mode
-	let lastHeadAnimationMode: 'idle' | 'typing' | 'breathing' = 'idle'; // Előző mód követése
+	let lastHeadAnimationMode: 'idle' | 'idle2' | 'typing' | 'breathing' = 'idle'; // Előző mód követése
 
 	function lerp(a: number, b: number, t: number): number {
 		return a + (b - a) * Math.min(t, 1);
@@ -234,10 +234,15 @@
 				// Semmi extra target, az idle animáció a switch-ben lesz
 				break;
 
+			case 'idle2':
+				// Természetes várakozó animáció - breathing-ből indul
+				// Semmi extra target, az idle2 animáció a switch-ben lesz
+				break;
+
 			case 'typing':
-				// Gépelés közben: balra néz az input mezőre
-				targetTypingRotY = -0.4;
-				targetTypingRotX = -0.1;
+				// Gépelés közben: balra és lejjebb néz az input mezőre
+				targetTypingRotY = -0.6;
+				targetTypingRotX = 0.0; // -0.1-ről -0.2-re: jobban lefelé néz
 				break;
 
 			case 'breathing':
@@ -257,21 +262,48 @@
 		switch (lastEmotion) {
 			case 'neutral':
 				if (headAnimationMode === 'idle') {
-					// Idle animáció: aktív nézelődés - gyors, szemből/előre indul
-					// Még gyorsabb hullámok (0.3 → 0.5, 0.4 → 0.6, stb.)
-					const slowWave1 = Math.sin(time * 0.5) * 0.3;
-					const slowWave2 = Math.sin(time * 0.6 + 1.5) * 0.2;
-					const slowWave3 = Math.sin(time * 0.55 + 3) * 0.15;
-					const slowWave4 = Math.sin(time * 0.4 + 2) * 0.1;
+					// Idle animáció: aktív nézelődés - semleges pozícióból (0,0) indul
+					// Phase offset-tel indítjuk, hogy a hullámok 0 körül kezdjenek
+					const slowWave1 = Math.sin(time * 0.5 + Math.PI / 2) * 0.3; // +PI/2 offset: 1-ről indul, 0 felé tart
+					const slowWave2 = Math.sin(time * 0.6 + 1.5 + Math.PI / 2) * 0.2;
+					const slowWave3 = Math.sin(time * 0.55 + 3 + Math.PI / 2) * 0.15;
+					const slowWave4 = Math.sin(time * 0.4 + 2 + Math.PI / 2) * 0.1;
 
-					// Y rotáció: jobbra-balra (0 körül oszcillál)
-					extraRotY = slowWave1 + slowWave2 * 0.5;
-					// X rotáció: fel-le, de FELFELE offset (+0.15) hogy előre nézzen
-					extraRotX = (slowWave3 + slowWave4) * 0.6 + 0.15;
+					// Y rotáció: jobbra-balra, kis negatív offset (-0.02) hogy kicsit balrább nézzen
+					extraRotY = slowWave1 + slowWave2 * 0.5 - 0.03;
+
+					// X rotáció: fel-le, középpontja 0 (mint breathing)
+					extraRotX = (slowWave3 + slowWave4) * 0.6;
 					extraRotZ = 0; // Nincs Z rotáció idle módban
 
 					// Finom lélegzés idle módban is
 					extraScale = 1 + Math.sin(time * 1.5) * 0.005;
+				} else if (headAnimationMode === 'idle2') {
+					// Idle2 animáció: természetes várakozás - breathing-ből (0,0) indul
+					// Lassú, finom lélegzés + látványosabb, természetes nézelődés
+
+					// Lélegzés (mint breathing, de folyamatos)
+					extraScale = 1 + Math.sin(time * 1.5) * 0.013; // 1.3% mint breathing
+
+					// Lassú, természetes fejmozgás - mintha várakozna és nézelődne
+					const verySlowWave1 = Math.sin(time * 0.25) * 0.18; // Látványosabb jobbra-balra
+					const verySlowWave2 = Math.sin(time * 0.2 + 2) * 0.12; // Látványosabb fel-le
+					const verySlowWave3 = Math.sin(time * 0.3 + 1) * 0.14; // Harmadik dimenzió
+
+					// Y rotáció: látványosabb jobbra-balra lengés
+					extraRotY = verySlowWave1 + verySlowWave3 * 0.5;
+
+					// X rotáció: látványosabb fel-le mozgás, 0 körül
+					extraRotX = verySlowWave2 * 0.8;
+
+					// Z rotáció: időnként egy kis fej billentés
+					const thinkCycle = Math.sin(time * 0.08) * 0.5 + 0.5; // 0..1
+					if (thinkCycle > 0.8) {
+						const thinkAmount = (thinkCycle - 0.8) / 0.2;
+						extraRotZ = Math.sin(thinkAmount * Math.PI) * 0.15;
+					} else {
+						extraRotZ = 0;
+					}
 				} else if (headAnimationMode === 'typing') {
 					// Gépelés közben: csak finom lélegzés, SEMMI más mozgás
 					extraRotX = 0;

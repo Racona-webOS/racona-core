@@ -21,7 +21,8 @@
 			theme: 'light' | 'dark';
 			enableMouseTracking?: boolean;
 			panelRef?: HTMLDivElement;
-			headAnimationMode?: 'idle' | 'typing' | 'breathing';
+			headAnimationMode?: 'idle' | 'idle2' | 'typing' | 'breathing';
+			filename?: string;
 		}>;
 		/** Az aktuális érzelmi állapot — átadódik a belső avatar komponensnek */
 		emotionState: EmotionState;
@@ -33,6 +34,8 @@
 		panelRef?: HTMLDivElement;
 		/** Opcionális: fej animáció mód (alapértelmezett: 'idle') */
 		headAnimationMode?: 'idle' | 'typing' | 'breathing';
+		/** Opcionális: GLB fájl neve (alapértelmezett: 'ai_head_01.glb') */
+		filename?: string;
 	}
 
 	let {
@@ -41,7 +44,8 @@
 		theme,
 		enableMouseTracking = true,
 		panelRef,
-		headAnimationMode = 'idle'
+		headAnimationMode = 'idle',
+		filename = 'ai_head_01.glb'
 	}: Props = $props();
 </script>
 
@@ -51,5 +55,12 @@
   Requirements: 13.9
 -->
 <div class="aspect-square w-full" style="height: 100%;" aria-hidden="true">
-	<AvatarComponent {emotionState} {theme} {enableMouseTracking} {panelRef} {headAnimationMode} />
+	<AvatarComponent
+		{emotionState}
+		{theme}
+		{enableMouseTracking}
+		{panelRef}
+		{headAnimationMode}
+		{filename}
+	/>
 </div>
