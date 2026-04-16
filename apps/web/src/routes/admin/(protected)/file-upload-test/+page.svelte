@@ -32,7 +32,16 @@
 	let theme = $state<'light' | 'dark'>('light');
 
 	// Modell fájlnevek tömbje
-	let modelFilenames = $state<string[]>(['h1.glb', 'h3_2k.glb', 'h4_2k.glb', 'h5.glb']);
+	let modelFilenames = $state<string[]>([
+		'h1.glb',
+		'h3_2k.glb',
+		'h4_2k.glb',
+		'h5.glb',
+		'dog.glb',
+		'monkey.glb',
+		'monkey_tri_2k.glb',
+		'monkey_tri_2k_2.glb'
+	]);
 
 	// Feltöltött fájlok listájának frissítése
 	async function refreshFileList() {

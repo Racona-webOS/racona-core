@@ -20,6 +20,7 @@
 	const store = getTranslationStore();
 
 	// Támogatott nyelvek beállítása a szerverről jövő konfigurációval
+	// és locale szinkronizálása a szerverről jövő értékkel
 	if (browser) {
 		// eslint-disable-next-line svelte/valid-compile -- initial setup, not reactive
 		const rawLocales = data.supportedLocales;
@@ -30,6 +31,12 @@
 				: undefined;
 		const supportedLocales = getSupportedLocales(localeArray);
 		store.setSupportedLocales(supportedLocales);
+
+		// Ha a szerverről jövő locale eltér a jelenlegi locale-tól, szinkronizáljuk
+		// Ez biztosítja, hogy a cookie-ban tárolt nyelv érvényesüljön oldal újratöltéskor
+		if (data.locale && data.locale !== store.currentLocale) {
+			store.setLocale(data.locale);
+		}
 	}
 
 	let decorTitle = $state('');

@@ -254,6 +254,22 @@ async function handleRequest(
 		// Nem védett oldalak esetén is beállítjuk a locale-t
 		event.locals.locale = resolveLocale(null, cookieLocale, browserLocale, DEFAULT_FALLBACK_LOCALE);
 
+		// Cookie szinkronizálása nem védett oldalaknál is
+		// Ha nincs cookie, de van böngésző nyelv vagy fallback, akkor beállítjuk
+		const isApiOrFetch =
+			event.url.pathname.startsWith('/api/') ||
+			event.request.headers.get('x-sveltekit-action') !== null ||
+			event.request.headers.get('accept') === 'application/json';
+		if (event.locals.locale !== cookieLocale && !isApiOrFetch) {
+			event.cookies.set(LOCALE_COOKIE_NAME, event.locals.locale, {
+				path: '/',
+				maxAge: 60 * 60 * 24 * 365,
+				httpOnly: false,
+				secure: true,
+				sameSite: 'lax'
+			});
+		}
+
 		return svelteKitHandler({
 			event,
 			resolve: (event) =>
