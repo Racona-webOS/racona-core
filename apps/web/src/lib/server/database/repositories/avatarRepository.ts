@@ -66,13 +66,32 @@ export const avatarRepository = {
 
 	/**
 	 * Felhasználói avatar konfiguráció lekérése.
-	 * Ha nincs konfiguráció, null-t ad vissza (az alapértelmezett az első avatar, SD minőség).
+	 * Ha nincs konfiguráció, automatikusan a "default" avatart adja vissza SD minőséggel.
 	 */
 	async getUserAvatarConfig(userId: number): Promise<UserAvatarConfigSelectModel | null> {
 		const [config] = await db
 			.select()
 			.from(userAvatarConfigs)
 			.where(eq(userAvatarConfigs.userId, userId));
-		return config ?? null;
+
+		// Ha van mentett konfiguráció, azt adjuk vissza
+		if (config) {
+			return config;
+		}
+
+		// Ha nincs konfiguráció, ellenőrizzük hogy létezik-e a "default" avatar
+		const defaultAvatar = await this.findAvatarByIdname('default');
+		if (!defaultAvatar) {
+			return null; // Nincs default avatar sem
+		}
+
+		// Visszaadjuk a default avatar konfigurációt (de nem mentjük el)
+		return {
+			id: 0, // Dummy ID, mivel ez nem mentett konfiguráció
+			userId,
+			avatarIdname: 'default',
+			quality: 'sd' as const,
+			customName: null
+		};
 	}
 };

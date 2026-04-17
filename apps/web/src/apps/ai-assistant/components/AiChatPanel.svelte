@@ -201,7 +201,7 @@
 
 	<!-- Üzenet előzmények (Requirements: 2.3, 2.6) -->
 	<div
-		class="hidden flex-1 overflow-y-auto px-4 py-3"
+		class="flex-1 overflow-y-auto px-4 py-3"
 		role="log"
 		aria-label={t('ai-assistant.history.label') ?? 'Beszélgetési előzmények'}
 		aria-live="polite"
@@ -237,7 +237,17 @@
 						<!-- Asszisztens üzenet -->
 						<div class="flex justify-start">
 							<div class="max-w-[80%]">
-								<div class="bg-muted rounded-2xl rounded-tl-sm px-3 py-2 text-sm">
+								<div
+									class="rounded-2xl rounded-tl-sm px-3 py-2 text-sm"
+									style="background-color: {message.isError
+										? '#fef2f2'
+										: 'var(--muted)'}; color: {message.isError
+										? '#b91c1c'
+										: 'inherit'}; border: {message.isError ? '1px solid #fecaca' : 'none'};"
+								>
+									{#if message.isError}
+										<small style="color: blue; font-weight: bold;">[ERROR]</small>
+									{/if}
 									{message.content}
 								</div>
 								<p class="text-muted-foreground mt-0.5 text-xs">
@@ -279,7 +289,7 @@
 	<!-- Hibaüzenet -->
 	{#if aiStore.error}
 		<div
-			class="bg-destructive/10 text-destructive mx-4 mb-2 hidden rounded-md px-3 py-2 text-xs"
+			class="bg-destructive/10 text-destructive mx-4 mb-2 rounded-md px-3 py-2 text-xs"
 			role="alert"
 			aria-live="assertive"
 		>
@@ -288,7 +298,7 @@
 	{/if}
 
 	<!-- Üzenet beviteli sáv (Requirements: 2.2, 2.4, 2.5) -->
-	<div class="hidden">
+	<div class="px-4 pb-4">
 		<MessageInputBar onSend={handleSend} disabled={!aiStore.canSend} maxLength={500} />
 	</div>
 </div>

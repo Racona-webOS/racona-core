@@ -55,6 +55,10 @@ export { notificationRepository } from './notificationRepository';
 export { avatarRepository } from './avatarRepository';
 export type { InsertAvatarData, UpsertAvatarConfigData } from './avatarRepository';
 
+// Agent Config repository exports
+export { agentConfigRepository } from './agentConfigRepository';
+export type { UpsertAgentConfigData, AgentConfigWithMaskedKey } from './agentConfigRepository';
+
 // Theme presets repository exports
 export { themePresetsRepository } from './theme-presets-repository';
 

@@ -10,6 +10,7 @@ import type {
 	EmotionState,
 	ResponseCacheEntry
 } from '../types/index.js';
+import { sendChatMessage } from '../chat.remote.js';
 
 const AI_ASSISTANT_STORE_KEY = Symbol('aiAssistantStore');
 
@@ -271,12 +272,17 @@ class AiAssistantStore {
 		if (typeof localStorage === 'undefined') return;
 
 		try {
-			const raw = localStorage.getItem('elyos_ai_assistant_history');
+			const raw = localStorage.getItem('racona_ai_assistant_history');
 			if (!raw) return;
 
 			const parsed = JSON.parse(raw) as { messages: ChatMessage[]; lastUpdated: number };
 			if (Array.isArray(parsed.messages)) {
-				this.messages = parsed.messages.slice(-this.#config.maxHistoryLength);
+				// Biztosítjuk, hogy minden üzenetnek legyen isError property-je
+				const messagesWithError = parsed.messages.map((msg) => ({
+					...msg,
+					isError: msg.isError ?? false
+				}));
+				this.messages = messagesWithError.slice(-this.#config.maxHistoryLength);
 			}
 		} catch {
 			// Graceful degradation: ha a localStorage nem olvasható, session-only history
@@ -292,7 +298,7 @@ class AiAssistantStore {
 				messages: this.messages.slice(-this.#config.maxHistoryLength),
 				lastUpdated: Date.now()
 			};
-			localStorage.setItem('elyos_ai_assistant_history', JSON.stringify(toStore));
+			localStorage.setItem('racona_ai_assistant_history', JSON.stringify(toStore));
 		} catch {
 			// Graceful degradation: ha a localStorage nem írható, session-only history
 		}
@@ -305,7 +311,7 @@ class AiAssistantStore {
 		this.messages = [];
 		if (typeof localStorage !== 'undefined') {
 			try {
-				localStorage.removeItem('elyos_ai_assistant_history');
+				localStorage.removeItem('racona_ai_assistant_history');
 			} catch {
 				// Graceful degradation
 			}
@@ -314,7 +320,6 @@ class AiAssistantStore {
 
 	/**
 	 * Üzenetet küld az AI asszisztensnek.
-	 * Phase 1-ben placeholder — Phase 2-ban a valós API hívás kerül ide.
 	 */
 	async sendMessage(question: string): Promise<void> {
 		const trimmed = question.trim();
@@ -322,7 +327,10 @@ class AiAssistantStore {
 		// Validáció
 		if (!trimmed) return;
 		if (trimmed.length > this.#config.maxQuestionLength) {
-			this.error = `A kérdés túl hosszú (maximum ${this.#config.maxQuestionLength} karakter).`;
+			this.#addAssistantMessage(
+				`A kérdés túl hosszú (maximum ${this.#config.maxQuestionLength} karakter).`,
+				true
+			);
 			return;
 		}
 
@@ -337,46 +345,75 @@ class AiAssistantStore {
 		this.messages = [...this.messages, userMessage].slice(-this.#config.maxHistoryLength);
 		this.error = null;
 		this.loading = true;
-		// NE állítsuk thinking-re - maradjon neutral, így nincs animáció
-		// this.currentEmotion = 'thinking';
 
 		try {
+			console.log('[AiAssistantStore] Cache ellenőrzés...');
 			// Cache ellenőrzés
 			const cached = this.getCachedResponse(trimmed);
 			if (cached) {
+				console.log('[AiAssistantStore] Cache találat:', cached);
 				this.#addAssistantMessage(cached);
 				return;
 			}
 
-			// Random válasz generálása (placeholder Phase 2-ig)
-			const randomResponses = [
-				'Érdekes kérdés! Ezen gondolkodom...',
-				'Hmm, hadd lássam mit tudok erről mondani.',
-				'Ez egy jó kérdés! Szerintem...',
-				'Köszönöm a kérdést! A válaszom:',
-				'Remek, hogy megkérdezted! Úgy gondolom...',
-				'Ez egy izgalmas téma! Az én véleményem szerint...',
-				'Nagyon jó kérdés! Hadd válaszoljak rá...',
-				'Örülök, hogy ezt kérdezted! Szerintem...'
-			];
+			console.log('[AiAssistantStore] Conversation history előkészítése...');
+			// Conversation history előkészítése (utolsó 10 üzenet)
+			const conversationHistory = this.messages
+				.slice(-11, -1) // Utolsó 10 üzenet (az aktuális előtt)
+				.map((msg) => ({
+					role: msg.role,
+					content: msg.content
+				}));
 
-			// Kis késleltetés a természetesebb élményért
-			await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
+			console.log('[AiAssistantStore] API hívás indítása...', {
+				message: trimmed,
+				historyLength: conversationHistory.length
+			});
+			// API hívás
+			const result = await sendChatMessage({
+				message: trimmed,
+				conversationHistory
+			});
 
-			const randomAnswer = randomResponses[Math.floor(Math.random() * randomResponses.length)];
-			this.setCachedResponse(trimmed, randomAnswer);
-			this.#addAssistantMessage(randomAnswer);
-		} catch {
-			this.error = 'Az AI asszisztens jelenleg nem elérhető. Kérjük, próbálja újra később.';
+			console.log('[AiAssistantStore] API válasz:', result);
+			if (result.success && result.response) {
+				console.log('[AiAssistantStore] Sikeres válasz, cache-elés és hozzáadás...');
+				this.setCachedResponse(trimmed, result.response);
+				this.#addAssistantMessage(result.response);
+			} else {
+				console.log('[AiAssistantStore] API hiba:', result.error);
+				// Hibaüzenetet chat üzenetként jelenítjük meg
+				const errorMessage = result.error || 'Nem érkezett válasz az AI-tól.';
+				this.#addAssistantMessage(errorMessage, true);
+				this.currentEmotion = 'confused';
+
+				// 5 másodperc után visszaállítjuk neutral állapotra
+				setTimeout(() => {
+					this.currentEmotion = 'neutral';
+				}, 5000);
+			}
+		} catch (err) {
+			console.error('[AiAssistantStore] Hiba az üzenet küldése során:', err);
+			// Általános hibaüzenetet chat üzenetként jelenítjük meg
+			this.#addAssistantMessage(
+				'Az AI asszisztens jelenleg nem elérhető. Kérjük, próbálja újra később.',
+				true
+			);
 			this.currentEmotion = 'confused';
+
+			// 5 másodperc után visszaállítjuk neutral állapotra
+			setTimeout(() => {
+				this.currentEmotion = 'neutral';
+			}, 5000);
 		} finally {
+			console.log('[AiAssistantStore] Loading = false');
 			this.loading = false;
 			this.saveToStorage();
 		}
 	}
 
 	/** Hozzáad egy assistant üzenetet és frissíti az érzelmi állapotot */
-	#addAssistantMessage(content: string): void {
+	#addAssistantMessage(content: string, isError: boolean = false): void {
 		// NE detektáljuk az érzelmet - maradjon neutral
 		// const emotion = this.detectEmotion(content);
 		const emotion: EmotionState = 'neutral';
@@ -385,7 +422,8 @@ class AiAssistantStore {
 			role: 'assistant',
 			content,
 			timestamp: Date.now(),
-			emotionState: emotion
+			emotionState: emotion,
+			isError
 		};
 
 		this.messages = [...this.messages, assistantMessage].slice(-this.#config.maxHistoryLength);

@@ -17,6 +17,8 @@ export interface ChatMessage {
 	timestamp: number;
 	/** Csak assistant üzenetekhez: a detektált érzelmi állapot */
 	emotionState?: EmotionState;
+	/** Hibaüzenet-e (piros háttér) */
+	isError?: boolean;
 }
 
 /** A teljes beszélgetési előzmény */

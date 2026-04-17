@@ -157,6 +157,13 @@ export const seedConfig: Record<string, SeedDefinition> = {
 		description: 'AI Assistant translations (panel, input, history)'
 	},
 
+	// Platform schema - AI avatars
+	ai_avatars_default: {
+		file: 'platform/ai_avatars_default.sql',
+		dependsOn: [],
+		description: 'Default AI avatar (Rico)'
+	},
+
 	// Platform schema - apps
 	apps: {
 		file: 'platform/apps.sql',
@@ -223,10 +230,14 @@ export const truncateOrder = [
 	'platform.error_logs',
 	'platform.files',
 	'platform.desktop_shortcuts',
+	// Platform - AI avatar user configs (depends on ai_avatars)
+	'platform.user_avatar_configs',
+	'platform.ai_agent_configs',
 	// Platform - seed data
 	'auth.role_app_access',
 	'auth.group_app_access',
 	'platform.apps',
+	'platform.ai_avatars',
 	'platform.translations',
 	'platform.locales',
 	'platform.theme_presets',

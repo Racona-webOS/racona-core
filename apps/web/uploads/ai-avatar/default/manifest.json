@@ -1,0 +1,9 @@
+{
+	"idname": "default",
+	"displayName": "Rico",
+	"descriptions": {
+		"hu": "Alapértelmezett AI asszisztens",
+		"en": "Default AI assistant."
+	},
+	"availableQualities": ["sd"]
+}
