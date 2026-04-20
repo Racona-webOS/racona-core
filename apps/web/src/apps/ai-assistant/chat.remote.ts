@@ -14,6 +14,10 @@ import {
 	avatarRepository,
 	aiProviderRepository
 } from '$lib/server/database/repositories';
+import { KnowledgeBaseService } from '$lib/server/ai-assistant/knowledgeBaseService.js';
+import type { KnowledgeBaseLocale, SearchParams } from '$lib/server/ai-assistant/types.js';
+import { join } from 'path';
+import { dev } from '$app/environment';
 
 // ============================================================================
 // Helper funkciók
@@ -115,8 +119,170 @@ export const sendChatMessage = command(
 
 			// Nyelvi beállítás meghatározása
 			const userLocale = locals.locale || 'hu';
-			const languageInstruction =
-				userLocale === 'hu' ? 'Válaszolj magyarul.' : 'Please respond in English.';
+			const knowledgeBaseLocale: KnowledgeBaseLocale = userLocale === 'hu' ? 'hu' : 'en';
+
+			// Knowledge Base keresés
+			let contextFromKnowledgeBase = '';
+			let knowledgeBaseInfo = '';
+
+			try {
+				// Knowledge Base szolgáltatás inicializálása
+				const knowledgeBasePath = dev
+					? join(process.cwd(), 'static/knowledge-base')
+					: join(process.cwd(), 'static/knowledge-base');
+
+				// Singleton resetelése, hogy az új útvonallal jöjjön létre
+				KnowledgeBaseService.resetInstance();
+				const kbService = KnowledgeBaseService.getInstance(knowledgeBasePath);
+				await kbService.initialize();
+
+				// Keresés a Knowledge Base-ben
+				const searchParams: SearchParams = {
+					query: data.message,
+					userLocale: knowledgeBaseLocale,
+					maxResults: 5,
+					enableFallback: true
+				};
+
+				const searchResponse = await kbService.search(searchParams);
+
+				console.log('[AiChat] Knowledge Base keresési eredmény:', {
+					query: data.message,
+					totalResults: searchResponse.totalResults,
+					primaryResults: searchResponse.primaryLanguageResults,
+					fallbackResults: searchResponse.fallbackLanguageResults,
+					strategy: searchResponse.searchStrategy,
+					results: searchResponse.results.map((r) => ({
+						title: r.chunk.documentTitle,
+						score: r.score,
+						keywords: r.matchedKeywords,
+						content: r.chunk.content.substring(0, 100) + '...'
+					}))
+				});
+
+				if (searchResponse.results.length > 0) {
+					// Context összeállítása a talált dokumentumokból
+					const contextChunks = searchResponse.results
+						.map((result, index) => {
+							const sourceInfo =
+								result.chunk.locale === knowledgeBaseLocale
+									? ''
+									: ` (forrás: ${result.chunk.locale === 'hu' ? 'magyar' : 'angol'} dokumentáció)`;
+
+							return `[${index + 1}] ${result.chunk.documentTitle}${sourceInfo}\n${result.chunk.content}`;
+						})
+						.join('\n\n---\n\n');
+
+					contextFromKnowledgeBase = `\n\n=== RACONA DOKUMENTÁCIÓ ===\nA következő dokumentációs részletek PONTOSAN válaszolnak a kérdésedre. Használd KÖTELEZŐEN ezeket az információkat a válaszadáshoz:\n\n${contextChunks}\n\n=== DOKUMENTÁCIÓ VÉGE ===\n\nA fenti dokumentáció alapján adj KONKRÉT, RÉSZLETES választ a kérdésre!`;
+
+					// Információ a keresési stratégiáról
+					if (searchResponse.searchStrategy === 'primary-with-fallback') {
+						knowledgeBaseInfo = `\n\n(Debug: ${searchResponse.primaryLanguageResults} találat ${knowledgeBaseLocale} nyelven, ${searchResponse.fallbackLanguageResults} találat fallback nyelven)`;
+					} else {
+						knowledgeBaseInfo = `\n\n(Debug: ${searchResponse.totalResults} találat ${knowledgeBaseLocale} nyelven)`;
+					}
+				}
+			} catch (kbError) {
+				console.warn('[AiChat] Knowledge Base keresési hiba:', kbError);
+				// Folytatjuk Knowledge Base nélkül
+			}
+
+			// System prompt - Racona-specifikus instrukciók
+			let systemPrompt: string;
+			if (userLocale === 'hu') {
+				systemPrompt = `Te a Racona webes operációs rendszer hivatalos AI asszisztense vagy.
+
+A Racona egy modern, böngészőben futó webes operációs rendszer asztali környezettel, alkalmazásokkal, beállításokkal és plugin rendszerrel.
+
+FONTOS SZABÁLYOK:
+1. CSAK a Racona rendszerrel kapcsolatos kérdésekre válaszolj
+2. MINDIG a mellékelt dokumentáció alapján válaszolj - ha dokumentáció van mellékelve, azt KÖTELEZŐ használni
+3. Ha a kérdés NEM a Racona rendszerről szól, udvariasan mondd el, hogy csak Racona-specifikus kérdésekre tudsz válaszolni
+4. Ha a dokumentációban NINCS válasz a kérdésre, mondd el őszintén, hogy erről nincs információd
+5. NE találj ki információkat - csak azt mondd el, ami a dokumentációban van
+
+VÁLASZ FORMÁZÁS - KRITIKUS FONTOSSÁGÚ:
+- Válaszolj magyarul, természetes beszédstílusban, mintha egy barátnak magyaráznád
+- TILOS markdown formázást használni: SOHA ne használj **, ##, ###, *, _, \`, stb. jeleket
+- KÖTELEZŐ sortöréseket használni a bekezdések között
+- Használj CSAK egyszerű szöveget
+- Minden bekezdés után tegyél egy üres sort
+- Felsorolásoknál használj egyszerű kötőjelet (-) vagy számokat (1., 2., 3.)
+- Lépésről lépésre magyarázd el, ha útmutatót adsz
+- Rövid, érthető mondatokat használj
+- Ha a dokumentáció más nyelven van, fordítsd le magyarra
+
+PÉLDA JÓ VÁLASZRA (figyeld a sortöréseket!):
+"Igen, tudsz háttérképet beállítani a Raconában!
+
+Így teheted meg:
+
+1. Nyisd meg a Beállítások alkalmazást
+2. Menj az Asztal menüpontra
+3. Válaszd ki a Háttér almenüt
+4. Itt három lehetőséged van: szín, kép vagy videó háttér
+
+Ha képet szeretnél:
+
+- Választhatsz az előre telepített képek közül
+- Vagy feltölthetsz saját képet (JPG, PNG, WebP formátumban)
+- A kép automatikusan igazodik a képernyő méretéhez
+
+Ennyi az egész!"`;
+			} else {
+				systemPrompt = `You are the official AI assistant for the Racona web-based operating system.
+
+Racona is a modern web-based operating system that runs in the browser with a desktop environment, applications, settings, and a plugin system.
+
+IMPORTANT RULES:
+1. ONLY answer questions about the Racona system
+2. ALWAYS base your answers on the attached documentation - if documentation is provided, you MUST use it
+3. If the question is NOT about Racona, politely explain that you can only answer Racona-specific questions
+4. If there is NO answer in the documentation, honestly say that you don't have information about this
+5. DO NOT make up information - only say what is in the documentation
+
+RESPONSE FORMATTING - CRITICAL:
+- Respond in English, using natural conversational style, as if explaining to a friend
+- NEVER use markdown formatting: NEVER use **, ##, ###, *, _, \`, etc.
+- You MUST use line breaks between paragraphs
+- Use ONLY plain text
+- Add an empty line after each paragraph
+- For lists, use simple dashes (-) or numbers (1., 2., 3.)
+- Explain step-by-step if providing instructions
+- Use short, clear sentences
+- If the documentation is in a different language, translate it to English
+
+EXAMPLE OF GOOD RESPONSE (notice the line breaks!):
+"Yes, you can set a background image in Racona!
+
+Here's how:
+
+1. Open the Settings application
+2. Go to the Desktop menu
+3. Select the Background submenu
+4. You have three options: color, image, or video background
+
+If you want an image:
+
+- Choose from pre-installed images
+- Or upload your own image (JPG, PNG, WebP formats)
+- The image automatically adjusts to your screen size
+
+That's it!"`;
+			}
+
+			// User message kiegészítése Knowledge Base kontextussal
+			let userMessage = data.message;
+			if (contextFromKnowledgeBase) {
+				userMessage += contextFromKnowledgeBase;
+				console.log('[AiChat] Knowledge Base kontextus hozzáadva a user message-hez:', {
+					originalMessage: data.message,
+					contextLength: contextFromKnowledgeBase.length,
+					fullMessage: userMessage.substring(0, 500) + '...'
+				});
+			} else {
+				console.log('[AiChat] Nincs Knowledge Base kontextus');
+			}
 
 			// Provider-specifikus API hívás
 			switch (provider) {
@@ -134,10 +300,10 @@ export const sendChatMessage = command(
 					// Conversation history formázása Gemini formátumra
 					const contents = [];
 
-					// System message hozzáadása a nyelvi beállítással
+					// System message hozzáadása a Racona-specifikus instrukcióval
 					contents.push({
 						role: 'user',
-						parts: [{ text: languageInstruction }]
+						parts: [{ text: systemPrompt }]
 					});
 					contents.push({
 						role: 'model',
@@ -155,7 +321,7 @@ export const sendChatMessage = command(
 					// Aktuális üzenet hozzáadása
 					contents.push({
 						role: 'user',
-						parts: [{ text: data.message }]
+						parts: [{ text: userMessage }]
 					});
 
 					const response = await fetch(apiUrl, {
@@ -184,7 +350,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 
@@ -201,10 +367,10 @@ export const sendChatMessage = command(
 					// Conversation history formázása OpenAI formátumra
 					const messages = [];
 
-					// System message hozzáadása a nyelvi beállítással
+					// System message hozzáadása a Racona-specifikus instrukcióval
 					messages.push({
 						role: 'system',
-						content: languageInstruction
+						content: systemPrompt
 					});
 
 					if (data.conversationHistory && data.conversationHistory.length > 0) {
@@ -218,7 +384,7 @@ export const sendChatMessage = command(
 					// Aktuális üzenet hozzáadása
 					messages.push({
 						role: 'user',
-						content: data.message
+						content: userMessage
 					});
 
 					const response = await fetch(url, {
@@ -253,7 +419,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 
@@ -270,10 +436,10 @@ export const sendChatMessage = command(
 					// Conversation history formázása OpenAI formátumra
 					const messages = [];
 
-					// System message hozzáadása a nyelvi beállítással
+					// System message hozzáadása a Racona-specifikus instrukcióval
 					messages.push({
 						role: 'system',
-						content: languageInstruction
+						content: systemPrompt
 					});
 
 					if (data.conversationHistory && data.conversationHistory.length > 0) {
@@ -287,7 +453,7 @@ export const sendChatMessage = command(
 					// Aktuális üzenet hozzáadása
 					messages.push({
 						role: 'user',
-						content: data.message
+						content: userMessage
 					});
 
 					const response = await fetch(url, {
@@ -322,7 +488,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 
@@ -343,10 +509,10 @@ export const sendChatMessage = command(
 					// Conversation history formázása Anthropic formátumra
 					const messages = [];
 
-					// System message hozzáadása a nyelvi beállítással
+					// System message hozzáadása a Racona-specifikus instrukcióval
 					messages.push({
 						role: 'user',
-						content: languageInstruction
+						content: systemPrompt
 					});
 					messages.push({
 						role: 'assistant',
@@ -364,7 +530,7 @@ export const sendChatMessage = command(
 					// Aktuális üzenet hozzáadása
 					messages.push({
 						role: 'user',
-						content: data.message
+						content: userMessage
 					});
 
 					const response = await fetch(url, {
@@ -401,7 +567,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 
@@ -421,13 +587,13 @@ export const sendChatMessage = command(
 					const apiUrl = baseUrl ? url : `https://api-inference.huggingface.co/models/${model}`;
 
 					// Hugging Face Inference API egyszerűbb formátum
-					let prompt = `${languageInstruction}\n\n${data.message}`;
+					let prompt = `${systemPrompt}\n\n${userMessage}`;
 					if (data.conversationHistory && data.conversationHistory.length > 0) {
 						// Conversation history hozzáfűzése a prompthoz
 						const history = data.conversationHistory
 							.map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
 							.join('\n');
-						prompt = `${languageInstruction}\n\n${history}\nUser: ${data.message}\nAssistant:`;
+						prompt = `${systemPrompt}\n\n${history}\nUser: ${userMessage}\nAssistant:`;
 					}
 
 					const response = await fetch(apiUrl, {
@@ -465,7 +631,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 
@@ -480,10 +646,10 @@ export const sendChatMessage = command(
 					// OpenAI-kompatibilis formátum
 					const messages = [];
 
-					// System message hozzáadása a nyelvi beállítással
+					// System message hozzáadása a Racona-specifikus instrukcióval
 					messages.push({
 						role: 'system',
-						content: languageInstruction
+						content: systemPrompt
 					});
 
 					if (data.conversationHistory && data.conversationHistory.length > 0) {
@@ -496,7 +662,7 @@ export const sendChatMessage = command(
 					}
 					messages.push({
 						role: 'user',
-						content: data.message
+						content: userMessage
 					});
 
 					const response = await fetch(baseUrl, {
@@ -537,7 +703,7 @@ export const sendChatMessage = command(
 
 					return {
 						success: true,
-						response: text
+						response: text + (dev ? knowledgeBaseInfo : '')
 					};
 				}
 

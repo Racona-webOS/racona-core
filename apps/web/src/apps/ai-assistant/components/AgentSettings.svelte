@@ -12,6 +12,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import { useI18n } from '$lib/i18n/hooks';
+	import KnowledgeBaseAdminPanel from './KnowledgeBaseAdminPanel.svelte';
 	import {
 		getAgentConfig,
 		saveAgentConfig,
@@ -19,7 +20,7 @@
 		getAvailableProviders
 	} from '../agent-config.remote.js';
 	import type { AgentConfigWithMaskedKey } from '$lib/server/database/repositories';
-	import { Eye, EyeOff, TestTube } from 'lucide-svelte';
+	import { Eye, EyeOff, TestTube, Database } from 'lucide-svelte';
 
 	const { t } = useI18n();
 
@@ -56,6 +57,7 @@
 	let showApiKey = $state(false);
 	let showAdvanced = $state(false);
 	let apiKeyChanged = $state(false); // Jelzi, hogy az API key megváltozott-e
+	let activeTab = $state<'agent' | 'knowledge-base'>('agent');
 
 	// -------------------------------------------------------------------------
 	// Derived
@@ -230,137 +232,164 @@
 			<span>{t('ai-assistant.agent.loading')}</span>
 		</div>
 	{:else}
-		<div class="agent-settings__content">
-			<!-- Provider választó -->
-			<div class="agent-settings__field">
-				<Label for="provider">{t('ai-assistant.agent.provider')}</Label>
-				<select id="provider" bind:value={provider} class="agent-settings__select">
-					{#each providers as prov (prov.value)}
-						<option value={prov.value}>
-							{prov.label}
-							{#if prov.recommended}
-								({t('ai-assistant.agent.recommended')})
-							{/if}
-						</option>
-					{/each}
-				</select>
-			</div>
+		<!-- Tab Navigation -->
+		<div class="agent-settings__tabs">
+			<button
+				type="button"
+				class="agent-settings__tab {activeTab === 'agent' ? 'active' : ''}"
+				onclick={() => (activeTab = 'agent')}
+			>
+				<TestTube class="h-4 w-4" />
+				{t('ai-assistant.agent.title')}
+			</button>
+			<button
+				type="button"
+				class="agent-settings__tab {activeTab === 'knowledge-base' ? 'active' : ''}"
+				onclick={() => (activeTab = 'knowledge-base')}
+			>
+				<Database class="h-4 w-4" />
+				{t('ai-assistant.knowledgeBase.title')}
+			</button>
+		</div>
 
-			<!-- API Key -->
-			<div class="agent-settings__field">
-				<Label for="api-key">{t('ai-assistant.agent.apiKey')}</Label>
-				<div class="agent-settings__input-group">
-					<Input
-						id="api-key"
-						type={showApiKey ? 'text' : 'password'}
-						value={apiKey}
-						oninput={handleApiKeyChange}
-						placeholder={t('ai-assistant.agent.apiKeyPlaceholder')}
-					/>
-					<button
-						type="button"
-						class="agent-settings__toggle-btn"
-						onclick={() => (showApiKey = !showApiKey)}
-						aria-label={showApiKey
-							? t('ai-assistant.agent.hideApiKey')
-							: t('ai-assistant.agent.showApiKey')}
-					>
-						{#if showApiKey}
-							<EyeOff class="h-4 w-4" />
-						{:else}
-							<Eye class="h-4 w-4" />
-						{/if}
-					</button>
-				</div>
-				<p class="agent-settings__hint">{t('ai-assistant.agent.apiKeyHint')}</p>
-			</div>
+		<!-- Tab Content -->
+		<div class="agent-settings__tab-content">
+			{#if activeTab === 'agent'}
+				<div class="agent-settings__content">
+					<!-- Provider választó -->
+					<div class="agent-settings__field">
+						<Label for="provider">{t('ai-assistant.agent.provider')}</Label>
+						<select id="provider" bind:value={provider} class="agent-settings__select">
+							{#each providers as prov (prov.value)}
+								<option value={prov.value}>
+									{prov.label}
+									{#if prov.recommended}
+										({t('ai-assistant.agent.recommended')})
+									{/if}
+								</option>
+							{/each}
+						</select>
+					</div>
 
-			<!-- Model név -->
-			<div class="agent-settings__field">
-				<Label for="model-name">{t('ai-assistant.agent.modelName')}</Label>
-				<Input
-					id="model-name"
-					type="text"
-					bind:value={modelName}
-					placeholder={t('ai-assistant.agent.modelNamePlaceholder')}
-				/>
-				<p class="agent-settings__hint">{t('ai-assistant.agent.modelNameHint')}</p>
-			</div>
-
-			<!-- Advanced beállítások -->
-			<div class="agent-settings__advanced">
-				<button
-					type="button"
-					class="agent-settings__advanced-toggle"
-					onclick={() => (showAdvanced = !showAdvanced)}
-				>
-					{showAdvanced
-						? t('ai-assistant.agent.hideAdvanced')
-						: t('ai-assistant.agent.showAdvanced')}
-				</button>
-
-				{#if showAdvanced}
-					<div class="agent-settings__advanced-content">
-						<!-- Base URL -->
-						<div class="agent-settings__field">
-							<Label for="base-url">{t('ai-assistant.agent.baseUrl')}</Label>
+					<!-- API Key -->
+					<div class="agent-settings__field">
+						<Label for="api-key">{t('ai-assistant.agent.apiKey')}</Label>
+						<div class="agent-settings__input-group">
 							<Input
-								id="base-url"
-								type="text"
-								bind:value={baseUrl}
-								placeholder={t('ai-assistant.agent.baseUrlPlaceholder')}
+								id="api-key"
+								type={showApiKey ? 'text' : 'password'}
+								value={apiKey}
+								oninput={handleApiKeyChange}
+								placeholder={t('ai-assistant.agent.apiKeyPlaceholder')}
 							/>
-							<p class="agent-settings__hint">{t('ai-assistant.agent.baseUrlHint')}</p>
+							<button
+								type="button"
+								class="agent-settings__toggle-btn"
+								onclick={() => (showApiKey = !showApiKey)}
+								aria-label={showApiKey
+									? t('ai-assistant.agent.hideApiKey')
+									: t('ai-assistant.agent.showApiKey')}
+							>
+								{#if showApiKey}
+									<EyeOff class="h-4 w-4" />
+								{:else}
+									<Eye class="h-4 w-4" />
+								{/if}
+							</button>
 						</div>
+						<p class="agent-settings__hint">{t('ai-assistant.agent.apiKeyHint')}</p>
+					</div>
 
-						<!-- Max Tokens -->
-						<div class="agent-settings__field">
-							<Label for="max-tokens">
-								{t('ai-assistant.agent.maxTokens')}: {maxTokens}
-							</Label>
-							<Slider
-								id="max-tokens"
-								type="single"
-								min={100}
-								max={4000}
-								step={100}
-								bind:value={maxTokens}
-							/>
-						</div>
+					<!-- Model név -->
+					<div class="agent-settings__field">
+						<Label for="model-name">{t('ai-assistant.agent.modelName')}</Label>
+						<Input
+							id="model-name"
+							type="text"
+							bind:value={modelName}
+							placeholder={t('ai-assistant.agent.modelNamePlaceholder')}
+						/>
+						<p class="agent-settings__hint">{t('ai-assistant.agent.modelNameHint')}</p>
+					</div>
 
-						<!-- Temperature -->
-						<div class="agent-settings__field">
-							<Label for="temperature">
-								{t('ai-assistant.agent.temperature')}: {temperature.toFixed(2)}
-							</Label>
-							<Slider
-								id="temperature"
-								type="single"
-								min={0}
-								max={1}
-								step={0.01}
-								bind:value={temperature}
-							/>
+					<!-- Advanced beállítások -->
+					<div class="agent-settings__advanced">
+						<button
+							type="button"
+							class="agent-settings__advanced-toggle"
+							onclick={() => (showAdvanced = !showAdvanced)}
+						>
+							{showAdvanced
+								? t('ai-assistant.agent.hideAdvanced')
+								: t('ai-assistant.agent.showAdvanced')}
+						</button>
+
+						{#if showAdvanced}
+							<div class="agent-settings__advanced-content">
+								<!-- Base URL -->
+								<div class="agent-settings__field">
+									<Label for="base-url">{t('ai-assistant.agent.baseUrl')}</Label>
+									<Input
+										id="base-url"
+										type="text"
+										bind:value={baseUrl}
+										placeholder={t('ai-assistant.agent.baseUrlPlaceholder')}
+									/>
+									<p class="agent-settings__hint">{t('ai-assistant.agent.baseUrlHint')}</p>
+								</div>
+
+								<!-- Max Tokens -->
+								<div class="agent-settings__field">
+									<Label for="max-tokens">
+										{t('ai-assistant.agent.maxTokens')}: {maxTokens}
+									</Label>
+									<Slider
+										id="max-tokens"
+										type="single"
+										min={100}
+										max={4000}
+										step={100}
+										bind:value={maxTokens}
+									/>
+								</div>
+
+								<!-- Temperature -->
+								<div class="agent-settings__field">
+									<Label for="temperature">
+										{t('ai-assistant.agent.temperature')}: {temperature.toFixed(2)}
+									</Label>
+									<Slider
+										id="temperature"
+										type="single"
+										min={0}
+										max={1}
+										step={0.01}
+										bind:value={temperature}
+									/>
+								</div>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Gombok -->
+					<div class="agent-settings__actions">
+						<Button variant="outline" onclick={handleTest} disabled={testing || saving}>
+							<TestTube class="mr-2 h-4 w-4" />
+							{testing ? t('ai-assistant.agent.testing') : t('ai-assistant.agent.testConnection')}
+						</Button>
+						<div class="agent-settings__actions-right">
+							<Button variant="outline" onclick={handleCancel} disabled={saving || !hasChanges}>
+								{t('ai-assistant.agent.cancel')}
+							</Button>
+							<Button onclick={handleSave} disabled={saving || !hasChanges}>
+								{saving ? t('ai-assistant.agent.saving') : t('ai-assistant.agent.save')}
+							</Button>
 						</div>
 					</div>
-				{/if}
-			</div>
-
-			<!-- Gombok -->
-			<div class="agent-settings__actions">
-				<Button variant="outline" onclick={handleTest} disabled={testing || saving}>
-					<TestTube class="mr-2 h-4 w-4" />
-					{testing ? t('ai-assistant.agent.testing') : t('ai-assistant.agent.testConnection')}
-				</Button>
-				<div class="agent-settings__actions-right">
-					<Button variant="outline" onclick={handleCancel} disabled={saving || !hasChanges}>
-						{t('ai-assistant.agent.cancel')}
-					</Button>
-					<Button onclick={handleSave} disabled={saving || !hasChanges}>
-						{saving ? t('ai-assistant.agent.saving') : t('ai-assistant.agent.save')}
-					</Button>
 				</div>
-			</div>
+			{:else if activeTab === 'knowledge-base'}
+				<KnowledgeBaseAdminPanel />
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -369,9 +398,64 @@
 	.agent-settings {
 		display: flex;
 		flex-direction: column;
-		padding: 1.5rem;
 		height: 100%;
-		overflow-y: auto;
+		overflow: hidden;
+	}
+
+	.agent-settings__tabs {
+		display: flex;
+		border-bottom: 1px solid var(--color-neutral-200);
+		background: var(--color-neutral-50);
+	}
+
+	:global(.dark) .agent-settings__tabs {
+		border-bottom-color: var(--color-neutral-700);
+		background: var(--color-neutral-800);
+	}
+
+	.agent-settings__tab {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		transition: all 0.2s;
+		cursor: pointer;
+		border: none;
+		border-bottom: 2px solid transparent;
+		background: none;
+		padding: 0.75rem 1rem;
+		color: var(--color-neutral-600);
+		font-weight: 500;
+		font-size: 0.875rem;
+	}
+
+	.agent-settings__tab:hover {
+		background: var(--color-neutral-100);
+		color: var(--color-neutral-900);
+	}
+
+	.agent-settings__tab.active {
+		border-bottom-color: var(--color-primary-500);
+		background: var(--color-white);
+		color: var(--color-primary-600);
+	}
+
+	:global(.dark) .agent-settings__tab {
+		color: var(--color-neutral-400);
+	}
+
+	:global(.dark) .agent-settings__tab:hover {
+		background: var(--color-neutral-700);
+		color: var(--color-neutral-100);
+	}
+
+	:global(.dark) .agent-settings__tab.active {
+		background: var(--color-neutral-900);
+		color: var(--color-primary-400);
+	}
+
+	.agent-settings__tab-content {
+		flex: 1;
+		overflow: hidden;
 	}
 
 	.agent-settings__loading {
@@ -404,7 +488,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+		padding: 1.5rem;
 		max-width: 600px;
+		overflow-y: auto;
 	}
 
 	.agent-settings__field {

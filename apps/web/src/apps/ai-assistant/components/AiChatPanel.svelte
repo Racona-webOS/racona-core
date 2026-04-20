@@ -225,6 +225,7 @@
 							<div class="max-w-[80%]">
 								<div
 									class="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-3 py-2 text-sm"
+									style="white-space: pre-wrap;"
 								>
 									{message.content}
 								</div>
@@ -243,7 +244,9 @@
 										? '#fef2f2'
 										: 'var(--muted)'}; color: {message.isError
 										? '#b91c1c'
-										: 'inherit'}; border: {message.isError ? '1px solid #fecaca' : 'none'};"
+										: 'inherit'}; border: {message.isError
+										? '1px solid #fecaca'
+										: 'none'}; white-space: pre-wrap;"
 								>
 									{#if message.isError}
 										<small style="color: blue; font-weight: bold;">[ERROR]</small>

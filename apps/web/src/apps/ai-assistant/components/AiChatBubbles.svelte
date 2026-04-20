@@ -53,7 +53,7 @@
 		aria-live="polite"
 		aria-relevant="additions"
 	>
-		<div class="flex flex-col gap-3">
+		<div class="flex flex-col gap-3 select-text">
 			{#each messages as message (message.id)}
 				{#if message.role === 'user'}
 					<UserMessage {message} {formatTime} />
@@ -102,7 +102,7 @@
 		animation: bubble-fade-in 0.3s ease;
 		padding: 1rem;
 		padding-bottom: 0.5rem;
-		width: 400px;
+		width: 600px;
 		max-width: calc(100vw - 320px);
 		max-height: 50vh;
 		overflow-y: auto;

@@ -52,7 +52,7 @@
 		gap: 0.5rem;
 		z-index: 9997;
 		animation: input-slide-in 0.3s ease;
-		width: 400px;
+		width: 600px;
 		max-width: calc(100vw - 320px);
 	}
 

@@ -14,7 +14,10 @@
 
 <div class="chat-bubble flex justify-end">
 	<div class="max-w-[80%]">
-		<div class="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-3 py-2 text-sm">
+		<div
+			class="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-3 py-2 text-sm"
+			style="white-space: pre-wrap;"
+		>
 			{message.content}
 		</div>
 		<p class="text-muted-foreground mt-0.5 text-right text-xs">

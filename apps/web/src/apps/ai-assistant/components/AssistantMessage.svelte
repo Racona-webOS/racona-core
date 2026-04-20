@@ -20,7 +20,9 @@
 				? '#fef2f2'
 				: 'var(--muted)'}; color: {message.isError
 				? '#b91c1c'
-				: 'inherit'}; border: {message.isError ? '1px solid #fecaca' : 'none'};"
+				: 'inherit'}; border: {message.isError
+				? '1px solid #fecaca'
+				: 'none'}; white-space: pre-wrap;"
 		>
 			{message.content}
 		</div>

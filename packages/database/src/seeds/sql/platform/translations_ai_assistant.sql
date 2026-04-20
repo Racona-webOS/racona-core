@@ -194,3 +194,77 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'agent.testSuccess', 'Connection tested successfully'),
 ('en', 'ai-assistant', 'agent.testError', 'Error testing connection')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+-- -----------------------------------------------------------------------------
+-- Knowledge Base admin fordítások - MAGYAR
+-- Requirements: 3.4, 3.5, 18.1
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'ai-assistant', 'knowledgeBase.loading', 'Betöltés...'),
+('hu', 'ai-assistant', 'knowledgeBase.statusLoadError', 'Hiba történt a státusz betöltése során'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexSuccess', 'Újraindexelés sikeresen befejezve'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexError', 'Hiba történt az újraindexelés során'),
+('hu', 'ai-assistant', 'knowledgeBase.neverIndexed', 'Soha'),
+('hu', 'ai-assistant', 'knowledgeBase.totalDocuments', 'Összes dokumentum'),
+('hu', 'ai-assistant', 'knowledgeBase.totalChunks', 'Összes chunk'),
+('hu', 'ai-assistant', 'knowledgeBase.uptime', 'Üzemidő'),
+('hu', 'ai-assistant', 'knowledgeBase.languageDetails', 'Nyelvi részletek'),
+('hu', 'ai-assistant', 'knowledgeBase.loaded', 'Betöltve'),
+('hu', 'ai-assistant', 'knowledgeBase.notLoaded', 'Nincs betöltve'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexing', 'Újraindexelés...'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexLanguage', 'Újraindexelés'),
+('hu', 'ai-assistant', 'knowledgeBase.documents', 'Dokumentumok'),
+('hu', 'ai-assistant', 'knowledgeBase.chunks', 'Chunk-ok'),
+('hu', 'ai-assistant', 'knowledgeBase.lastIndexed', 'Utolsó indexelés'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexingAll', 'Összes újraindexelése...'),
+('hu', 'ai-assistant', 'knowledgeBase.reindexAll', 'Összes újraindexelése'),
+('hu', 'ai-assistant', 'knowledgeBase.refreshStatus', 'Státusz frissítése'),
+('hu', 'ai-assistant', 'knowledgeBase.statusUnavailable', 'A státusz nem elérhető'),
+('hu', 'ai-assistant', 'knowledgeBase.retry', 'Újrapróbálás')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Knowledge Base admin fordítások - ANGOL
+-- Requirements: 3.4, 3.5, 18.1
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'ai-assistant', 'knowledgeBase.loading', 'Loading...'),
+('en', 'ai-assistant', 'knowledgeBase.statusLoadError', 'Error loading status'),
+('en', 'ai-assistant', 'knowledgeBase.reindexSuccess', 'Reindexing completed successfully'),
+('en', 'ai-assistant', 'knowledgeBase.reindexError', 'Error during reindexing'),
+('en', 'ai-assistant', 'knowledgeBase.neverIndexed', 'Never'),
+('en', 'ai-assistant', 'knowledgeBase.totalDocuments', 'Total Documents'),
+('en', 'ai-assistant', 'knowledgeBase.totalChunks', 'Total Chunks'),
+('en', 'ai-assistant', 'knowledgeBase.uptime', 'Uptime'),
+('en', 'ai-assistant', 'knowledgeBase.languageDetails', 'Language Details'),
+('en', 'ai-assistant', 'knowledgeBase.loaded', 'Loaded'),
+('en', 'ai-assistant', 'knowledgeBase.notLoaded', 'Not Loaded'),
+('en', 'ai-assistant', 'knowledgeBase.reindexing', 'Reindexing...'),
+('en', 'ai-assistant', 'knowledgeBase.reindexLanguage', 'Reindex'),
+('en', 'ai-assistant', 'knowledgeBase.documents', 'Documents'),
+('en', 'ai-assistant', 'knowledgeBase.chunks', 'Chunks'),
+('en', 'ai-assistant', 'knowledgeBase.lastIndexed', 'Last Indexed'),
+('en', 'ai-assistant', 'knowledgeBase.reindexingAll', 'Reindexing All...'),
+('en', 'ai-assistant', 'knowledgeBase.reindexAll', 'Reindex All'),
+('en', 'ai-assistant', 'knowledgeBase.refreshStatus', 'Refresh Status'),
+('en', 'ai-assistant', 'knowledgeBase.statusUnavailable', 'Status unavailable'),
+('en', 'ai-assistant', 'knowledgeBase.retry', 'Retry')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+-- -----------------------------------------------------------------------------
+-- Agent Settings tab címek - MAGYAR
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'ai-assistant', 'agent.title', 'AI Agent'),
+('hu', 'ai-assistant', 'knowledgeBase.title', 'Tudásbázis')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Agent Settings tab címek - ANGOL
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'ai-assistant', 'agent.title', 'AI Agent'),
+('en', 'ai-assistant', 'knowledgeBase.title', 'Knowledge Base')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
