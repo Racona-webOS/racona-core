@@ -7,7 +7,7 @@
 export type { TaskbarPosition, BackgroundType } from './desktopEnviroment.js';
 
 // Beállítások típusok
-export type { BackgroundSettings, UserSettings } from './settings.js';
+export type { BackgroundSettings, UserSettings, TTSSettings } from './settings.js';
 
 export { DEFAULT_USER_SETTINGS } from './settings.js';
 

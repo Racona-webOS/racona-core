@@ -1,0 +1,1 @@
+DROP TABLE "platform"."ai_agent_configs" CASCADE;

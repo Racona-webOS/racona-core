@@ -3,9 +3,10 @@
 -->
 <script lang="ts">
 	import type { ChatMessage } from '../types/index.js';
-	import { ExternalLink } from 'lucide-svelte';
+	import { ExternalLink, Volume2, VolumeX, Pause, Play } from 'lucide-svelte';
 	import { getWindowManager } from '$lib/stores';
 	import { getAppByName } from '$lib/services/client/appRegistry';
+	import { getAiAssistantStore } from '../stores/aiAssistantStore.svelte.js';
 
 	interface Props {
 		message: ChatMessage;
@@ -15,6 +16,14 @@
 	let { message, formatTime }: Props = $props();
 
 	const windowManager = getWindowManager();
+	const aiStore = getAiAssistantStore();
+
+	const isCurrentlySpeaking = $derived(
+		aiStore.tts.status === 'speaking' && aiStore.tts.currentMessageId === message.id
+	);
+	const isCurrentlyPaused = $derived(
+		aiStore.tts.status === 'paused' && aiStore.tts.currentMessageId === message.id
+	);
 
 	async function handleOpenApp() {
 		if (!message.suggestedApp) return;
@@ -30,6 +39,20 @@
 		} catch (error) {
 			console.error('Failed to open suggested app:', error);
 		}
+	}
+
+	function handleSpeak() {
+		if (isCurrentlySpeaking) {
+			aiStore.tts.pause();
+		} else if (isCurrentlyPaused) {
+			aiStore.tts.resume();
+		} else {
+			aiStore.tts.speak(message.content, message.id);
+		}
+	}
+
+	function handleStop() {
+		aiStore.tts.stop();
 	}
 </script>
 
@@ -47,15 +70,49 @@
 		>
 			{message.content}
 		</div>
-		{#if message.suggestedApp}
-			<button
-				onclick={handleOpenApp}
-				class="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-			>
-				<ExternalLink class="h-3.5 w-3.5" />
-				Megnyitás
-			</button>
-		{/if}
+		<div class="mt-2 flex items-center gap-2">
+			{#if message.suggestedApp}
+				<button
+					onclick={handleOpenApp}
+					class="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+				>
+					<ExternalLink class="h-3.5 w-3.5" />
+					Megnyitás
+				</button>
+			{/if}
+
+			{#if !message.isError && aiStore.tts.isSupported && aiStore.tts.enabled}
+				<div class="flex items-center gap-1">
+					<button
+						onclick={handleSpeak}
+						class="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-colors"
+						title={isCurrentlySpeaking
+							? 'Szüneteltetés'
+							: isCurrentlyPaused
+								? 'Folytatás'
+								: 'Felolvasás'}
+					>
+						{#if isCurrentlySpeaking}
+							<Pause class="h-3.5 w-3.5" />
+						{:else if isCurrentlyPaused}
+							<Play class="h-3.5 w-3.5" />
+						{:else}
+							<Volume2 class="h-3.5 w-3.5" />
+						{/if}
+					</button>
+
+					{#if isCurrentlySpeaking || isCurrentlyPaused}
+						<button
+							onclick={handleStop}
+							class="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-colors"
+							title="Leállítás"
+						>
+							<VolumeX class="h-3.5 w-3.5" />
+						</button>
+					{/if}
+				</div>
+			{/if}
+		</div>
 		<p class="text-muted-foreground mt-0.5 text-xs">
 			{formatTime(message.timestamp)}
 		</p>

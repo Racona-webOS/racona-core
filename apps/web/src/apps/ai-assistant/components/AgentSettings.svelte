@@ -13,6 +13,7 @@
 	import { Slider } from '$lib/components/ui/slider';
 	import { useI18n } from '$lib/i18n/hooks';
 	import KnowledgeBaseAdminPanel from './KnowledgeBaseAdminPanel.svelte';
+	import TTSSettings from './TTSSettings.svelte';
 	import {
 		getAgentConfig,
 		saveAgentConfig,
@@ -20,7 +21,7 @@
 		getAvailableProviders
 	} from '../agent-config.remote.js';
 	import type { AgentConfigWithMaskedKey } from '$lib/server/database/repositories';
-	import { Eye, EyeOff, TestTube, Database } from 'lucide-svelte';
+	import { Eye, EyeOff, TestTube, Database, Volume2 } from 'lucide-svelte';
 
 	const { t } = useI18n();
 
@@ -57,7 +58,7 @@
 	let showApiKey = $state(false);
 	let showAdvanced = $state(false);
 	let apiKeyChanged = $state(false); // Jelzi, hogy az API key megváltozott-e
-	let activeTab = $state<'agent' | 'knowledge-base'>('agent');
+	let activeTab = $state<'agent' | 'knowledge-base' | 'tts'>('agent');
 
 	// -------------------------------------------------------------------------
 	// Derived
@@ -250,6 +251,14 @@
 				<Database class="h-4 w-4" />
 				{t('ai-assistant.knowledgeBase.title')}
 			</button>
+			<button
+				type="button"
+				class="agent-settings__tab {activeTab === 'tts' ? 'active' : ''}"
+				onclick={() => (activeTab = 'tts')}
+			>
+				<Volume2 class="h-4 w-4" />
+				Felolvasás
+			</button>
 		</div>
 
 		<!-- Tab Content -->
@@ -389,6 +398,8 @@
 				</div>
 			{:else if activeTab === 'knowledge-base'}
 				<KnowledgeBaseAdminPanel />
+			{:else if activeTab === 'tts'}
+				<TTSSettings />
 			{/if}
 		</div>
 	{/if}

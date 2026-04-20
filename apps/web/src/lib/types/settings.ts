@@ -33,6 +33,21 @@ export interface DesktopSettings {
 	clickMode: DesktopClickMode;
 }
 
+export interface TTSSettings {
+	/** Felolvasás engedélyezve */
+	enabled: boolean;
+	/** Automatikus felolvasás új válaszoknál */
+	autoPlay: boolean;
+	/** Felolvasás sebessége (0.1 - 10) */
+	rate: number;
+	/** Hang magassága (0 - 2) */
+	pitch: number;
+	/** Hangerő (0 - 1) */
+	volume: number;
+	/** Kiválasztott hang neve */
+	selectedVoice: string | null;
+}
+
 export interface UserSettings {
 	windowPreview: boolean;
 	screenshotThumbnailHeight: number;
@@ -44,6 +59,8 @@ export interface UserSettings {
 	desktop: DesktopSettings;
 	/** Felhasználó nyelvi preferenciája (pl. "hu", "en"). */
 	locale?: string;
+	/** Text-to-Speech beállítások */
+	tts?: TTSSettings;
 }
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
@@ -54,5 +71,13 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
 	theme: DEFAULTS.THEME,
 	taskbar: DEFAULTS.TASKBAR,
 	startMenu: DEFAULTS.START_MENU,
-	desktop: DEFAULTS.DESKTOP
+	desktop: DEFAULTS.DESKTOP,
+	tts: {
+		enabled: true,
+		autoPlay: false,
+		rate: 1.0,
+		pitch: 1.0,
+		volume: 1.0,
+		selectedVoice: null
+	}
 };

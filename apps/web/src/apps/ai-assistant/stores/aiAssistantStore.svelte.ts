@@ -11,6 +11,7 @@ import type {
 	ResponseCacheEntry
 } from '../types/index.js';
 import { sendChatMessage, getWelcomeMessage } from '../chat.remote.js';
+import { getTTSService } from '../services/tts.svelte.js';
 
 const AI_ASSISTANT_STORE_KEY = Symbol('aiAssistantStore');
 
@@ -110,6 +111,9 @@ class AiAssistantStore {
 	headAnimationMode = $state<'idle' | 'idle2' | 'typing' | 'breathing'>('idle'); // Fej animáció állapot
 	avatarModelUrl = $state<string | undefined>(undefined); // Avatar modell URL
 	#userId: string | null = null; // Aktuális felhasználó ID-ja
+
+	// --- TTS service ---
+	tts = getTTSService();
 
 	// --- Derived értékek ---
 	readonly hasMessages = $derived(this.messages.length > 0);
@@ -572,6 +576,14 @@ class AiAssistantStore {
 		this.messages = [...this.messages, assistantMessage].slice(-this.#config.maxHistoryLength);
 		// NE változtassuk meg a currentEmotion-t - így nincs animáció
 		// this.currentEmotion = emotion;
+
+		// Automatikus felolvasás, ha be van kapcsolva és nem hibaüzenet
+		if (this.tts.enabled && this.tts.autoPlay && !isError) {
+			// Kis késleltetés, hogy a UI frissüljön
+			setTimeout(() => {
+				this.tts.speak(content, assistantMessage.id);
+			}, 300);
+		}
 	}
 }
 

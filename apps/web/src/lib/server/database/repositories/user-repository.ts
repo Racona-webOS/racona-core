@@ -200,6 +200,10 @@ export class UserRepository {
 			desktop: {
 				...DEFAULT_USER_SETTINGS.desktop,
 				...((user.userSettings as Partial<UserSettings>)?.desktop || {})
+			},
+			tts: {
+				...DEFAULT_USER_SETTINGS.tts,
+				...((user.userSettings as Partial<UserSettings>)?.tts || {})
 			}
 		};
 	}

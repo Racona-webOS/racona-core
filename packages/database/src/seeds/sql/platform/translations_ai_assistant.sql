@@ -268,3 +268,63 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'agent.title', 'AI Agent'),
 ('en', 'ai-assistant', 'knowledgeBase.title', 'Knowledge Base')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- TTS (Text-to-Speech) beállítások fordítások - MAGYAR
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'ai-assistant', 'tts.title', 'Felolvasás'),
+('hu', 'ai-assistant', 'tts.loading', 'Betöltés...'),
+('hu', 'ai-assistant', 'tts.notSupported', 'A böngésző nem támogatja a felolvasást (Web Speech API).'),
+('hu', 'ai-assistant', 'tts.enabled', 'Felolvasás engedélyezése'),
+('hu', 'ai-assistant', 'tts.enabledHint', 'Megjeleníti a felolvasás gombot az asszisztens üzeneteinél'),
+('hu', 'ai-assistant', 'tts.autoPlay', 'Automatikus felolvasás'),
+('hu', 'ai-assistant', 'tts.autoPlayHint', 'Automatikusan felolvassa az új asszisztens válaszokat'),
+('hu', 'ai-assistant', 'tts.voice', 'Hang'),
+('hu', 'ai-assistant', 'tts.voiceHint', 'Válassz hangot a felolvasáshoz (magyar hang ajánlott)'),
+('hu', 'ai-assistant', 'tts.rate', 'Sebesség'),
+('hu', 'ai-assistant', 'tts.rateHint', 'Felolvasás sebessége (0.5x = lassú, 2x = gyors)'),
+('hu', 'ai-assistant', 'tts.pitch', 'Hangmagasság'),
+('hu', 'ai-assistant', 'tts.pitchHint', 'Hang magassága (0.5 = mély, 2 = magas)'),
+('hu', 'ai-assistant', 'tts.volume', 'Hangerő'),
+('hu', 'ai-assistant', 'tts.volumeHint', 'Felolvasás hangereje'),
+('hu', 'ai-assistant', 'tts.test', 'Teszt felolvasás'),
+('hu', 'ai-assistant', 'tts.saveSuccess', 'Beállítások mentve'),
+('hu', 'ai-assistant', 'tts.saveError', 'Mentés sikertelen'),
+('hu', 'ai-assistant', 'tts.loadError', 'Beállítások betöltése sikertelen'),
+('hu', 'ai-assistant', 'tts.speak', 'Felolvasás'),
+('hu', 'ai-assistant', 'tts.pause', 'Szüneteltetés'),
+('hu', 'ai-assistant', 'tts.resume', 'Folytatás'),
+('hu', 'ai-assistant', 'tts.stop', 'Leállítás')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- TTS (Text-to-Speech) beállítások fordítások - ANGOL
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'ai-assistant', 'tts.title', 'Text-to-Speech'),
+('en', 'ai-assistant', 'tts.loading', 'Loading...'),
+('en', 'ai-assistant', 'tts.notSupported', 'Your browser does not support text-to-speech (Web Speech API).'),
+('en', 'ai-assistant', 'tts.enabled', 'Enable text-to-speech'),
+('en', 'ai-assistant', 'tts.enabledHint', 'Shows the speak button on assistant messages'),
+('en', 'ai-assistant', 'tts.autoPlay', 'Auto-play'),
+('en', 'ai-assistant', 'tts.autoPlayHint', 'Automatically reads new assistant responses'),
+('en', 'ai-assistant', 'tts.voice', 'Voice'),
+('en', 'ai-assistant', 'tts.voiceHint', 'Select a voice for text-to-speech'),
+('en', 'ai-assistant', 'tts.rate', 'Speed'),
+('en', 'ai-assistant', 'tts.rateHint', 'Speech rate (0.5x = slow, 2x = fast)'),
+('en', 'ai-assistant', 'tts.pitch', 'Pitch'),
+('en', 'ai-assistant', 'tts.pitchHint', 'Voice pitch (0.5 = low, 2 = high)'),
+('en', 'ai-assistant', 'tts.volume', 'Volume'),
+('en', 'ai-assistant', 'tts.volumeHint', 'Speech volume'),
+('en', 'ai-assistant', 'tts.test', 'Test speech'),
+('en', 'ai-assistant', 'tts.saveSuccess', 'Settings saved'),
+('en', 'ai-assistant', 'tts.saveError', 'Failed to save settings'),
+('en', 'ai-assistant', 'tts.loadError', 'Failed to load settings'),
+('en', 'ai-assistant', 'tts.speak', 'Speak'),
+('en', 'ai-assistant', 'tts.pause', 'Pause'),
+('en', 'ai-assistant', 'tts.resume', 'Resume'),
+('en', 'ai-assistant', 'tts.stop', 'Stop')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

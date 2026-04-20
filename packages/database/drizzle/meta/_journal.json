@@ -15,6 +15,20 @@
       "when": 1776469500092,
       "tag": "0001_left_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776689872544,
+      "tag": "0002_left_jackpot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776690454941,
+      "tag": "0003_hot_cobalt_man",
+      "breakpoints": true
     }
   ]
 }
