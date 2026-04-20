@@ -19,6 +19,11 @@ export interface ChatMessage {
 	emotionState?: EmotionState;
 	/** Hibaüzenet-e (piros háttér) */
 	isError?: boolean;
+	/** Javasolt alkalmazás megnyitásához (csak assistant üzenetekhez) */
+	suggestedApp?: {
+		appName: string;
+		section?: string;
+	};
 }
 
 /** A teljes beszélgetési előzmény */

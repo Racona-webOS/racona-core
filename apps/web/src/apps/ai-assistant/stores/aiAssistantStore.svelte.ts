@@ -517,7 +517,7 @@ class AiAssistantStore {
 			if (result.success && result.response) {
 				console.log('[AiAssistantStore] Sikeres válasz, cache-elés és hozzáadás...');
 				this.setCachedResponse(trimmed, result.response);
-				this.#addAssistantMessage(result.response);
+				this.#addAssistantMessage(result.response, false, result.suggestedApp);
 			} else {
 				console.log('[AiAssistantStore] API hiba:', result.error);
 				// Hibaüzenetet chat üzenetként jelenítjük meg
@@ -551,7 +551,11 @@ class AiAssistantStore {
 	}
 
 	/** Hozzáad egy assistant üzenetet és frissíti az érzelmi állapotot */
-	#addAssistantMessage(content: string, isError: boolean = false): void {
+	#addAssistantMessage(
+		content: string,
+		isError: boolean = false,
+		suggestedApp?: { appName: string; section?: string }
+	): void {
 		// NE detektáljuk az érzelmet - maradjon neutral
 		// const emotion = this.detectEmotion(content);
 		const emotion: EmotionState = 'neutral';
@@ -561,7 +565,8 @@ class AiAssistantStore {
 			content,
 			timestamp: Date.now(),
 			emotionState: emotion,
-			isError
+			isError,
+			suggestedApp
 		};
 
 		this.messages = [...this.messages, assistantMessage].slice(-this.#config.maxHistoryLength);

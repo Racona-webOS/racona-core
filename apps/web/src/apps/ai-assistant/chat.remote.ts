@@ -24,6 +24,29 @@ import { dev } from '$app/environment';
 // ============================================================================
 
 /**
+ * APP jelölés kinyerése a válaszból
+ * Formátum: [APP:appName] vagy [APP:appName:section]
+ */
+function extractAppSuggestion(text: string): {
+	cleanText: string;
+	suggestedApp?: { appName: string; section?: string };
+} {
+	const appRegex = /\[APP:([a-z-]+)(?::([a-z-]+))?\]/i;
+	const match = text.match(appRegex);
+
+	if (match) {
+		const cleanText = text.replace(appRegex, '').trim();
+		const suggestedApp = {
+			appName: match[1],
+			section: match[2] || undefined
+		};
+		return { cleanText, suggestedApp };
+	}
+
+	return { cleanText: text };
+}
+
+/**
  * Provider konfiguráció lekérése adatbázisból environment változó fallback-kel
  */
 async function getProviderConfigValue(
@@ -80,6 +103,10 @@ export interface SendChatMessageResult {
 	success: boolean;
 	error?: string;
 	response?: string;
+	suggestedApp?: {
+		appName: string;
+		section?: string;
+	};
 }
 
 export interface GetWelcomeMessageResult {
@@ -201,6 +228,33 @@ FONTOS SZABÁLYOK:
 4. Ha a dokumentációban NINCS válasz a kérdésre, mondd el őszintén, hogy erről nincs információd
 5. NE találj ki információkat - csak azt mondd el, ami a dokumentációban van
 
+ALKALMAZÁS JAVASLAT:
+Ha a válaszod egy konkrét alkalmazáshoz kapcsolódik, a válasz VÉGÉN add hozzá ezt a speciális jelölést:
+[APP:appName:section]
+
+Ahol:
+- appName: az alkalmazás neve (settings, chat, users, plugin-manager, log, notifications, help, map, ai-assistant)
+- section: opcionális, az alkalmazáson belüli szekció
+
+SETTINGS APP SZEKCIÓK:
+- profile: Fiók beállítások (profilkép, név, email)
+- security: Biztonság (jelszó, 2FA)
+- appearance: Megjelenés (téma, színek, betűméret)
+- desktop: Asztal → Általános (parancsikonok megnyitása)
+- background: Asztal → Háttér (háttérkép, háttérszín, háttérvideó)
+- taskbar: Asztal → Tálca (pozíció, stílus, elemek)
+- start: Asztal → Indító panel (nézet)
+- performance: Teljesítmény (optimalizálás, előnézet)
+- language: Nyelv és régió
+- system-info: Névjegy
+
+Példák:
+- "Háttérkép beállítás" esetén: [APP:settings:background]
+- "Tálca pozíció" esetén: [APP:settings:taskbar]
+- "Jelszó módosítás" esetén: [APP:settings:security]
+- "Chat alkalmazás" esetén: [APP:chat]
+- "Felhasználók kezelése" esetén: [APP:users]
+
 VÁLASZ FORMÁZÁS - KRITIKUS FONTOSSÁGÚ:
 - Válaszolj magyarul, természetes beszédstílusban, mintha egy barátnak magyaráznád
 - TILOS markdown formázást használni: SOHA ne használj **, ##, ###, *, _, \`, stb. jeleket
@@ -212,7 +266,7 @@ VÁLASZ FORMÁZÁS - KRITIKUS FONTOSSÁGÚ:
 - Rövid, érthető mondatokat használj
 - Ha a dokumentáció más nyelven van, fordítsd le magyarra
 
-PÉLDA JÓ VÁLASZRA (figyeld a sortöréseket!):
+PÉLDA JÓ VÁLASZRA (figyeld a sortöréseket és az APP jelölést!):
 "Igen, tudsz háttérképet beállítani a Raconában!
 
 Így teheted meg:
@@ -228,7 +282,9 @@ Ha képet szeretnél:
 - Vagy feltölthetsz saját képet (JPG, PNG, WebP formátumban)
 - A kép automatikusan igazodik a képernyő méretéhez
 
-Ennyi az egész!"`;
+Ennyi az egész!
+
+[APP:settings:background]"`;
 			} else {
 				systemPrompt = `You are the official AI assistant for the Racona web-based operating system.
 
@@ -241,6 +297,33 @@ IMPORTANT RULES:
 4. If there is NO answer in the documentation, honestly say that you don't have information about this
 5. DO NOT make up information - only say what is in the documentation
 
+APPLICATION SUGGESTION:
+If your answer relates to a specific application, add this special marker at the END of your response:
+[APP:appName:section]
+
+Where:
+- appName: the application name (settings, chat, users, plugin-manager, log, notifications, help, map, ai-assistant)
+- section: optional, section within the application
+
+SETTINGS APP SECTIONS:
+- profile: Account settings (profile picture, name, email)
+- security: Security (password, 2FA)
+- appearance: Appearance (theme, colors, font size)
+- desktop: Desktop → General (shortcut opening)
+- background: Desktop → Background (wallpaper, background color, background video)
+- taskbar: Desktop → Taskbar (position, style, elements)
+- start: Desktop → Start Panel (view)
+- performance: Performance (optimization, preview)
+- language: Language and region
+- system-info: About
+
+Examples:
+- "Background image settings" case: [APP:settings:background]
+- "Taskbar position" case: [APP:settings:taskbar]
+- "Password change" case: [APP:settings:security]
+- "Chat application" case: [APP:chat]
+- "User management" case: [APP:users]
+
 RESPONSE FORMATTING - CRITICAL:
 - Respond in English, using natural conversational style, as if explaining to a friend
 - NEVER use markdown formatting: NEVER use **, ##, ###, *, _, \`, etc.
@@ -252,7 +335,7 @@ RESPONSE FORMATTING - CRITICAL:
 - Use short, clear sentences
 - If the documentation is in a different language, translate it to English
 
-EXAMPLE OF GOOD RESPONSE (notice the line breaks!):
+EXAMPLE OF GOOD RESPONSE (notice the line breaks and APP marker!):
 "Yes, you can set a background image in Racona!
 
 Here's how:
@@ -268,7 +351,9 @@ If you want an image:
 - Or upload your own image (JPG, PNG, WebP formats)
 - The image automatically adjusts to your screen size
 
-That's it!"`;
+That's it!
+
+[APP:settings:background]"`;
 			}
 
 			// User message kiegészítése Knowledge Base kontextussal
@@ -348,9 +433,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 
@@ -417,9 +506,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 
@@ -486,9 +579,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 
@@ -565,9 +662,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 
@@ -629,9 +730,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 
@@ -701,9 +806,13 @@ That's it!"`;
 						};
 					}
 
+					// APP jelölés kinyerése
+					const { cleanText, suggestedApp } = extractAppSuggestion(text);
+
 					return {
 						success: true,
-						response: text + (dev ? knowledgeBaseInfo : '')
+						response: cleanText + (dev ? knowledgeBaseInfo : ''),
+						suggestedApp
 					};
 				}
 

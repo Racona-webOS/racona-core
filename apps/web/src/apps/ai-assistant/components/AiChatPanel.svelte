@@ -12,15 +12,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { mode } from 'mode-watcher';
-	import { Bot } from 'lucide-svelte';
+	import { Bot, ExternalLink } from 'lucide-svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 	import { getAiAssistantStore } from '../stores/aiAssistantStore.svelte.js';
+	import { getWindowManager } from '$lib/stores';
+	import { getAppByName } from '$lib/services/client/appRegistry';
 	import AiAvatarCanvas from './AiAvatarCanvas.svelte';
 	import MessageInputBar from './MessageInputBar.svelte';
 	import type { EmotionState } from '../types/index.js';
 
 	const { t } = useI18n();
 	const aiStore = getAiAssistantStore();
+	const windowManager = getWindowManager();
 
 	/** Aktuális téma a mode-watcher alapján */
 	const theme = $derived<'light' | 'dark'>(mode.current === 'dark' ? 'dark' : 'light');
@@ -253,6 +256,33 @@
 									{/if}
 									{message.content}
 								</div>
+								{#if message.suggestedApp}
+									<button
+										onclick={async () => {
+											if (!message.suggestedApp) return;
+											try {
+												const app = await getAppByName(message.suggestedApp.appName);
+												if (app) {
+													const options = message.suggestedApp.section
+														? { section: message.suggestedApp.section }
+														: undefined;
+													windowManager.openWindow(
+														message.suggestedApp.appName,
+														app.title,
+														app,
+														options
+													);
+												}
+											} catch (error) {
+												console.error('Failed to open suggested app:', error);
+											}
+										}}
+										class="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+									>
+										<ExternalLink class="h-3.5 w-3.5" />
+										Megnyitás
+									</button>
+								{/if}
 								<p class="text-muted-foreground mt-0.5 text-xs">
 									{formatTime(message.timestamp)}
 								</p>
