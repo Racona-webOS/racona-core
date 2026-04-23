@@ -30,6 +30,7 @@ INSERT INTO auth.role_permissions (role_id, permission_id) VALUES
   -- Settings permissions
   (2, 24), -- settings.view
   (2, 25), -- settings.update
+  (2, 29), -- settings.admin.aiAssistant
   -- Log permissions
   (2, 26), -- log.error.view
   (2, 27), -- log.activity.view

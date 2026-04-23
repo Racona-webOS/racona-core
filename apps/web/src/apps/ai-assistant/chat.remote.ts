@@ -12,12 +12,15 @@ import * as v from 'valibot';
 import {
 	agentConfigRepository,
 	avatarRepository,
-	aiProviderRepository
+	aiProviderRepository,
+	adminConfigRepository
 } from '$lib/server/database/repositories';
 import { KnowledgeBaseService } from '$lib/server/ai-assistant/knowledgeBaseService.js';
 import type { KnowledgeBaseLocale, SearchParams } from '$lib/server/ai-assistant/types.js';
 import { join } from 'path';
 import { dev } from '$app/environment';
+import { decrypt } from '$lib/server/utils/encryption';
+import type { AIAssistantConfig } from '@racona/database/schemas';
 
 // ============================================================================
 // Helper funkciók
@@ -132,9 +135,9 @@ export const sendChatMessage = command(
 		try {
 			const userId = parseInt(locals.user.id);
 
-			// Betöltjük az aktív agent konfigurációt
-			const config = await agentConfigRepository.getActiveAgentConfigWithKey(userId);
-			if (!config) {
+			// Betöltjük a globális admin AI Agent konfigurációt
+			const adminConfig = await adminConfigRepository.getByConfigKey('ai_assistant');
+			if (!adminConfig || !adminConfig.configData) {
 				return {
 					success: false,
 					error:
@@ -142,7 +145,37 @@ export const sendChatMessage = command(
 				};
 			}
 
-			const { provider, apiKey, modelName, baseUrl } = config;
+			const aiConfig = adminConfig.configData as AIAssistantConfig;
+
+			// Ellenőrizzük, hogy az AI Agent engedélyezve van-e
+			if (!aiConfig.enabled) {
+				return {
+					success: false,
+					error: 'Az AI Agent funkció jelenleg le van tiltva.'
+				};
+			}
+
+			// API kulcs dekódolása
+			const apiKey = await decrypt(aiConfig.aiAgent.apiKeyEncrypted);
+			console.log('[sendChatMessage] Decrypted API key length:', apiKey?.length);
+
+			if (!apiKey) {
+				return {
+					success: false,
+					error: 'Az API kulcs dekódolása sikertelen.'
+				};
+			}
+
+			const provider = aiConfig.aiAgent.provider;
+			const modelName = aiConfig.aiAgent.model;
+			const baseUrl = aiConfig.aiAgent.baseUrl;
+
+			// Advanced paraméterek feldolgozása
+			const advancedParams = {
+				maxTokens: aiConfig.aiAgent.advancedParams.maxTokens ?? 1000,
+				temperature: aiConfig.aiAgent.advancedParams.temperature ?? 0.7,
+				topP: aiConfig.aiAgent.advancedParams.topP ?? 0.9
+			};
 
 			// Nyelvi beállítás meghatározása
 			const userLocale = locals.locale || 'hu';
@@ -412,7 +445,14 @@ That's it!
 					const response = await fetch(apiUrl, {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ contents })
+						body: JSON.stringify({
+							contents,
+							generationConfig: {
+								maxOutputTokens: advancedParams.maxTokens,
+								temperature: advancedParams.temperature,
+								topP: advancedParams.topP
+							}
+						})
 					});
 
 					if (!response.ok) {
@@ -484,7 +524,10 @@ That's it!
 						},
 						body: JSON.stringify({
 							model,
-							messages
+							messages,
+							max_tokens: advancedParams.maxTokens,
+							temperature: advancedParams.temperature,
+							top_p: advancedParams.topP
 						})
 					});
 
@@ -557,7 +600,10 @@ That's it!
 						},
 						body: JSON.stringify({
 							model,
-							messages
+							messages,
+							max_tokens: advancedParams.maxTokens,
+							temperature: advancedParams.temperature,
+							top_p: advancedParams.topP
 						})
 					});
 
@@ -640,7 +686,9 @@ That's it!
 						body: JSON.stringify({
 							model,
 							messages,
-							max_tokens: 1024
+							max_tokens: advancedParams.maxTokens,
+							temperature: advancedParams.temperature,
+							top_p: advancedParams.topP
 						})
 					});
 
@@ -706,8 +754,9 @@ That's it!
 						body: JSON.stringify({
 							inputs: prompt,
 							parameters: {
-								max_new_tokens: 512,
-								temperature: 0.7
+								max_new_tokens: advancedParams.maxTokens,
+								temperature: advancedParams.temperature,
+								top_p: advancedParams.topP
 							}
 						})
 					});
@@ -785,7 +834,10 @@ That's it!
 									'AI_CUSTOM_DEFAULT_MODEL'
 								)) ||
 								'default',
-							messages
+							messages,
+							max_tokens: advancedParams.maxTokens,
+							temperature: advancedParams.temperature,
+							top_p: advancedParams.topP
 						})
 					});
 

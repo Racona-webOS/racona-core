@@ -19,6 +19,7 @@
 	import { useI18n } from '$lib/i18n/hooks';
 	import { getNotificationStore } from '$lib/stores/notificationStore.svelte';
 	import { getChatStore } from '$apps/chat/stores/chatStore.svelte';
+	import { isAIAgentEnabled } from '$apps/settings/admin-config.remote';
 
 	const { t } = useI18n();
 
@@ -26,6 +27,9 @@
 
 	const notificationStore = getNotificationStore();
 	const chatStore = getChatStore();
+
+	let aiAgentEnabled = $state(false);
+	let aiAgentConfigured = $state(false);
 
 	const settingsContext = getContext<{
 		screenshotThumbnailHeight: number;
@@ -111,6 +115,29 @@
 	});
 
 	onMount(() => {
+		// Ellenőrizzük az AI Agent státuszt
+		const checkAIAgentStatus = async () => {
+			try {
+				const status = await isAIAgentEnabled({});
+				aiAgentEnabled = status.enabled;
+				aiAgentConfigured = status.configured;
+			} catch (error) {
+				console.error('[Taskbar] Error checking AI Agent status:', error);
+			}
+		};
+
+		checkAIAgentStatus();
+
+		// Hallgatjuk az AI Agent konfiguráció változásait
+		const handleConfigChange = () => {
+			// Kis késleltetéssel hívjuk meg, hogy a backend mentés befejeződjön
+			setTimeout(() => {
+				checkAIAgentStatus();
+			}, 100);
+		};
+
+		window.addEventListener('ai-agent-config-changed', handleConfigChange);
+
 		const element = document.querySelector('.border-gradient') as HTMLElement;
 
 		let angle = 0;
@@ -121,6 +148,11 @@
 		};
 
 		rotateGradient(); // Start the animation
+
+		// Cleanup
+		return () => {
+			window.removeEventListener('ai-agent-config-changed', handleConfigChange);
+		};
 	});
 
 	// SSR-hez: effektív taskbar téma mód kiszámítása settings-ből
@@ -333,7 +365,7 @@
 		{#if settings.taskbar.itemVisibility.messages ?? true}
 			<ChatCenter />
 		{/if}
-		{#if settings.taskbar.itemVisibility.aiAssistant ?? true}
+		{#if (settings.taskbar.itemVisibility.aiAssistant ?? true) && aiAgentEnabled && aiAgentConfigured}
 			<AIAssistantCenter />
 		{/if}
 		{#if settings.taskbar.itemVisibility.notifications ?? true}

@@ -66,6 +66,9 @@ export type { ProviderWithConfigs, ProviderConfigMap } from './aiProviderReposit
 // Theme presets repository exports
 export { themePresetsRepository } from './theme-presets-repository';
 
+// Admin config repository exports
+export { adminConfigRepository } from './adminConfigRepository';
+
 // Email template repository exports
 export { DatabaseTemplateRepository } from './email-template-repository';
 export { TemplateCache, CACHE_KEYS } from './email-template-cache';

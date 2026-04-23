@@ -38,5 +38,8 @@ export * from './ai-avatar';
 // AI Providers
 export * from './ai-providers';
 
+// Admin Config
+export * from './admin-config';
+
 // Relations
 export * from './relations';

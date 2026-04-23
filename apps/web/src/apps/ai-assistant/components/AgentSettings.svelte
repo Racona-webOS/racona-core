@@ -12,7 +12,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import { useI18n } from '$lib/i18n/hooks';
-	import KnowledgeBaseAdminPanel from './KnowledgeBaseAdminPanel.svelte';
 	import TTSSettings from './TTSSettings.svelte';
 	import {
 		getAgentConfig,
@@ -21,7 +20,7 @@
 		getAvailableProviders
 	} from '../agent-config.remote.js';
 	import type { AgentConfigWithMaskedKey } from '$lib/server/database/repositories';
-	import { Eye, EyeOff, TestTube, Database, Volume2 } from 'lucide-svelte';
+	import { Eye, EyeOff, TestTube, Volume2 } from 'lucide-svelte';
 
 	const { t } = useI18n();
 
@@ -53,12 +52,13 @@
 	let baseUrl = $state('');
 	let maxTokens = $state(1000);
 	let temperature = $state(0.7);
+	let topP = $state(0.9);
 
 	// UI állapotok
 	let showApiKey = $state(false);
 	let showAdvanced = $state(false);
 	let apiKeyChanged = $state(false); // Jelzi, hogy az API key megváltozott-e
-	let activeTab = $state<'agent' | 'knowledge-base' | 'tts'>('agent');
+	let activeTab = $state<'agent' | 'tts'>('agent');
 
 	// -------------------------------------------------------------------------
 	// Derived
@@ -71,7 +71,8 @@
 			modelName !== (originalConfig.modelName ?? '') ||
 			baseUrl !== (originalConfig.baseUrl ?? '') ||
 			maxTokens !== (originalConfig.maxTokens ?? 1000) ||
-			temperature !== parseFloat(originalConfig.temperature ?? '0.70')
+			temperature !== parseFloat(originalConfig.temperature ?? '0.70') ||
+			topP !== parseFloat(originalConfig.topP ?? '0.90')
 	);
 
 	// -------------------------------------------------------------------------
@@ -107,6 +108,7 @@
 				baseUrl = result.config.baseUrl ?? '';
 				maxTokens = result.config.maxTokens ?? 1000;
 				temperature = parseFloat(result.config.temperature ?? '0.70');
+				topP = parseFloat(result.config.topP ?? '0.90');
 				apiKeyChanged = false;
 			} else if (providers.length > 0) {
 				// Ha nincs konfiguráció, de vannak provider-ek, válasszuk az első ajánlottat
@@ -139,7 +141,8 @@
 				modelName: modelName.trim() || null,
 				baseUrl: baseUrl.trim() || null,
 				maxTokens,
-				temperature: temperature.toFixed(2)
+				temperature: temperature.toFixed(2),
+				topP: topP.toFixed(2)
 			});
 
 			if (result.success) {
@@ -154,6 +157,7 @@
 					baseUrl = result.config.baseUrl ?? '';
 					maxTokens = result.config.maxTokens ?? 1000;
 					temperature = parseFloat(result.config.temperature ?? '0.70');
+					topP = parseFloat(result.config.topP ?? '0.90');
 					apiKeyChanged = false;
 				}
 			} else {
@@ -211,6 +215,7 @@
 			baseUrl = originalConfig.baseUrl ?? '';
 			maxTokens = originalConfig.maxTokens ?? 1000;
 			temperature = parseFloat(originalConfig.temperature ?? '0.70');
+			topP = parseFloat(originalConfig.topP ?? '0.90');
 			apiKeyChanged = false;
 		}
 	}
@@ -242,14 +247,6 @@
 			>
 				<TestTube class="h-4 w-4" />
 				{t('ai-assistant.agent.title')}
-			</button>
-			<button
-				type="button"
-				class="agent-settings__tab {activeTab === 'knowledge-base' ? 'active' : ''}"
-				onclick={() => (activeTab = 'knowledge-base')}
-			>
-				<Database class="h-4 w-4" />
-				{t('ai-assistant.knowledgeBase.title')}
 			</button>
 			<button
 				type="button"
@@ -376,6 +373,14 @@
 										bind:value={temperature}
 									/>
 								</div>
+
+								<!-- Top P -->
+								<div class="agent-settings__field">
+									<Label for="top-p">
+										{t('ai-assistant.agent.topP')}: {topP.toFixed(2)}
+									</Label>
+									<Slider id="top-p" type="single" min={0} max={1} step={0.01} bind:value={topP} />
+								</div>
 							</div>
 						{/if}
 					</div>
@@ -396,8 +401,6 @@
 						</div>
 					</div>
 				</div>
-			{:else if activeTab === 'knowledge-base'}
-				<KnowledgeBaseAdminPanel />
 			{:else if activeTab === 'tts'}
 				<TTSSettings />
 			{/if}

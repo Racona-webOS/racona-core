@@ -29,6 +29,27 @@
       "when": 1776690454941,
       "tag": "0003_hot_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776714355157,
+      "tag": "0004_perfect_talisman",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776778588177,
+      "tag": "0005_fresh_penance",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776864243247,
+      "tag": "0006_funny_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

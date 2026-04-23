@@ -14,4 +14,4 @@
 	});
 </script>
 
-<AppLayout {shell} namespaces={['settings']} searchable />
+<AppLayout {shell} namespaces={['settings']} searchable sidebarWidth={300} />

@@ -21,16 +21,18 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'menu.startPanel', 'Indító panel'),
 ('hu', 'settings', 'menu.performance', 'Teljesítmény'),
 ('hu', 'settings', 'menu.language', 'Nyelv és régió'),
+('hu', 'settings', 'menu.aiAssistant', 'AI asszisztens'),
+('hu', 'settings', 'menu.aiAgent', 'AI ügynök'),
+('hu', 'settings', 'menu.ttsProvider', 'TTS szolgáltató'),
+('hu', 'settings', 'menu.aiAvatar', 'AI Avatar telepítés'),
+('hu', 'settings', 'menu.knowledgeBase', 'Tudásbázis'),
 ('hu', 'settings', 'menu.about', 'Névjegy')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
-
 
 -- Placeholder beállítások
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'placeholder.title', 'Fejlesztés alatt'),
-('hu', 'settings', 'placeholder.message', 'Ez a funkció hamarosan elérhető lesz.'),
-('hu', 'settings', 'placeholder.profile', 'A saját profil beállítások kezelése fejlesztés alatt áll.'),
-('hu', 'settings', 'placeholder.startPanel', 'Az indító panel kezelése fejlesztés alatt áll.')
+('hu', 'settings', 'placeholder.message', 'Ez a funkció hamarosan elérhető lesz.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Indító panel beállítások (StartMenuSettings.svelte)
@@ -264,6 +266,45 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'profile.error', 'Hiba történt a mentés során')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
+-- AI Agent beállítások (AIAgentConfigPanel.svelte)
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'admin.aiAgent.title', 'AI ügynök beállítások'),
+('hu', 'settings', 'admin.aiAgent.enableTitle', 'AI ügynök engedélyezése'),
+('hu', 'settings', 'admin.aiAgent.enableDescription', 'AI ügynök funkciók globális engedélyezése vagy letiltása'),
+('hu', 'settings', 'admin.aiAgent.enableInfo', 'Ha ki van kapcsolva, az AI ügynök funkciók nem lesznek elérhetők a rendszerben. Ez magában foglalja az AI asszisztenst, a TTS szolgáltatásokat és minden kapcsolódó funkciót.'),
+('hu', 'settings', 'admin.aiAgent.description', 'AI asszisztens szolgáltató és modell konfigurációja'),
+('hu', 'settings', 'admin.aiAgent.info', 'Konfigurálja az AI asszisztens szolgáltatót és modellt a chat funkciók használatához. A beállítások mentése után tesztelheti a kapcsolatot.'),
+('hu', 'settings', 'admin.aiAgent.active', 'Aktív konfiguráció'),
+('hu', 'settings', 'admin.aiAgent.inactive', 'Nincs konfiguráció'),
+('hu', 'settings', 'admin.aiAgent.provider', 'Szolgáltató'),
+('hu', 'settings', 'admin.aiAgent.model', 'Modell'),
+('hu', 'settings', 'admin.aiAgent.modelPlaceholder', 'pl. gpt-4, claude-3-sonnet'),
+('hu', 'settings', 'admin.aiAgent.apiKey', 'API kulcs'),
+('hu', 'settings', 'admin.aiAgent.apiKeyPlaceholder', 'Adja meg az API kulcsot'),
+('hu', 'settings', 'admin.aiAgent.baseUrl', 'Alap URL (opcionális)'),
+('hu', 'settings', 'admin.aiAgent.baseUrlPlaceholder', 'Egyedi API végpont URL'),
+('hu', 'settings', 'admin.aiAgent.testConnection', 'Kapcsolat tesztelése'),
+('hu', 'settings', 'admin.aiAgent.testSuccess', 'Kapcsolat sikeres'),
+('hu', 'settings', 'admin.aiAgent.testFailed', 'Kapcsolat sikertelen'),
+('hu', 'settings', 'admin.aiAgent.saveSuccess', 'Beállítások mentve'),
+('hu', 'settings', 'admin.aiAgent.saveFailed', 'Mentés sikertelen'),
+('hu', 'settings', 'admin.aiAgent.disabled', 'AI ügynök kikapcsolva'),
+('hu', 'settings', 'admin.aiAgent.loadFailed', 'Betöltés sikertelen'),
+('hu', 'settings', 'admin.aiAgent.advancedParams', 'Speciális paraméterek'),
+('hu', 'settings', 'admin.aiAgent.advancedParamsDescription', 'AI modell viselkedésének finomhangolása'),
+('hu', 'settings', 'admin.aiAgent.advancedParamsInfo', 'Ezek a paraméterek befolyásolják az AI válaszok minőségét és stílusát. Csak akkor módosítsa őket, ha ismeri a hatásukat.'),
+('hu', 'settings', 'admin.aiAgent.maxTokens', 'Max tokenek'),
+('hu', 'settings', 'admin.aiAgent.maxTokensTooltip', 'A válasz maximális hossza tokenekben. Magasabb érték hosszabb válaszokat tesz lehetővé, de több költséggel jár.'),
+('hu', 'settings', 'admin.aiAgent.temperature', 'Kreativitás'),
+('hu', 'settings', 'admin.aiAgent.temperatureTooltip', 'Szabályozza a válaszok kreativitását. 0.0 = determinisztikus, 2.0 = nagyon kreatív. Ajánlott: 0.7'),
+('hu', 'settings', 'admin.aiAgent.topP', 'Top P'),
+('hu', 'settings', 'admin.aiAgent.topPTooltip', 'Nucleus sampling paraméter. Alacsonyabb értékek fókuszáltabb, magasabb értékek változatosabb válaszokat eredményeznek.'),
+('hu', 'settings', 'admin.aiAgent.validation.required', 'API kulcs és modell megadása kötelező'),
+('hu', 'settings', 'admin.aiAgent.validation.maxTokensRange', 'Max tokenek értéke 1 és 100,000 között kell legyen'),
+('hu', 'settings', 'admin.aiAgent.validation.temperatureRange', 'Kreativitás értéke 0.0 és 2.0 között kell legyen'),
+('hu', 'settings', 'admin.aiAgent.validation.topPRange', 'Top P értéke 0.0 és 1.0 között kell legyen')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
 
 -- -----------------------------------------------------------------------------
 -- ANGOL (en) fordítások
@@ -275,25 +316,24 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'menu.security', 'Security'),
 ('en', 'settings', 'menu.appearance', 'Appearance'),
 ('en', 'settings', 'menu.desktop', 'Desktop'),
+('en', 'settings', 'menu.general', 'General'),
 ('en', 'settings', 'menu.background', 'Background'),
 ('en', 'settings', 'menu.taskbar', 'Taskbar'),
 ('en', 'settings', 'menu.startPanel', 'Start Panel'),
 ('en', 'settings', 'menu.performance', 'Performance'),
 ('en', 'settings', 'menu.language', 'Language & Region'),
-('en', 'settings', 'menu.about', 'About'),
--- Régi kulcsok megtartása visszafelé kompatibilitás miatt
-('en', 'settings', 'menu.profile', 'My Profile'),
-('en', 'settings', 'menu.general', 'General'),
-('en', 'settings', 'menu.personalization', 'Personalization'),
-('en', 'settings', 'menu.systemInfo', 'System Information')
+('en', 'settings', 'menu.aiAssistant', 'AI assistant'),
+('en', 'settings', 'menu.aiAgent', 'AI Agent'),
+('en', 'settings', 'menu.ttsProvider', 'TTS Provider'),
+('en', 'settings', 'menu.aiAvatar', 'Avatar Installation'),
+('en', 'settings', 'menu.knowledgeBase', 'Knowledge Base'),
+('en', 'settings', 'menu.about', 'About')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Placeholder beállítások
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'placeholder.title', 'Under Development'),
-('en', 'settings', 'placeholder.message', 'This feature will be available soon.'),
-('en', 'settings', 'placeholder.profile', 'Profile settings management is under development.'),
-('en', 'settings', 'placeholder.startPanel', 'Start panel management is under development.')
+('en', 'settings', 'placeholder.message', 'This feature will be available soon.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Indító panel beállítások (StartMenuSettings.svelte)
@@ -741,4 +781,229 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'desktop.clickMode.single', 'Single Click'),
 ('en', 'settings', 'desktop.clickMode.double', 'Double Click'),
 ('en', 'settings', 'desktop.clickMode.saved', 'Click mode saved')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- AI Agent Config Panel fordítások (AIAgentConfigPanel.svelte)
+-- -----------------------------------------------------------------------------
+
+-- Magyar fordítások (ezek már fent vannak az admin.aiAgent.* kulcsokkal)
+-- Angol fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'settings', 'admin.aiAgent.title', 'AI Agent Settings'),
+('en', 'settings', 'admin.aiAgent.enableTitle', 'Enable AI Agent'),
+('en', 'settings', 'admin.aiAgent.enableDescription', 'Globally enable or disable AI agent features'),
+('en', 'settings', 'admin.aiAgent.enableInfo', 'When disabled, AI agent features will not be available in the system. This includes the AI assistant, TTS services, and all related functionality.'),
+('en', 'settings', 'admin.aiAgent.description', 'AI assistant provider and model configuration'),
+('en', 'settings', 'admin.aiAgent.info', 'Configure the AI assistant provider and model for chat functionality. You can test the connection after saving the settings.'),
+('en', 'settings', 'admin.aiAgent.active', 'Active Configuration'),
+('en', 'settings', 'admin.aiAgent.inactive', 'No Configuration'),
+('en', 'settings', 'admin.aiAgent.provider', 'Provider'),
+('en', 'settings', 'admin.aiAgent.model', 'Model'),
+('en', 'settings', 'admin.aiAgent.modelPlaceholder', 'e.g. gpt-4, claude-3-sonnet'),
+('en', 'settings', 'admin.aiAgent.apiKey', 'API Key'),
+('en', 'settings', 'admin.aiAgent.apiKeyPlaceholder', 'Enter API key'),
+('en', 'settings', 'admin.aiAgent.baseUrl', 'Base URL (optional)'),
+('en', 'settings', 'admin.aiAgent.baseUrlPlaceholder', 'Custom API endpoint URL'),
+('en', 'settings', 'admin.aiAgent.testConnection', 'Test Connection'),
+('en', 'settings', 'admin.aiAgent.testSuccess', 'Connection Successful'),
+('en', 'settings', 'admin.aiAgent.testFailed', 'Connection Failed'),
+('en', 'settings', 'admin.aiAgent.saveSuccess', 'Settings Saved'),
+('en', 'settings', 'admin.aiAgent.saveFailed', 'Save Failed'),
+('en', 'settings', 'admin.aiAgent.disabled', 'AI Agent Disabled'),
+('en', 'settings', 'admin.aiAgent.loadFailed', 'Load Failed'),
+('en', 'settings', 'admin.aiAgent.advancedParams', 'Advanced Parameters'),
+('en', 'settings', 'admin.aiAgent.advancedParamsDescription', 'Fine-tune AI model behavior'),
+('en', 'settings', 'admin.aiAgent.advancedParamsInfo', 'These parameters affect the quality and style of AI responses. Only modify them if you understand their effects.'),
+('en', 'settings', 'admin.aiAgent.maxTokens', 'Max Tokens'),
+('en', 'settings', 'admin.aiAgent.maxTokensTooltip', 'Maximum response length in tokens. Higher values allow longer responses but cost more.'),
+('en', 'settings', 'admin.aiAgent.temperature', 'Temperature'),
+('en', 'settings', 'admin.aiAgent.temperatureTooltip', 'Controls response creativity. 0.0 = deterministic, 2.0 = very creative. Recommended: 0.7'),
+('en', 'settings', 'admin.aiAgent.topP', 'Top P'),
+('en', 'settings', 'admin.aiAgent.topPTooltip', 'Nucleus sampling parameter. Lower values produce more focused, higher values more diverse responses.'),
+('en', 'settings', 'admin.aiAgent.validation.required', 'API key and model are required'),
+('en', 'settings', 'admin.aiAgent.validation.maxTokensRange', 'Max tokens must be between 1 and 100,000'),
+('en', 'settings', 'admin.aiAgent.validation.temperatureRange', 'Temperature must be between 0.0 and 2.0'),
+('en', 'settings', 'admin.aiAgent.validation.topPRange', 'Top P must be between 0.0 and 1.0')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- TTS Provider Config Panel fordítások (TTSProviderConfigPanel.svelte)
+-- -----------------------------------------------------------------------------
+
+-- Magyar fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'admin.ttsProvider.title', 'TTS Provider konfiguráció'),
+('hu', 'settings', 'admin.ttsProvider.description', 'Központi TTS Provider beállítások kezelése'),
+('hu', 'settings', 'admin.ttsProvider.info', 'A TTS Provider konfiguráció határozza meg, hogy melyik szövegfelolvasó szolgáltatót használja a rendszer.'),
+('hu', 'settings', 'admin.ttsProvider.enableTitle', 'TTS Provider engedélyezése'),
+('hu', 'settings', 'admin.ttsProvider.enableDescription', 'TTS Provider funkciók globális engedélyezése vagy letiltása'),
+('hu', 'settings', 'admin.ttsProvider.enableInfo', 'Ha ki van kapcsolva, a szövegfelolvasás funkciók nem lesznek elérhetők a rendszerben. Ez magában foglalja az AI asszisztens válaszainak felolvasását és minden kapcsolódó funkciót.'),
+('hu', 'settings', 'admin.ttsProvider.disabled', 'TTS Provider kikapcsolva'),
+('hu', 'settings', 'admin.ttsProvider.enableAIAgentFirst', 'Kérjük, engedélyezze az AI ügynököt az AI ügynök beállítások oldalon.'),
+('hu', 'settings', 'admin.ttsProvider.active', 'Aktív konfiguráció'),
+('hu', 'settings', 'admin.ttsProvider.inactive', 'Nincs aktív konfiguráció'),
+('hu', 'settings', 'admin.ttsProvider.provider', 'Szolgáltató'),
+('hu', 'settings', 'admin.ttsProvider.apiKey', 'API kulcs'),
+('hu', 'settings', 'admin.ttsProvider.apiKeyPlaceholder', 'Adja meg az API kulcsot'),
+('hu', 'settings', 'admin.ttsProvider.loadVoices', 'Hangok betöltése'),
+('hu', 'settings', 'admin.ttsProvider.voice', 'Hang'),
+('hu', 'settings', 'admin.ttsProvider.selectVoice', 'Válasszon hangot'),
+('hu', 'settings', 'admin.ttsProvider.language', 'Nyelv'),
+('hu', 'settings', 'admin.ttsProvider.testVoice', 'Hang tesztelése'),
+('hu', 'settings', 'admin.ttsProvider.testSuccess', 'Teszt sikeres'),
+('hu', 'settings', 'admin.ttsProvider.testFailed', 'Teszt sikertelen'),
+('hu', 'settings', 'admin.ttsProvider.saveSuccess', 'Konfiguráció mentve'),
+('hu', 'settings', 'admin.ttsProvider.saveFailed', 'Mentés sikertelen'),
+('hu', 'settings', 'admin.ttsProvider.loadFailed', 'Betöltés sikertelen'),
+('hu', 'settings', 'admin.ttsProvider.voicesLoaded', '{count} hang betöltve'),
+('hu', 'settings', 'admin.ttsProvider.voicesLoadFailed', 'Hangok betöltése sikertelen'),
+('hu', 'settings', 'admin.ttsProvider.browserVoicesInfo', 'Böngésző hangok automatikusan elérhetők'),
+('hu', 'settings', 'admin.ttsProvider.aiAgentConfigMissing', 'AI Agent konfiguráció hiányzik'),
+('hu', 'settings', 'admin.ttsProvider.validation.required', 'API kulcs és hang kiválasztása kötelező'),
+('hu', 'settings', 'admin.ttsProvider.validation.apiKeyRequired', 'API kulcs megadása kötelező')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Angol fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'settings', 'admin.ttsProvider.title', 'TTS Provider Configuration'),
+('en', 'settings', 'admin.ttsProvider.description', 'Manage central TTS Provider settings'),
+('en', 'settings', 'admin.ttsProvider.info', 'The TTS Provider configuration determines which text-to-speech service the system uses.'),
+('en', 'settings', 'admin.ttsProvider.enableTitle', 'Enable TTS Provider'),
+('en', 'settings', 'admin.ttsProvider.enableDescription', 'Globally enable or disable TTS Provider features'),
+('en', 'settings', 'admin.ttsProvider.enableInfo', 'When disabled, text-to-speech features will not be available in the system. This includes reading AI assistant responses and all related functionality.'),
+('en', 'settings', 'admin.ttsProvider.disabled', 'TTS Provider Disabled'),
+('en', 'settings', 'admin.ttsProvider.enableAIAgentFirst', 'Please enable the AI Agent in the AI Agent settings page.'),
+('en', 'settings', 'admin.ttsProvider.active', 'Active Configuration'),
+('en', 'settings', 'admin.ttsProvider.inactive', 'No Active Configuration'),
+('en', 'settings', 'admin.ttsProvider.provider', 'Provider'),
+('en', 'settings', 'admin.ttsProvider.apiKey', 'API Key'),
+('en', 'settings', 'admin.ttsProvider.apiKeyPlaceholder', 'Enter API key'),
+('en', 'settings', 'admin.ttsProvider.loadVoices', 'Load Voices'),
+('en', 'settings', 'admin.ttsProvider.voice', 'Voice'),
+('en', 'settings', 'admin.ttsProvider.selectVoice', 'Select voice'),
+('en', 'settings', 'admin.ttsProvider.language', 'Language'),
+('en', 'settings', 'admin.ttsProvider.testVoice', 'Test Voice'),
+('en', 'settings', 'admin.ttsProvider.testSuccess', 'Test Successful'),
+('en', 'settings', 'admin.ttsProvider.testFailed', 'Test Failed'),
+('en', 'settings', 'admin.ttsProvider.saveSuccess', 'Configuration Saved'),
+('en', 'settings', 'admin.ttsProvider.saveFailed', 'Save Failed'),
+('en', 'settings', 'admin.ttsProvider.loadFailed', 'Load Failed'),
+('en', 'settings', 'admin.ttsProvider.voicesLoaded', '{count} voices loaded'),
+('en', 'settings', 'admin.ttsProvider.voicesLoadFailed', 'Failed to load voices'),
+('en', 'settings', 'admin.ttsProvider.browserVoicesInfo', 'Browser voices are automatically available'),
+('en', 'settings', 'admin.ttsProvider.aiAgentConfigMissing', 'AI Agent configuration is missing'),
+('en', 'settings', 'admin.ttsProvider.validation.required', 'API key and voice selection are required'),
+('en', 'settings', 'admin.ttsProvider.validation.apiKeyRequired', 'API key is required')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+
+-- AI Avatar telepítés fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'admin.aiAvatar.title', 'AI Avatar telepítés'),
+('hu', 'settings', 'admin.aiAvatar.description', 'Avatar csomagok telepítése az AI asszisztenshez'),
+('hu', 'settings', 'admin.aiAvatar.enableAIAgentFirst', 'Az AI Avatar telepítéséhez először engedélyezd az AI ügynököt.'),
+('hu', 'settings', 'admin.aiAvatar.uploadTitle', 'Avatar csomag feltöltése'),
+('hu', 'settings', 'admin.aiAvatar.uploadDescription', 'Telepíts új avatar csomagot .raconapkg fájlból'),
+('hu', 'settings', 'admin.aiAvatar.uploadInfo', 'Az avatar csomagok (.raconapkg) tartalmazzák a 3D modellt és a kapcsolódó konfigurációt. A telepítés után az avatar elérhető lesz az AI asszisztens beállításokban.'),
+('hu', 'settings', 'admin.aiAvatar.fileLabel', 'Avatar csomag fájl (.raconapkg)'),
+('hu', 'settings', 'admin.aiAvatar.install', 'Telepítés'),
+('hu', 'settings', 'admin.aiAvatar.installing', 'Telepítés...'),
+('hu', 'settings', 'admin.aiAvatar.installSuccess', 'Avatar sikeresen telepítve: {name}'),
+('hu', 'settings', 'admin.aiAvatar.installError', 'Avatar telepítése sikertelen'),
+('hu', 'settings', 'admin.aiAvatar.validation.invalidFileType', 'Csak .raconapkg fájlok engedélyezettek')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'settings', 'admin.aiAvatar.title', 'AI Avatar Installation'),
+('en', 'settings', 'admin.aiAvatar.description', 'Install avatar packages for the AI assistant'),
+('en', 'settings', 'admin.aiAvatar.enableAIAgentFirst', 'To install AI Avatars, first enable the AI Agent.'),
+('en', 'settings', 'admin.aiAvatar.uploadTitle', 'Upload Avatar Package'),
+('en', 'settings', 'admin.aiAvatar.uploadDescription', 'Install a new avatar package from .raconapkg file'),
+('en', 'settings', 'admin.aiAvatar.uploadInfo', 'Avatar packages (.raconapkg) contain the 3D model and related configuration. After installation, the avatar will be available in AI assistant settings.'),
+('en', 'settings', 'admin.aiAvatar.fileLabel', 'Avatar package file (.raconapkg)'),
+('en', 'settings', 'admin.aiAvatar.install', 'Install'),
+('en', 'settings', 'admin.aiAvatar.installing', 'Installing...'),
+('en', 'settings', 'admin.aiAvatar.installSuccess', 'Avatar installed successfully: {name}'),
+('en', 'settings', 'admin.aiAvatar.installError', 'Avatar installation failed'),
+('en', 'settings', 'admin.aiAvatar.validation.invalidFileType', 'Only .raconapkg files are allowed')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+-- -----------------------------------------------------------------------------
+-- AI Avatar - Telepített avatarok lista (AIAvatarInstallPanel.svelte)
+-- -----------------------------------------------------------------------------
+
+-- Magyar fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'admin.aiAvatar.installedAvatars', 'Telepített avatarok'),
+('hu', 'settings', 'admin.aiAvatar.installedAvatarsDescription', 'Jelenleg telepített avatar csomagok kezelése'),
+('hu', 'settings', 'admin.aiAvatar.noAvatarsInstalled', 'Nincs telepített avatar'),
+('hu', 'settings', 'admin.aiAvatar.quality', 'Minőség'),
+('hu', 'settings', 'admin.aiAvatar.description', 'Leírás'),
+('hu', 'settings', 'admin.aiAvatar.delete', 'Törlés')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Angol fordítások
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'settings', 'admin.aiAvatar.installedAvatars', 'Installed Avatars'),
+('en', 'settings', 'admin.aiAvatar.installedAvatarsDescription', 'Manage currently installed avatar packages'),
+('en', 'settings', 'admin.aiAvatar.noAvatarsInstalled', 'No avatars installed'),
+('en', 'settings', 'admin.aiAvatar.quality', 'Quality'),
+('en', 'settings', 'admin.aiAvatar.description', 'Description'),
+('en', 'settings', 'admin.aiAvatar.delete', 'Delete')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Tudásbázis (Knowledge Base) fordítások - MAGYAR
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'admin.knowledgeBase.loading', 'Betöltés...'),
+('hu', 'settings', 'admin.knowledgeBase.statusLoadError', 'Hiba történt a státusz betöltése során'),
+('hu', 'settings', 'admin.knowledgeBase.reindexSuccess', 'Újraindexelés sikeresen befejezve'),
+('hu', 'settings', 'admin.knowledgeBase.reindexError', 'Hiba történt az újraindexelés során'),
+('hu', 'settings', 'admin.knowledgeBase.neverIndexed', 'Soha'),
+('hu', 'settings', 'admin.knowledgeBase.totalDocuments', 'Összes dokumentum'),
+('hu', 'settings', 'admin.knowledgeBase.totalChunks', 'Összes chunk'),
+('hu', 'settings', 'admin.knowledgeBase.uptime', 'Üzemidő'),
+('hu', 'settings', 'admin.knowledgeBase.languageDetails', 'Nyelvi részletek'),
+('hu', 'settings', 'admin.knowledgeBase.loaded', 'Betöltve'),
+('hu', 'settings', 'admin.knowledgeBase.notLoaded', 'Nincs betöltve'),
+('hu', 'settings', 'admin.knowledgeBase.reindexing', 'Újraindexelés...'),
+('hu', 'settings', 'admin.knowledgeBase.reindexLanguage', 'Újraindexelés'),
+('hu', 'settings', 'admin.knowledgeBase.documents', 'Dokumentumok'),
+('hu', 'settings', 'admin.knowledgeBase.chunks', 'Chunk-ok'),
+('hu', 'settings', 'admin.knowledgeBase.lastIndexed', 'Utolsó indexelés'),
+('hu', 'settings', 'admin.knowledgeBase.reindexingAll', 'Összes újraindexelése...'),
+('hu', 'settings', 'admin.knowledgeBase.reindexAll', 'Összes újraindexelése'),
+('hu', 'settings', 'admin.knowledgeBase.refreshStatus', 'Státusz frissítése'),
+('hu', 'settings', 'admin.knowledgeBase.statusUnavailable', 'A státusz nem elérhető'),
+('hu', 'settings', 'admin.knowledgeBase.retry', 'Újrapróbálás')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Tudásbázis (Knowledge Base) fordítások - ANGOL
+-- -----------------------------------------------------------------------------
+
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'settings', 'admin.knowledgeBase.loading', 'Loading...'),
+('en', 'settings', 'admin.knowledgeBase.statusLoadError', 'Error loading status'),
+('en', 'settings', 'admin.knowledgeBase.reindexSuccess', 'Reindexing completed successfully'),
+('en', 'settings', 'admin.knowledgeBase.reindexError', 'Error during reindexing'),
+('en', 'settings', 'admin.knowledgeBase.neverIndexed', 'Never'),
+('en', 'settings', 'admin.knowledgeBase.totalDocuments', 'Total Documents'),
+('en', 'settings', 'admin.knowledgeBase.totalChunks', 'Total Chunks'),
+('en', 'settings', 'admin.knowledgeBase.uptime', 'Uptime'),
+('en', 'settings', 'admin.knowledgeBase.languageDetails', 'Language Details'),
+('en', 'settings', 'admin.knowledgeBase.loaded', 'Loaded'),
+('en', 'settings', 'admin.knowledgeBase.notLoaded', 'Not Loaded'),
+('en', 'settings', 'admin.knowledgeBase.reindexing', 'Reindexing...'),
+('en', 'settings', 'admin.knowledgeBase.reindexLanguage', 'Reindex'),
+('en', 'settings', 'admin.knowledgeBase.documents', 'Documents'),
+('en', 'settings', 'admin.knowledgeBase.chunks', 'Chunks'),
+('en', 'settings', 'admin.knowledgeBase.lastIndexed', 'Last Indexed'),
+('en', 'settings', 'admin.knowledgeBase.reindexingAll', 'Reindexing All...'),
+('en', 'settings', 'admin.knowledgeBase.reindexAll', 'Reindex All'),
+('en', 'settings', 'admin.knowledgeBase.refreshStatus', 'Refresh Status'),
+('en', 'settings', 'admin.knowledgeBase.statusUnavailable', 'Status unavailable'),
+('en', 'settings', 'admin.knowledgeBase.retry', 'Retry')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

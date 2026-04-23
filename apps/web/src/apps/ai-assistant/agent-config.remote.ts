@@ -41,7 +41,8 @@ const saveAgentConfigSchema = v.object({
 	modelName: v.optional(v.nullable(v.string())),
 	baseUrl: v.optional(v.nullable(v.string())),
 	maxTokens: v.optional(v.nullable(v.pipe(v.number(), v.minValue(1), v.maxValue(100000)))),
-	temperature: v.optional(v.nullable(v.pipe(v.string(), v.regex(/^\d+\.\d{2}$/))))
+	temperature: v.optional(v.nullable(v.pipe(v.string(), v.regex(/^\d+\.\d{2}$/)))),
+	topP: v.optional(v.nullable(v.pipe(v.string(), v.regex(/^\d+\.\d{2}$/))))
 });
 
 /** testAgentConnection: agent kapcsolat tesztelése */
@@ -219,7 +220,8 @@ export const saveAgentConfig = command(
 				modelName: data.modelName ?? null,
 				baseUrl: data.baseUrl ?? null,
 				maxTokens: data.maxTokens ?? 1000,
-				temperature: data.temperature ?? '0.70'
+				temperature: data.temperature ?? '0.70',
+				topP: data.topP ?? '0.90'
 			});
 
 			// Lekérjük a mentett konfigurációt (maszkolt API key-vel)
@@ -253,6 +255,9 @@ export const testAgentConnection = command(
 		try {
 			const userId = parseInt(locals.user.id);
 			let { provider, apiKey, modelName, baseUrl } = data;
+			let maxTokens = 10; // Teszteléshez elég a 10
+			let temperature = 0.7;
+			let topP = 0.9;
 
 			// Ha az API kulcs maszkolt (tartalmaz csillagokat), akkor az adatbázisból töltjük be
 			if (apiKey.includes('*')) {
@@ -268,6 +273,8 @@ export const testAgentConnection = command(
 				provider = config.provider;
 				modelName = modelName || config.modelName || null;
 				baseUrl = baseUrl || config.baseUrl || null;
+				maxTokens = config.maxTokens ?? 10;
+				temperature = parseFloat(config.temperature ?? '0.70');
 			}
 
 			// Provider-specifikus tesztelés
@@ -288,7 +295,12 @@ export const testAgentConnection = command(
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
-							contents: [{ parts: [{ text: 'Hello' }] }]
+							contents: [{ parts: [{ text: 'Hello' }] }],
+							generationConfig: {
+								maxOutputTokens: maxTokens,
+								temperature: temperature,
+								topP: topP
+							}
 						})
 					});
 
@@ -326,7 +338,9 @@ export const testAgentConnection = command(
 						body: JSON.stringify({
 							model,
 							messages: [{ role: 'user', content: 'Hello' }],
-							max_tokens: 10
+							max_tokens: maxTokens,
+							temperature: temperature,
+							top_p: topP
 						})
 					});
 
@@ -364,7 +378,9 @@ export const testAgentConnection = command(
 						body: JSON.stringify({
 							model,
 							messages: [{ role: 'user', content: 'Hello' }],
-							max_tokens: 10
+							max_tokens: maxTokens,
+							temperature: temperature,
+							top_p: topP
 						})
 					});
 
@@ -407,7 +423,9 @@ export const testAgentConnection = command(
 						body: JSON.stringify({
 							model,
 							messages: [{ role: 'user', content: 'Hello' }],
-							max_tokens: 10
+							max_tokens: maxTokens,
+							temperature: temperature,
+							top_p: topP
 						})
 					});
 
@@ -448,7 +466,12 @@ export const testAgentConnection = command(
 							Authorization: `Bearer ${apiKey}`
 						},
 						body: JSON.stringify({
-							inputs: 'Hello'
+							inputs: 'Hello',
+							parameters: {
+								max_new_tokens: maxTokens,
+								temperature: temperature,
+								top_p: topP
+							}
 						})
 					});
 
@@ -492,7 +515,9 @@ export const testAgentConnection = command(
 								)) ||
 								'default',
 							messages: [{ role: 'user', content: 'Hello' }],
-							max_tokens: 10
+							max_tokens: maxTokens,
+							temperature: temperature,
+							top_p: topP
 						})
 					});
 

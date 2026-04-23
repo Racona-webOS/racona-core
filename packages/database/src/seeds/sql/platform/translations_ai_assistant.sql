@@ -43,7 +43,6 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'menu.settings', 'Beállítások'),
-('hu', 'ai-assistant', 'menu.install', 'Telepítés'),
 ('hu', 'ai-assistant', 'menu.agentSettings', 'AI Agent'),
 ('hu', 'ai-assistant', 'greeting.hu', 'Szia, {name} vagyok, miben segíthetek?'),
 ('hu', 'ai-assistant', 'greeting.en', 'Szia, {name} vagyok, miben segíthetek?'),
@@ -61,29 +60,11 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'settings.saveError', 'Hiba történt a mentés során'),
 ('hu', 'ai-assistant', 'settings.installedAvatars', 'Telepített avatárok'),
 ('hu', 'ai-assistant', 'settings.noAvatarsInstalled', 'Még nincs telepített avatar'),
-('hu', 'ai-assistant', 'settings.installHint', 'Használd a Telepítés menüpontot új avatárok hozzáadásához'),
 ('hu', 'ai-assistant', 'settings.noAvatars', 'Nincs elérhető avatar')
-ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
-
--- -----------------------------------------------------------------------------
--- Telepítés (install) fordítások
--- Requirements: 5.1, 5.2, 5.3, 5.4, 5.7
--- -----------------------------------------------------------------------------
-
-INSERT INTO platform.translations (locale, namespace, key, value) VALUES
-('hu', 'ai-assistant', 'install.title', 'Avatar telepítése'),
-('hu', 'ai-assistant', 'install.description', 'Tölts fel egy .raconapkg fájlt új avatar telepítéséhez'),
-('hu', 'ai-assistant', 'install.fileLabel', 'Avatar csomag fájl'),
-('hu', 'ai-assistant', 'install.invalidFileType', 'Érvénytelen fájltípus. Csak .raconapkg fájlok engedélyezettek.'),
-('hu', 'ai-assistant', 'install.install', 'Telepítés'),
-('hu', 'ai-assistant', 'install.installing', 'Telepítés...'),
-('hu', 'ai-assistant', 'install.success', '{name} sikeresen telepítve'),
-('hu', 'ai-assistant', 'install.unknownError', 'Ismeretlen hiba történt a telepítés során')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'menu.settings', 'Settings'),
-('en', 'ai-assistant', 'menu.install', 'Install'),
 ('en', 'ai-assistant', 'menu.agentSettings', 'AI Agent'),
 ('en', 'ai-assistant', 'greeting.hu', 'Szia, {name} vagyok, miben segíthetek?'),
 ('en', 'ai-assistant', 'greeting.en', 'Hi, I''m {name}, how can I help you?'),
@@ -101,24 +82,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'settings.saveError', 'Error saving settings'),
 ('en', 'ai-assistant', 'settings.installedAvatars', 'Installed avatars'),
 ('en', 'ai-assistant', 'settings.noAvatarsInstalled', 'No avatars installed yet'),
-('en', 'ai-assistant', 'settings.installHint', 'Use the Install menu to add new avatars'),
 ('en', 'ai-assistant', 'settings.noAvatars', 'No avatars available')
-ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
-
--- -----------------------------------------------------------------------------
--- Telepítés (install) fordítások - ANGOL
--- Requirements: 5.1, 5.2, 5.3, 5.4, 5.7
--- -----------------------------------------------------------------------------
-
-INSERT INTO platform.translations (locale, namespace, key, value) VALUES
-('en', 'ai-assistant', 'install.title', 'Install Avatar'),
-('en', 'ai-assistant', 'install.description', 'Upload a .raconapkg file to install a new avatar'),
-('en', 'ai-assistant', 'install.fileLabel', 'Avatar package file'),
-('en', 'ai-assistant', 'install.invalidFileType', 'Invalid file type. Only .raconapkg files are allowed.'),
-('en', 'ai-assistant', 'install.install', 'Install'),
-('en', 'ai-assistant', 'install.installing', 'Installing...'),
-('en', 'ai-assistant', 'install.success', '{name} installed successfully'),
-('en', 'ai-assistant', 'install.unknownError', 'Unknown error occurred during installation')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -144,7 +108,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'agent.baseUrlPlaceholder', 'https://api.example.com'),
 ('hu', 'ai-assistant', 'agent.baseUrlHint', 'Opcionális. Egyéni API végpont megadásához'),
 ('hu', 'ai-assistant', 'agent.maxTokens', 'Maximum tokenek'),
-('hu', 'ai-assistant', 'agent.temperature', 'Hőmérséklet'),
+('hu', 'ai-assistant', 'agent.temperature', 'Kreativitás'),
 ('hu', 'ai-assistant', 'agent.testConnection', 'Kapcsolat tesztelése'),
 ('hu', 'ai-assistant', 'agent.testing', 'Tesztelés...'),
 ('hu', 'ai-assistant', 'agent.cancel', 'Mégse'),
@@ -281,6 +245,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'tts.enabledHint', 'Megjeleníti a felolvasás gombot az asszisztens üzeneteinél'),
 ('hu', 'ai-assistant', 'tts.autoPlay', 'Automatikus felolvasás'),
 ('hu', 'ai-assistant', 'tts.autoPlayHint', 'Automatikusan felolvassa az új asszisztens válaszokat'),
+('hu', 'ai-assistant', 'tts.provider', 'Szolgáltató'),
+('hu', 'ai-assistant', 'tts.providerBrowser', 'Böngésző (Web Speech API) - Ingyenes'),
+('hu', 'ai-assistant', 'tts.providerElevenLabs', 'ElevenLabs - Prémium minőség'),
 ('hu', 'ai-assistant', 'tts.voice', 'Hang'),
 ('hu', 'ai-assistant', 'tts.voiceHint', 'Válassz hangot a felolvasáshoz (magyar hang ajánlott)'),
 ('hu', 'ai-assistant', 'tts.rate', 'Sebesség'),
@@ -296,7 +263,13 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'tts.speak', 'Felolvasás'),
 ('hu', 'ai-assistant', 'tts.pause', 'Szüneteltetés'),
 ('hu', 'ai-assistant', 'tts.resume', 'Folytatás'),
-('hu', 'ai-assistant', 'tts.stop', 'Leállítás')
+('hu', 'ai-assistant', 'tts.stop', 'Leállítás'),
+('hu', 'ai-assistant', 'tts.elevenLabsApiKey', 'ElevenLabs API kulcs'),
+('hu', 'ai-assistant', 'tts.elevenLabsApiKeyHint', 'Szerezz API kulcsot: elevenlabs.io'),
+('hu', 'ai-assistant', 'tts.loadVoices', 'Hangok betöltése'),
+('hu', 'ai-assistant', 'tts.loadingVoices', 'Betöltés...'),
+('hu', 'ai-assistant', 'tts.voicesLoaded', '{count} hang betöltve'),
+('hu', 'ai-assistant', 'tts.apiKeyRequired', 'Először add meg az ElevenLabs API kulcsot')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -311,6 +284,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'tts.enabledHint', 'Shows the speak button on assistant messages'),
 ('en', 'ai-assistant', 'tts.autoPlay', 'Auto-play'),
 ('en', 'ai-assistant', 'tts.autoPlayHint', 'Automatically reads new assistant responses'),
+('en', 'ai-assistant', 'tts.provider', 'Provider'),
+('en', 'ai-assistant', 'tts.providerBrowser', 'Browser (Web Speech API) - Free'),
+('en', 'ai-assistant', 'tts.providerElevenLabs', 'ElevenLabs - Premium Quality'),
 ('en', 'ai-assistant', 'tts.voice', 'Voice'),
 ('en', 'ai-assistant', 'tts.voiceHint', 'Select a voice for text-to-speech'),
 ('en', 'ai-assistant', 'tts.rate', 'Speed'),
@@ -326,5 +302,11 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'tts.speak', 'Speak'),
 ('en', 'ai-assistant', 'tts.pause', 'Pause'),
 ('en', 'ai-assistant', 'tts.resume', 'Resume'),
-('en', 'ai-assistant', 'tts.stop', 'Stop')
+('en', 'ai-assistant', 'tts.stop', 'Stop'),
+('en', 'ai-assistant', 'tts.elevenLabsApiKey', 'ElevenLabs API Key'),
+('en', 'ai-assistant', 'tts.elevenLabsApiKeyHint', 'Get API key at: elevenlabs.io'),
+('en', 'ai-assistant', 'tts.loadVoices', 'Load Voices'),
+('en', 'ai-assistant', 'tts.loadingVoices', 'Loading...'),
+('en', 'ai-assistant', 'tts.voicesLoaded', '{count} voices loaded'),
+('en', 'ai-assistant', 'tts.apiKeyRequired', 'Please enter ElevenLabs API key first')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

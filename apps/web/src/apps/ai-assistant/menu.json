@@ -6,12 +6,6 @@
 		"component": "AvatarSettings"
 	},
 	{
-		"labelKey": "menu.install",
-		"href": "#install",
-		"icon": "Download",
-		"component": "AvatarInstall"
-	},
-	{
 		"labelKey": "menu.agentSettings",
 		"href": "#agent",
 		"icon": "Settings",

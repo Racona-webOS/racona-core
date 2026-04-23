@@ -41,7 +41,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'common', 'status.active', 'Aktív'),
 ('hu', 'common', 'status.inactive', 'Inaktív'),
 ('hu', 'common', 'status.enabled', 'Engedélyezve'),
-('hu', 'common', 'status.disabled', 'Letiltva')
+('hu', 'common', 'status.disabled', 'Letiltva'),
+('hu', 'common', 'saving', 'Mentés...'),
+('hu', 'common', 'testing', 'Tesztelés...')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Általános hibaüzenetek
@@ -151,7 +153,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'common', 'status.active', 'Active'),
 ('en', 'common', 'status.inactive', 'Inactive'),
 ('en', 'common', 'status.enabled', 'Enabled'),
-('en', 'common', 'status.disabled', 'Disabled')
+('en', 'common', 'status.disabled', 'Disabled'),
+('en', 'common', 'saving', 'Saving...'),
+('en', 'common', 'testing', 'Testing...')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Általános hibaüzenetek
@@ -265,4 +269,12 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'common', 'sidebar.search', 'Search...'),
 ('en', 'common', 'error.backToHome', 'Back to home'),
 ('en', 'common', 'error.technicalInfo', 'Technical information')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Dátum mezők
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'common', 'createdAt', 'Létrehozva'),
+('hu', 'common', 'installedAt', 'Telepítve'),
+('en', 'common', 'createdAt', 'Created'),
+('en', 'common', 'installedAt', 'Installed')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

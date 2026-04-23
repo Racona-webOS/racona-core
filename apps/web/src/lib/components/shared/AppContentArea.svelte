@@ -87,7 +87,8 @@
 			console.error(`Failed to load component: ${name} from app: ${appName}`, e);
 			error = `Nem sikerült betölteni a komponenst: ${name}`;
 			loadedComponent = null;
-			lastLoadedComponent = null;
+			// Set lastLoadedComponent to the failed component name to prevent infinite loop
+			lastLoadedComponent = name;
 		} finally {
 			loading = false;
 			isLoadingComponent = false;

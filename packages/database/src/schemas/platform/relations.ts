@@ -9,6 +9,7 @@ import { userAvatarConfigs } from './ai-avatar/user_avatar_configs';
 import { aiAgentConfigs } from './ai-avatar/ai_agent_configs';
 import { aiProviders } from './ai-providers/aiProviders';
 import { aiProviderConfigs } from './ai-providers/aiProviderConfigs';
+import { adminConfig } from './admin-config/adminConfig';
 
 // Import auth tables for cross-schema relations
 import { users } from '../auth/users/users';
@@ -79,5 +80,13 @@ export const aiProviderConfigsRelations = relations(aiProviderConfigs, ({ one })
 	provider: one(aiProviders, {
 		fields: [aiProviderConfigs.providerId],
 		references: [aiProviders.id]
+	})
+}));
+
+// Admin Config relations
+export const adminConfigRelations = relations(adminConfig, ({ one }) => ({
+	creator: one(users, {
+		fields: [adminConfig.createdBy],
+		references: [users.id]
 	})
 }));

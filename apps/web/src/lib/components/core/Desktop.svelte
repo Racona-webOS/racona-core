@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onMount, untrack } from 'svelte';
 	import {
 		createWindowManager,
 		setWindowManager,
@@ -83,8 +83,48 @@
 			// Szerver kapcsolat figyelő indítása
 			const connectionStore = getConnectionStore();
 			connectionStore.start();
+
+			// Hallgatjuk a TTS Provider konfiguráció változásait
+			window.addEventListener('tts-provider-config-changed', handleTTSConfigChange);
 		}
 	});
+
+	onMount(() => {
+		// TTS Provider globális státusz ellenőrzése
+		untrack(() => checkTTSProviderStatus());
+	});
+
+	async function checkTTSProviderStatus() {
+		try {
+			const { isTTSProviderEnabled, getAIAssistantConfig } =
+				await import('$apps/settings/admin-config.remote');
+			const status = await isTTSProviderEnabled({});
+			aiAssistantStore.tts.setGloballyEnabled(status.enabled);
+
+			// Admin TTS config betöltése
+			if (status.enabled && status.configured) {
+				const configResult = await getAIAssistantConfig({});
+				if (configResult.success && configResult.config) {
+					aiAssistantStore.tts.loadAdminConfig(configResult.config.ttsProvider);
+				}
+			}
+
+			// User TTS settings betöltése
+			const { getTTSSettings } = await import('$apps/ai-assistant/tts-settings.remote');
+			const userSettingsResult = await getTTSSettings({});
+			if (userSettingsResult.success && userSettingsResult.settings) {
+				aiAssistantStore.tts.loadUserSettings(userSettingsResult.settings);
+			}
+		} catch (error) {
+			console.error('[Desktop] Error checking TTS Provider status:', error);
+		}
+	}
+
+	function handleTTSConfigChange() {
+		setTimeout(() => {
+			checkTTSProviderStatus();
+		}, 100);
+	}
 
 	// Handle window resize - reflow icons if needed
 	$effect(() => {

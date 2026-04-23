@@ -1,0 +1,1 @@
+ALTER TABLE "platform"."ai_agent_configs" ADD COLUMN "top_p" numeric(3, 2) DEFAULT '0.90';

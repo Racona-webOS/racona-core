@@ -31,6 +31,7 @@ export const aiAgentConfigs = schema.table('ai_agent_configs', {
 	// Generálási paraméterek
 	maxTokens: integer('max_tokens').default(1000),
 	temperature: decimal('temperature', { precision: 3, scale: 2 }).default('0.70'),
+	topP: decimal('top_p', { precision: 3, scale: 2 }).default('0.90'),
 
 	// Aktív konfiguráció jelzése
 	isActive: boolean('is_active').default(true).notNull(),

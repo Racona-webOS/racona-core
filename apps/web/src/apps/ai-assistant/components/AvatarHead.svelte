@@ -20,8 +20,8 @@
 		modelUrl
 	}: AvatarRendererProps & { filename?: string } = $props();
 
-	// Modell URL: ha modelUrl meg van adva, azt használjuk; különben a filename alapján a /logos/ mappából
-	const resolvedModelUrl = $derived(modelUrl ?? `/logos/${filename}`);
+	// Modell URL: ha modelUrl meg van adva, azt használjuk; különben az API endpoint-ot használjuk
+	const resolvedModelUrl = $derived(modelUrl ?? `/api/ai-avatar/default/default_sd.glb`);
 
 	// GLB modell állapot
 	let gltfScene: THREE.Group | null = $state(null);

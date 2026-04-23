@@ -62,6 +62,42 @@
 		"hideWhen": "singleLocale"
 	},
 	{
+		"labelKey": "menu.aiAssistant",
+		"href": "#",
+		"icon": "Binary",
+		"requiredPermission": "settings.admin.aiAssistant",
+		"children": [
+			{
+				"labelKey": "menu.aiAgent",
+				"href": "#ai-agent",
+				"icon": "Bot",
+				"component": "AIAgentConfigPanel",
+				"requiredPermission": "settings.admin.aiAssistant"
+			},
+			{
+				"labelKey": "menu.ttsProvider",
+				"href": "#tts-provider",
+				"icon": "Volume2",
+				"component": "TTSProviderConfigPanel",
+				"requiredPermission": "settings.admin.aiAssistant"
+			},
+			{
+				"labelKey": "menu.aiAvatar",
+				"href": "#ai-avatar",
+				"icon": "User",
+				"component": "AIAvatarInstallPanel",
+				"requiredPermission": "settings.admin.aiAssistant"
+			},
+			{
+				"labelKey": "menu.knowledgeBase",
+				"href": "#knowledge-base",
+				"icon": "Database",
+				"component": "KnowledgeBaseAdminPanel",
+				"requiredPermission": "settings.admin.aiAssistant"
+			}
+		]
+	},
+	{
 		"labelKey": "menu.about",
 		"href": "#system-info",
 		"icon": "Info",

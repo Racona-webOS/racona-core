@@ -81,7 +81,7 @@
 				</button>
 			{/if}
 
-			{#if !message.isError && aiStore.tts.isSupported && aiStore.tts.enabled}
+			{#if !message.isError && aiStore.tts.isSupported && aiStore.tts.isGloballyEnabled}
 				<div class="flex items-center gap-1">
 					<button
 						onclick={handleSpeak}

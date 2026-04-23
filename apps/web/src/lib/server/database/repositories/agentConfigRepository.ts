@@ -19,6 +19,7 @@ export type UpsertAgentConfigData = {
 	baseUrl?: string | null;
 	maxTokens?: number | null;
 	temperature?: string | null;
+	topP?: string | null;
 };
 
 // Agent konfiguráció visszaadási típusa (maszkolt API key-vel)
@@ -54,6 +55,7 @@ export const agentConfigRepository = {
 				baseUrl: config.baseUrl ?? null,
 				maxTokens: config.maxTokens ?? 1000,
 				temperature: config.temperature ?? '0.70',
+				topP: config.topP ?? '0.90',
 				isActive: true
 			})
 			.returning();

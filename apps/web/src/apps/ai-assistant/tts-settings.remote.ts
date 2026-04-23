@@ -14,20 +14,21 @@ import { DEFAULT_USER_SETTINGS } from '$lib/types/settings';
 // Validation Schemas
 // -------------------------------------------------------------------------
 
+const emptySchema = v.object({});
+
 const TTSSettingsSchema = v.object({
-	enabled: v.boolean(),
 	autoPlay: v.boolean(),
 	rate: v.pipe(v.number(), v.minValue(0.1), v.maxValue(10)),
 	pitch: v.pipe(v.number(), v.minValue(0), v.maxValue(2)),
 	volume: v.pipe(v.number(), v.minValue(0), v.maxValue(1)),
-	selectedVoice: v.nullable(v.string())
+	selectedVoiceOverride: v.optional(v.nullable(v.string()))
 });
 
 // -------------------------------------------------------------------------
-// Query: TTS beállítások lekérése
+// Command: TTS beállítások lekérése
 // -------------------------------------------------------------------------
 
-export const getTTSSettings = query(async () => {
+export const getTTSSettings = command(emptySchema, async () => {
 	const { locals } = getRequestEvent();
 
 	if (!locals.session?.userId) {

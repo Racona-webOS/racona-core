@@ -577,8 +577,9 @@ class AiAssistantStore {
 		// NE változtassuk meg a currentEmotion-t - így nincs animáció
 		// this.currentEmotion = emotion;
 
-		// Automatikus felolvasás, ha be van kapcsolva és nem hibaüzenet
-		if (this.tts.enabled && this.tts.autoPlay && !isError) {
+		// Automatikus felolvasás, ha globálisan engedélyezve van és nem hibaüzenet
+		// A felhasználó az AI Assistant appban beállíthatja az autoPlay-t és a hangot
+		if (this.tts.autoPlay && !isError && this.tts.isGloballyEnabled) {
 			// Kis késleltetés, hogy a UI frissüljön
 			setTimeout(() => {
 				this.tts.speak(content, assistantMessage.id);

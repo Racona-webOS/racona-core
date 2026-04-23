@@ -34,18 +34,16 @@ export interface DesktopSettings {
 }
 
 export interface TTSSettings {
-	/** Felolvasás engedélyezve */
-	enabled: boolean;
 	/** Automatikus felolvasás új válaszoknál */
 	autoPlay: boolean;
-	/** Felolvasás sebessége (0.1 - 10) */
+	/** Felolvasás sebessége (0.1 - 10) - csak browser provider-nél */
 	rate: number;
-	/** Hang magassága (0 - 2) */
+	/** Hang magassága (0 - 2) - csak browser provider-nél */
 	pitch: number;
 	/** Hangerő (0 - 1) */
 	volume: number;
-	/** Kiválasztott hang neve */
-	selectedVoice: string | null;
+	/** Kiválasztott hang felülbírálása (opcionális, ha nincs megadva, akkor az admin default voice-t használja) */
+	selectedVoiceOverride?: string | null;
 }
 
 export interface UserSettings {
@@ -73,11 +71,10 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
 	startMenu: DEFAULTS.START_MENU,
 	desktop: DEFAULTS.DESKTOP,
 	tts: {
-		enabled: true,
 		autoPlay: false,
 		rate: 1.0,
 		pitch: 1.0,
 		volume: 1.0,
-		selectedVoice: null
+		selectedVoiceOverride: null
 	}
 };
