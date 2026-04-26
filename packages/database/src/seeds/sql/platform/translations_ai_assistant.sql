@@ -16,7 +16,10 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'input.placeholder', 'Mi a helyzet?'),
 ('hu', 'ai-assistant', 'input.label', 'Kérdés beviteli mező'),
 ('hu', 'ai-assistant', 'input.send', 'Küldés'),
-('hu', 'ai-assistant', 'input.tooLong', 'A kérdés túl hosszú (maximum {max} karakter).')
+('hu', 'ai-assistant', 'input.tooLong', 'A kérdés túl hosszú (maximum {max} karakter).'),
+('hu', 'ai-assistant', 'avatar.title', 'Avatar beállítások'),
+('hu', 'ai-assistant', 'tts.title', 'Felolvasás beállítások'),
+('hu', 'ai-assistant', 'tts.testButton', 'Teszt felolvasás')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -33,7 +36,10 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'input.placeholder', 'Ask something...'),
 ('en', 'ai-assistant', 'input.label', 'Question input field'),
 ('en', 'ai-assistant', 'input.send', 'Send'),
-('en', 'ai-assistant', 'input.tooLong', 'Question is too long (maximum {max} characters).')
+('en', 'ai-assistant', 'input.tooLong', 'Question is too long (maximum {max} characters).'),
+('en', 'ai-assistant', 'avatar.title', 'Avatar Settings'),
+('en', 'ai-assistant', 'tts.title', 'Text-to-Speech Settings'),
+('en', 'ai-assistant', 'tts.testButton', 'Test Playback')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -43,7 +49,6 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'menu.settings', 'Beállítások'),
-('hu', 'ai-assistant', 'menu.agentSettings', 'AI Agent'),
 ('hu', 'ai-assistant', 'greeting.hu', 'Szia, {name} vagyok, miben segíthetek?'),
 ('hu', 'ai-assistant', 'greeting.en', 'Szia, {name} vagyok, miben segíthetek?'),
 ('hu', 'ai-assistant', 'greeting.defaultName', 'Asszisztens'),
@@ -65,7 +70,6 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'menu.settings', 'Settings'),
-('en', 'ai-assistant', 'menu.agentSettings', 'AI Agent'),
 ('en', 'ai-assistant', 'greeting.hu', 'Szia, {name} vagyok, miben segíthetek?'),
 ('en', 'ai-assistant', 'greeting.en', 'Hi, I''m {name}, how can I help you?'),
 ('en', 'ai-assistant', 'greeting.defaultName', 'Assistant'),
@@ -240,6 +244,32 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'tts.title', 'Felolvasás'),
 ('hu', 'ai-assistant', 'tts.loading', 'Betöltés...'),
+('hu', 'ai-assistant', 'tts.testText', 'Üdvözöllek! Ez egy teszt üzenet a felolvasás kipróbálásához.'),
+('hu', 'ai-assistant', 'tts.disabled.title', 'TTS szolgáltatás letiltva'),
+('hu', 'ai-assistant', 'tts.disabled.message', 'A felolvasás funkció jelenleg le van tiltva. Kérj meg egy adminisztrátort, hogy engedélyezze a Settings appban.'),
+('hu', 'ai-assistant', 'tts.userEnabled.label', 'Felolvasás engedélyezése'),
+('hu', 'ai-assistant', 'tts.userEnabled.hint', 'Kikapcsolhatod a felolvasást, ha nem szeretnéd használni'),
+('hu', 'ai-assistant', 'tts.provider.label', 'Szolgáltató'),
+('hu', 'ai-assistant', 'tts.provider.browser', 'Böngésző (Web Speech API)'),
+('hu', 'ai-assistant', 'tts.provider.elevenlabs', 'ElevenLabs'),
+('hu', 'ai-assistant', 'tts.provider.note', 'A szolgáltatót és az API kulcsot az adminisztrátor állítja be a Settings appban.'),
+('hu', 'ai-assistant', 'tts.voice.label', 'Hang (opcionális felülbírálás)'),
+('hu', 'ai-assistant', 'tts.voice.default', 'Alapértelmezett (admin beállítás)'),
+('hu', 'ai-assistant', 'tts.voice.defaultMarker', 'alapértelmezett'),
+('hu', 'ai-assistant', 'tts.voice.hint', 'Ha nem választasz hangot, az admin által beállított alapértelmezett hang lesz használva.'),
+('hu', 'ai-assistant', 'tts.rate.label', 'Sebesség'),
+('hu', 'ai-assistant', 'tts.rate.range', '0.5x - 2x'),
+('hu', 'ai-assistant', 'tts.pitch.label', 'Hangmagasság'),
+('hu', 'ai-assistant', 'tts.pitch.range', '0.5 - 2'),
+('hu', 'ai-assistant', 'tts.volume.label', 'Hangerő'),
+('hu', 'ai-assistant', 'tts.volume.range', '0% - 100%'),
+('hu', 'ai-assistant', 'tts.volume.hint', 'Felolvasás hangereje'),
+('hu', 'ai-assistant', 'tts.autoPlay.label', 'Automatikus felolvasás'),
+('hu', 'ai-assistant', 'tts.autoPlay.hint', 'Automatikusan felolvassa az új asszisztens válaszokat'),
+('hu', 'ai-assistant', 'tts.errors.loadFailed', 'Beállítások betöltése sikertelen'),
+('hu', 'ai-assistant', 'tts.errors.saveFailed', 'Mentés sikertelen'),
+('hu', 'ai-assistant', 'tts.errors.notSupported', 'A böngésző nem támogatja a felolvasást'),
+('hu', 'ai-assistant', 'tts.errors.elevenLabsKeyMissing', 'ElevenLabs API kulcs hiányzik (admin beállítás)'),
 ('hu', 'ai-assistant', 'tts.notSupported', 'A böngésző nem támogatja a felolvasást (Web Speech API).'),
 ('hu', 'ai-assistant', 'tts.enabled', 'Felolvasás engedélyezése'),
 ('hu', 'ai-assistant', 'tts.enabledHint', 'Megjeleníti a felolvasás gombot az asszisztens üzeneteinél'),
@@ -279,6 +309,32 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'tts.title', 'Text-to-Speech'),
 ('en', 'ai-assistant', 'tts.loading', 'Loading...'),
+('en', 'ai-assistant', 'tts.testText', 'Hello! This is a test message to try out the text-to-speech feature.'),
+('en', 'ai-assistant', 'tts.disabled.title', 'TTS Service Disabled'),
+('en', 'ai-assistant', 'tts.disabled.message', 'The text-to-speech feature is currently disabled. Please ask an administrator to enable it in the Settings app.'),
+('en', 'ai-assistant', 'tts.userEnabled.label', 'Enable text-to-speech'),
+('en', 'ai-assistant', 'tts.userEnabled.hint', 'You can disable text-to-speech if you don''t want to use it'),
+('en', 'ai-assistant', 'tts.provider.label', 'Provider'),
+('en', 'ai-assistant', 'tts.provider.browser', 'Browser (Web Speech API)'),
+('en', 'ai-assistant', 'tts.provider.elevenlabs', 'ElevenLabs'),
+('en', 'ai-assistant', 'tts.provider.note', 'The provider and API key are configured by the administrator in the Settings app.'),
+('en', 'ai-assistant', 'tts.voice.label', 'Voice (optional override)'),
+('en', 'ai-assistant', 'tts.voice.default', 'Default (admin setting)'),
+('en', 'ai-assistant', 'tts.voice.defaultMarker', 'default'),
+('en', 'ai-assistant', 'tts.voice.hint', 'If no voice is selected, the default voice set by the administrator will be used.'),
+('en', 'ai-assistant', 'tts.rate.label', 'Speed'),
+('en', 'ai-assistant', 'tts.rate.range', '0.5x - 2x'),
+('en', 'ai-assistant', 'tts.pitch.label', 'Pitch'),
+('en', 'ai-assistant', 'tts.pitch.range', '0.5 - 2'),
+('en', 'ai-assistant', 'tts.volume.label', 'Volume'),
+('en', 'ai-assistant', 'tts.volume.range', '0% - 100%'),
+('en', 'ai-assistant', 'tts.volume.hint', 'Speech volume'),
+('en', 'ai-assistant', 'tts.autoPlay.label', 'Auto-play'),
+('en', 'ai-assistant', 'tts.autoPlay.hint', 'Automatically reads new assistant responses'),
+('en', 'ai-assistant', 'tts.errors.loadFailed', 'Failed to load settings'),
+('en', 'ai-assistant', 'tts.errors.saveFailed', 'Failed to save'),
+('en', 'ai-assistant', 'tts.errors.notSupported', 'Your browser does not support text-to-speech'),
+('en', 'ai-assistant', 'tts.errors.elevenLabsKeyMissing', 'ElevenLabs API key is missing (admin setting)'),
 ('en', 'ai-assistant', 'tts.notSupported', 'Your browser does not support text-to-speech (Web Speech API).'),
 ('en', 'ai-assistant', 'tts.enabled', 'Enable text-to-speech'),
 ('en', 'ai-assistant', 'tts.enabledHint', 'Shows the speak button on assistant messages'),

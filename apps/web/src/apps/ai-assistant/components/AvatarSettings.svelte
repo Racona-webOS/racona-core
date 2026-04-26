@@ -1,9 +1,9 @@
 <!--
   AvatarSettings — Avatar beállítások panel.
 
-  Vízszintes osztású elrendezés:
-  - Felső blokk: kiválasztott avatar megjelenítése (bal oldal) + beállítások (jobb oldal)
-  - Alsó blokk: telepített avatárok listája (grid elrendezés cover képekkel)
+  Vízszintes elrendezés:
+  - Bal oldal: kiválasztott avatar 3D megjelenítése
+  - Jobb oldal: beállítások (név, minőség) + telepített avatárok carousel
 
   Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.7, 9.7
 -->
@@ -11,13 +11,13 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { mode } from 'mode-watcher';
-	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import { useI18n } from '$lib/i18n/hooks';
 	import { listAvatars, getAvatarConfig, saveAvatarConfig } from '../avatar.remote.js';
 	import type { AiAvatarSelectModel } from '@racona/database/schemas';
-	import RaccoonHead from './AvatarHead.svelte';
+	import AvatarHead from './AvatarHead.svelte';
 	import { getAiAssistantStore } from '../stores/aiAssistantStore.svelte.js';
 
 	const { t } = useI18n();
@@ -169,6 +169,22 @@
 			customName !== originalConfig.customName
 	);
 
+	// Exportált API a szülő komponens számára
+	export const api = {
+		get saving() {
+			return saving;
+		},
+		get hasChanges() {
+			return hasChanges;
+		},
+		handleSave() {
+			return saveAvatar();
+		},
+		handleCancel() {
+			cancelChanges();
+		}
+	};
+
 	// -------------------------------------------------------------------------
 	// Avatar kiválasztása a listából
 	// -------------------------------------------------------------------------
@@ -193,10 +209,9 @@
 	// Mentés
 	// -------------------------------------------------------------------------
 
-	async function handleSave() {
+	async function saveAvatar() {
 		if (!selectedIdname) {
-			toast.error(t('ai-assistant.settings.noAvatarSelected'));
-			return;
+			return { success: false, error: t('ai-assistant.settings.noAvatarSelected') };
 		}
 
 		console.log('[AvatarSettings] Mentés indítása:', {
@@ -216,8 +231,6 @@
 			console.log('[AvatarSettings] Mentés eredménye:', result);
 
 			if (result.success) {
-				toast.success(t('ai-assistant.settings.saveSuccess'));
-
 				// Frissítjük az eredeti konfigurációt a lokális state-ben
 				originalConfig = {
 					avatarIdname: selectedIdname,
@@ -229,13 +242,15 @@
 				const modelUrl = `/api/ai-avatar/${selectedIdname}/${selectedIdname}_${quality}.glb`;
 				console.log('[AvatarSettings] Avatar mentve, store frissítése:', modelUrl);
 				aiStore.setAvatarModelUrl(modelUrl);
+
+				return { success: true };
 			} else {
 				console.error('[AvatarSettings] Mentés sikertelen:', result.error);
-				toast.error(result.error ?? t('ai-assistant.settings.saveError'));
+				return { success: false, error: result.error ?? t('ai-assistant.settings.saveError') };
 			}
 		} catch (err) {
 			console.error('[AvatarSettings] Mentési hiba:', err);
-			toast.error(t('ai-assistant.settings.saveError'));
+			return { success: false, error: t('ai-assistant.settings.saveError') };
 		} finally {
 			saving = false;
 		}
@@ -245,164 +260,153 @@
 	// Visszavonás
 	// -------------------------------------------------------------------------
 
-	function handleCancel() {
+	function cancelChanges() {
 		selectedIdname = originalConfig.avatarIdname;
 		quality = originalConfig.quality;
 		customName = originalConfig.customName;
 	}
 </script>
 
-<div class="avatar-settings">
-	{#if loading}
-		<div
-			class="avatar-settings__loading"
-			role="status"
-			aria-label={t('ai-assistant.settings.loading')}
-		>
-			<span class="avatar-settings__spinner" aria-hidden="true"></span>
-			<span>{t('ai-assistant.settings.loading')}</span>
-		</div>
-	{:else}
-		<!-- Felső blokk: Avatar preview + beállítások -->
-		<div class="avatar-settings__top">
-			<!-- Bal oldal: 3D avatar preview -->
-			<div class="avatar-settings__preview" bind:this={panelRef}>
-				{#if selectedIdname}
-					{#key `${selectedIdname}-${quality}`}
-						<RaccoonHead
-							emotionState="neutral"
-							{theme}
-							enableMouseTracking={true}
-							{panelRef}
-							headAnimationMode="idle"
-							modelUrl={previewModelUrl}
-						/>
-					{/key}
-				{:else}
-					<div class="avatar-settings__no-selection">
-						<p>{t('ai-assistant.settings.noAvatarSelected')}</p>
-						<p class="avatar-settings__no-selection-hint">
-							{t('ai-assistant.settings.selectFromBelow')}
-						</p>
-					</div>
-				{/if}
-			</div>
-
-			<!-- Jobb oldal: Beállítások -->
-			<div class="avatar-settings__config">
-				{#if selectedIdname}
-					<!-- Egyéni név (Req 4.3) -->
-					<div class="avatar-settings__field">
-						<Label for="avatar-custom-name">{t('ai-assistant.settings.customName')}</Label>
-						<Input
-							id="avatar-custom-name"
-							type="text"
-							bind:value={customName}
-							placeholder={namePlaceholder}
-						/>
-					</div>
-
-					<!-- Minőség (Req 4.4) -->
-					<div class="avatar-settings__field">
-						<fieldset class="avatar-settings__quality-fieldset">
-							<legend class="avatar-settings__quality-legend">
-								{t('ai-assistant.settings.quality')}
-							</legend>
-							<div class="avatar-settings__quality-options">
-								{#if isQualityAvailable.sd}
-									<label class="avatar-settings__quality-label">
-										<input
-											type="radio"
-											name="avatar-quality"
-											value="sd"
-											bind:group={quality}
-											class="avatar-settings__radio"
-										/>
-										<span>SD</span>
-									</label>
-								{/if}
-								{#if isQualityAvailable.hd}
-									<label class="avatar-settings__quality-label">
-										<input
-											type="radio"
-											name="avatar-quality"
-											value="hd"
-											bind:group={quality}
-											class="avatar-settings__radio"
-										/>
-										<span>HD</span>
-									</label>
-								{/if}
-							</div>
-						</fieldset>
-					</div>
-
-					<!-- Mentés / Mégse gombok -->
-					<div class="avatar-settings__actions">
-						<Button variant="outline" onclick={handleCancel} disabled={saving || !hasChanges}>
-							{t('ai-assistant.settings.cancel')}
-						</Button>
-						<Button onclick={handleSave} disabled={saving || !hasChanges}>
-							{saving ? t('ai-assistant.settings.saving') : t('ai-assistant.settings.save')}
-						</Button>
-					</div>
-				{:else}
-					<div class="avatar-settings__no-selection-info">
-						<p>{t('ai-assistant.settings.noAvatarSelected')}</p>
-						<p class="avatar-settings__no-selection-hint">
-							{t('ai-assistant.settings.selectFromBelow')}
-						</p>
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- Alsó blokk: Telepített avatárok listája -->
-		<div class="avatar-settings__bottom">
-			<h3 class="avatar-settings__section-title">{t('ai-assistant.settings.installedAvatars')}</h3>
-			{#if avatars.length === 0}
-				<div class="avatar-settings__empty">
-					<p>{t('ai-assistant.settings.noAvatarsInstalled')}</p>
-					<p class="avatar-settings__empty-hint">{t('ai-assistant.settings.installHint')}</p>
-				</div>
+{#if loading}
+	<div
+		class="avatar-settings__loading"
+		role="status"
+		aria-label={t('ai-assistant.settings.loading')}
+	>
+		<span class="avatar-settings__spinner" aria-hidden="true"></span>
+		<span>{t('ai-assistant.settings.loading')}</span>
+	</div>
+{:else}
+	<div class="avatar-settings__container w-full">
+		<!-- Bal oldal: 3D avatar preview -->
+		<div class="avatar-settings__preview" bind:this={panelRef}>
+			{#if selectedIdname}
+				{#key `${selectedIdname}-${quality}`}
+					<AvatarHead
+						emotionState="neutral"
+						{theme}
+						enableMouseTracking={true}
+						{panelRef}
+						headAnimationMode="idle"
+						modelUrl={previewModelUrl}
+					/>
+				{/key}
 			{:else}
-				<div
-					class="avatar-settings__grid"
-					role="radiogroup"
-					aria-label={t('ai-assistant.settings.selectAvatar')}
-				>
-					{#each avatars as avatar (avatar.idname)}
-						<button
-							type="button"
-							role="radio"
-							aria-checked={selectedIdname === avatar.idname}
-							class="avatar-settings__card"
-							class:avatar-settings__card--selected={selectedIdname === avatar.idname}
-							onclick={() => selectAvatar(avatar.idname)}
-						>
-							<img
-								src="/api/ai-avatar/{avatar.idname}/{avatar.idname}_cover.jpg"
-								alt={avatar.displayName}
-								class="avatar-settings__cover"
-								loading="lazy"
-							/>
-							<span class="avatar-settings__card-name">{avatar.displayName}</span>
-						</button>
-					{/each}
+				<div class="avatar-settings__no-selection">
+					<p>{t('ai-assistant.settings.noAvatarSelected')}</p>
+					<p class="avatar-settings__no-selection-hint">
+						{t('ai-assistant.settings.selectAvatar')}
+					</p>
 				</div>
 			{/if}
 		</div>
-	{/if}
-</div>
+
+		<!-- Jobb oldal: Beállítások + Avatárok -->
+		<div class="avatar-settings__config">
+			{#if selectedIdname}
+				<!-- Egyéni név -->
+				<div class="avatar-settings__field">
+					<Label for="avatar-custom-name">{t('ai-assistant.settings.customName')}</Label>
+					<Input
+						id="avatar-custom-name"
+						type="text"
+						bind:value={customName}
+						placeholder={namePlaceholder}
+					/>
+				</div>
+
+				<!-- Minőség -->
+				<div class="avatar-settings__field">
+					<fieldset class="avatar-settings__quality-fieldset">
+						<legend class="avatar-settings__quality-legend">
+							{t('ai-assistant.settings.quality')}
+						</legend>
+						<div class="avatar-settings__quality-options">
+							{#if isQualityAvailable.sd}
+								<label class="avatar-settings__quality-label">
+									<input
+										type="radio"
+										name="avatar-quality"
+										value="sd"
+										bind:group={quality}
+										class="avatar-settings__radio"
+									/>
+									<span>SD</span>
+								</label>
+							{/if}
+							{#if isQualityAvailable.hd}
+								<label class="avatar-settings__quality-label">
+									<input
+										type="radio"
+										name="avatar-quality"
+										value="hd"
+										bind:group={quality}
+										class="avatar-settings__radio"
+									/>
+									<span>HD</span>
+								</label>
+							{/if}
+						</div>
+					</fieldset>
+				</div>
+			{:else}
+				<div class="avatar-settings__no-selection-info">
+					<p>{t('ai-assistant.settings.noAvatarSelected')}</p>
+					<p class="avatar-settings__no-selection-hint">
+						{t('ai-assistant.settings.selectAvatar')}
+					</p>
+				</div>
+			{/if}
+
+			<!-- Telepített avatárok carousel -->
+			<div class="avatar-settings__avatars">
+				<h3 class="avatar-settings__section-title">
+					{t('ai-assistant.settings.installedAvatars')}
+				</h3>
+				{#if avatars.length === 0}
+					<div class="avatar-settings__empty">
+						<p>{t('ai-assistant.settings.noAvatarsInstalled')}</p>
+					</div>
+				{:else}
+					<div class="flex justify-center">
+						<Carousel.Root
+							opts={{
+								align: 'start',
+								loop: true
+							}}
+							class="w-[70%]"
+						>
+							<Carousel.Content class="-ml-2 md:-ml-4">
+								{#each avatars as avatar (avatar.idname)}
+									<Carousel.Item class="basis-1/3 pl-2 md:basis-1/4 md:pl-4">
+										<button
+											type="button"
+											class="avatar-settings__card"
+											class:avatar-settings__card--selected={selectedIdname === avatar.idname}
+											onclick={() => selectAvatar(avatar.idname)}
+										>
+											<img
+												src="/api/ai-avatar/{avatar.idname}/{avatar.idname}_cover.jpg"
+												alt={avatar.displayName}
+												class="avatar-settings__cover"
+												loading="lazy"
+											/>
+											<span class="avatar-settings__card-name">{avatar.displayName}</span>
+										</button>
+									</Carousel.Item>
+								{/each}
+							</Carousel.Content>
+							<Carousel.Previous />
+							<Carousel.Next />
+						</Carousel.Root>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
-	.avatar-settings {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		overflow: hidden;
-	}
-
 	.avatar-settings__loading {
 		display: flex;
 		justify-content: center;
@@ -430,20 +434,14 @@
 	}
 
 	/* ========================================================================
-	   Felső blokk: Avatar preview + beállítások
+	   Fő konténer
 	   ======================================================================== */
 
-	.avatar-settings__top {
+	.avatar-settings__container {
 		display: flex;
-		flex-shrink: 0;
 		gap: 1.5rem;
-		border-bottom: 1px solid var(--color-neutral-200);
-		padding: 1.5rem;
-		height: 420px;
-	}
-
-	:global(.dark) .avatar-settings__top {
-		border-bottom-color: var(--color-neutral-700);
+		height: 100%;
+		overflow: hidden;
 	}
 
 	/* Bal oldal: 3D preview */
@@ -454,8 +452,7 @@
 		align-items: center;
 		border-radius: var(--radius-lg);
 		background: var(--color-neutral-50);
-		width: 380px;
-		height: 100%;
+		padding: 0 1.5rem;
 	}
 
 	:global(.dark) .avatar-settings__preview {
@@ -479,24 +476,21 @@
 		font-size: 0.8125rem;
 	}
 
-	/* Jobb oldal: Beállítások */
+	/* Jobb oldal: Beállítások + Avatárok */
 	.avatar-settings__config {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
 		gap: 1.25rem;
+		overflow-y: auto;
 	}
 
 	.avatar-settings__no-selection-info {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		justify-content: center;
-		align-items: center;
 		gap: 0.5rem;
 		color: var(--color-neutral-500);
 		font-size: 0.875rem;
-		text-align: center;
 	}
 
 	.avatar-settings__field {
@@ -548,25 +542,21 @@
 		accent-color: var(--color-primary-500, #3b82f6);
 	}
 
-	/* Mentés / Mégse gombok */
-	.avatar-settings__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.75rem;
-		margin-top: auto;
-	}
-
 	/* ========================================================================
-	   Alsó blokk: Telepített avatárok listája
+	   Telepített avatárok carousel
 	   ======================================================================== */
 
-	.avatar-settings__bottom {
+	.avatar-settings__avatars {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
 		gap: 1rem;
-		padding: 1.5rem;
-		overflow-y: auto;
+		margin-top: auto;
+		border-top: 1px solid var(--color-neutral-200);
+		padding-top: 1rem;
+	}
+
+	:global(.dark) .avatar-settings__avatars {
+		border-top-color: var(--color-neutral-700);
 	}
 
 	.avatar-settings__section-title {
@@ -582,29 +572,13 @@
 	}
 
 	.avatar-settings__empty {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 3rem 1rem;
+		padding: 2rem 1rem;
 		color: var(--color-neutral-500);
 		font-size: 0.875rem;
 		text-align: center;
 	}
 
-	.avatar-settings__empty-hint {
-		color: var(--color-neutral-400);
-		font-size: 0.8125rem;
-	}
-
-	/* Avatar rács */
-	.avatar-settings__grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-		gap: 1.25rem;
-	}
-
+	/* Avatar kártyák */
 	.avatar-settings__card {
 		display: flex;
 		flex-direction: column;
@@ -619,6 +593,7 @@
 		border-radius: var(--radius-md, 0.5rem);
 		background: var(--color-neutral-100);
 		padding: 0.75rem;
+		width: 100%;
 		text-align: center;
 	}
 

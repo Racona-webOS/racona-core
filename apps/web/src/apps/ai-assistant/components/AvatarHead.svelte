@@ -16,7 +16,7 @@
 		enableMouseTracking = true,
 		panelRef,
 		headAnimationMode = 'idle',
-		filename = 'ai_head_01.glb',
+		filename = '',
 		modelUrl
 	}: AvatarRendererProps & { filename?: string } = $props();
 

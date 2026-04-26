@@ -6,14 +6,15 @@
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
+	import { Switch } from '$lib/components/ui/switch';
+	import { useI18n } from '$lib/i18n/hooks';
 	import { getAiAssistantStore } from '../stores/aiAssistantStore.svelte.js';
 	import { getTTSSettings, saveTTSSettings } from '../tts-settings.remote.js';
-	import { Play } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
+	const { t } = useI18n();
 	const aiStore = getAiAssistantStore();
 	const tts = aiStore.tts;
 
@@ -21,7 +22,89 @@
 	let saving = $state(false);
 
 	// Teszt szöveg
-	const testText = 'Üdvözöllek! Ez egy teszt üzenet a felolvasás kipróbálásához.';
+	const testText = $derived(t('ai-assistant.tts.testText'));
+
+	// Eredeti beállítások (a visszavonáshoz)
+	let originalSettings = $state<{
+		enabled: boolean;
+		autoPlay: boolean;
+		rate: number;
+		pitch: number;
+		volume: number;
+		selectedVoiceOverride: string | null;
+	}>({
+		enabled: true,
+		autoPlay: false,
+		rate: 1,
+		pitch: 1,
+		volume: 1,
+		selectedVoiceOverride: null
+	});
+
+	// Exportált API a szülő komponens számára
+	export const api = {
+		get saving() {
+			return saving;
+		},
+		get hasChanges() {
+			return (
+				tts.userEnabled !== originalSettings.enabled ||
+				tts.autoPlay !== originalSettings.autoPlay ||
+				tts.rate !== originalSettings.rate ||
+				tts.pitch !== originalSettings.pitch ||
+				tts.volume !== originalSettings.volume ||
+				tts.selectedVoiceOverride !== originalSettings.selectedVoiceOverride
+			);
+		},
+		async handleSave() {
+			saving = true;
+			try {
+				const settings = tts.getUserSettings();
+				const result = await saveTTSSettings(settings);
+
+				if (result.success) {
+					// Frissítjük az eredeti beállításokat
+					originalSettings = {
+						enabled: tts.userEnabled,
+						autoPlay: tts.autoPlay,
+						rate: tts.rate,
+						pitch: tts.pitch,
+						volume: tts.volume,
+						selectedVoiceOverride: tts.selectedVoiceOverride
+					};
+					return { success: true };
+				} else {
+					return { success: false, error: result.error || t('ai-assistant.tts.errors.saveFailed') };
+				}
+			} catch (err) {
+				console.error('[TTSSettings] Mentési hiba:', err);
+				return { success: false, error: t('ai-assistant.tts.errors.saveFailed') };
+			} finally {
+				saving = false;
+			}
+		},
+		handleCancel() {
+			// Visszaállítjuk az eredeti értékeket
+			tts.userEnabled = originalSettings.enabled;
+			tts.autoPlay = originalSettings.autoPlay;
+			tts.rate = originalSettings.rate;
+			tts.pitch = originalSettings.pitch;
+			tts.volume = originalSettings.volume;
+			tts.selectedVoiceOverride = originalSettings.selectedVoiceOverride;
+		},
+		handleTest() {
+			if (!tts.isSupported) {
+				if (tts.provider === 'elevenlabs') {
+					toast.error(t('ai-assistant.tts.errors.elevenLabsKeyMissing'));
+				} else {
+					toast.error(t('ai-assistant.tts.errors.notSupported'));
+				}
+				return;
+			}
+
+			tts.speakTest(testText);
+		}
+	};
 
 	onMount(async () => {
 		await loadSettings();
@@ -30,198 +113,193 @@
 	async function loadSettings() {
 		loading = true;
 		try {
-			const result = await getTTSSettings();
+			const result = await getTTSSettings({});
 			if (result.success && result.settings) {
 				tts.loadUserSettings(result.settings);
+				// Frissítjük az eredeti beállításokat a betöltés után
+				originalSettings = {
+					enabled: tts.userEnabled,
+					autoPlay: tts.autoPlay,
+					rate: tts.rate,
+					pitch: tts.pitch,
+					volume: tts.volume,
+					selectedVoiceOverride: tts.selectedVoiceOverride
+				};
 			}
 		} catch (err) {
 			console.error('[TTSSettings] Betöltési hiba:', err);
-			toast.error('Beállítások betöltése sikertelen');
+			toast.error(t('ai-assistant.tts.errors.loadFailed'));
 		} finally {
 			loading = false;
 		}
 	}
-
-	function handleTest() {
-		if (!tts.isSupported) {
-			if (tts.provider === 'elevenlabs') {
-				toast.error('ElevenLabs API kulcs hiányzik (admin beállítás)');
-			} else {
-				toast.error('A böngésző nem támogatja a felolvasást');
-			}
-			return;
-		}
-
-		tts.speakTest(testText);
-	}
-
-	async function handleSave() {
-		saving = true;
-		try {
-			const settings = tts.getUserSettings();
-			const result = await saveTTSSettings(settings);
-
-			if (result.success) {
-				toast.success('Beállítások mentve');
-			} else {
-				toast.error(result.error || 'Mentés sikertelen');
-			}
-		} catch (err) {
-			console.error('[TTSSettings] Mentési hiba:', err);
-			toast.error('Mentés sikertelen');
-		} finally {
-			saving = false;
-		}
-	}
-
-	// Automatikus mentés változáskor (debounced)
-	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-	$effect(() => {
-		// Figyeljük a változásokat
-		void tts.autoPlay;
-		void tts.rate;
-		void tts.pitch;
-		void tts.volume;
-		void tts.selectedVoiceOverride;
-
-		// Skip initial load
-		if (loading) return;
-
-		// Debounce: 1 másodperc után mentés
-		if (saveTimeout) clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(() => {
-			handleSave();
-		}, 1000);
-	});
 </script>
 
 <div class="tts-settings">
 	{#if loading}
 		<div class="tts-settings__loading">
 			<span class="tts-settings__spinner"></span>
-			<span>Betöltés...</span>
+			<span>{t('ai-assistant.tts.loading')}</span>
 		</div>
 	{:else if !tts.isGloballyEnabled}
-		<div class="tts-settings__disabled">
-			<div class="tts-settings__disabled-icon">🔇</div>
-			<h3>TTS szolgáltatás letiltva</h3>
-			<p>
-				A felolvasás funkció jelenleg le van tiltva. Kérj meg egy adminisztrátort, hogy engedélyezze
-				a Settings appban.
+		<div class="tts-settings__disabled-info">
+			<div class="tts-settings__disabled-header">
+				<span class="tts-settings__disabled-label">{t('ai-assistant.tts.disabled.title')}</span>
+			</div>
+			<p class="tts-settings__disabled-message">
+				{t('ai-assistant.tts.disabled.message')}
 			</p>
 		</div>
 	{:else}
 		<div class="tts-settings__content">
-			<!-- Provider info (read-only) -->
-			<div class="tts-settings__info">
-				<div class="tts-settings__info-item">
-					<span class="tts-settings__info-label">Szolgáltató:</span>
-					<span class="tts-settings__info-value">
-						{#if tts.provider === 'browser'}
-							Böngésző (Web Speech API)
-						{:else}
-							ElevenLabs
-						{/if}
-					</span>
+			<!-- User-level TTS engedélyezés -->
+			<div class="tts-settings__field">
+				<div class="flex items-center justify-between">
+					<Label for="tts-user-enabled">{t('ai-assistant.tts.userEnabled.label')}</Label>
+					<Switch id="tts-user-enabled" bind:checked={tts.userEnabled} />
 				</div>
-				<p class="tts-settings__hint">
-					A szolgáltatót és az API kulcsot az adminisztrátor állítja be a Settings appban.
-				</p>
+				<p class="tts-settings__hint">{t('ai-assistant.tts.userEnabled.hint')}</p>
 			</div>
 
-			<!-- Hang kiválasztása (opcionális felülbírálás) -->
-			{#if tts.provider === 'browser'}
-				<div class="tts-settings__field">
-					<Label for="tts-voice">Hang (opcionális felülbírálás)</Label>
-					<select
-						id="tts-voice"
-						bind:value={tts.selectedVoiceOverride}
-						class="tts-settings__select"
-					>
-						<option value={null}>Alapértelmezett (admin beállítás)</option>
-						{#each tts.availableVoices as voice (voice.name)}
-							<option value={voice.name}>
-								{voice.name} ({voice.lang})
-								{#if voice.default}(alapértelmezett){/if}
-							</option>
-						{/each}
-					</select>
-					<p class="tts-settings__hint">
-						Ha nem választasz hangot, az admin által beállított alapértelmezett hang lesz használva.
+			{#if tts.userEnabled}
+				<!-- Provider info (read-only) -->
+				<div class="tts-settings__provider-info">
+					<div class="tts-settings__provider-header">
+						<span class="tts-settings__provider-label">{t('ai-assistant.tts.provider.label')}</span>
+					</div>
+					<div class="tts-settings__provider-value">
+						{#if tts.provider === 'browser'}
+							{t('ai-assistant.tts.provider.browser')}
+						{:else}
+							{t('ai-assistant.tts.provider.elevenlabs')}
+						{/if}
+					</div>
+					<p class="tts-settings__provider-note">
+						{t('ai-assistant.tts.provider.note')}
 					</p>
 				</div>
 
-				<!-- Sebesség -->
-				<div class="tts-settings__field">
-					<Label for="tts-rate">Sebesség: {tts.rate.toFixed(1)}x</Label>
-					<Slider id="tts-rate" type="single" min={0.5} max={2} step={0.1} bind:value={tts.rate} />
-					<p class="tts-settings__hint">Felolvasás sebessége (0.5x = lassú, 2x = gyors)</p>
-				</div>
-
-				<!-- Hangmagasság -->
-				<div class="tts-settings__field">
-					<Label for="tts-pitch">Hangmagasság: {tts.pitch.toFixed(1)}</Label>
-					<Slider
-						id="tts-pitch"
-						type="single"
-						min={0.5}
-						max={2}
-						step={0.1}
-						bind:value={tts.pitch}
-					/>
-					<p class="tts-settings__hint">Hang magassága (0.5 = mély, 2 = magas)</p>
-				</div>
-			{:else if tts.provider === 'elevenlabs'}
-				<!-- ElevenLabs hang felülbírálás -->
-				{#if tts.elevenLabsVoices.length > 0}
+				<!-- Hang kiválasztása (opcionális felülbírálás) -->
+				{#if tts.provider === 'browser'}
 					<div class="tts-settings__field">
-						<Label for="elevenlabs-voice">Hang (opcionális felülbírálás)</Label>
+						<Label for="tts-voice">{t('ai-assistant.tts.voice.label')}</Label>
 						<select
-							id="elevenlabs-voice"
+							id="tts-voice"
 							bind:value={tts.selectedVoiceOverride}
 							class="tts-settings__select"
 						>
-							<option value={null}>Alapértelmezett (admin beállítás)</option>
-							{#each tts.elevenLabsVoices as voice (voice.voice_id)}
-								<option value={voice.voice_id}>
-									{voice.name} ({voice.category})
+							<option value={null}>{t('ai-assistant.tts.voice.default')}</option>
+							{#each tts.availableVoices as voice (voice.name)}
+								<option value={voice.name}>
+									{voice.name} ({voice.lang})
+									{#if voice.default}({t('ai-assistant.tts.voice.defaultMarker')}){/if}
 								</option>
 							{/each}
 						</select>
 						<p class="tts-settings__hint">
-							Ha nem választasz hangot, az admin által beállított alapértelmezett hang lesz
-							használva.
+							{t('ai-assistant.tts.voice.hint')}
 						</p>
 					</div>
+
+					<!-- Csúszkák egymás mellett -->
+					<div class="tts-settings__sliders">
+						<!-- Sebesség -->
+						<div class="tts-settings__slider-field">
+							<Label for="tts-rate"
+								>{t('ai-assistant.tts.rate.label')}: {tts.rate.toFixed(1)}x</Label
+							>
+							<Slider
+								id="tts-rate"
+								type="single"
+								min={0.5}
+								max={2}
+								step={0.1}
+								bind:value={tts.rate}
+							/>
+							<p class="tts-settings__hint">{t('ai-assistant.tts.rate.range')}</p>
+						</div>
+
+						<!-- Hangmagasság -->
+						<div class="tts-settings__slider-field">
+							<Label for="tts-pitch"
+								>{t('ai-assistant.tts.pitch.label')}: {tts.pitch.toFixed(1)}</Label
+							>
+							<Slider
+								id="tts-pitch"
+								type="single"
+								min={0.5}
+								max={2}
+								step={0.1}
+								bind:value={tts.pitch}
+							/>
+							<p class="tts-settings__hint">{t('ai-assistant.tts.pitch.range')}</p>
+						</div>
+
+						<!-- Hangerő -->
+						<div class="tts-settings__slider-field">
+							<Label for="tts-volume"
+								>{t('ai-assistant.tts.volume.label')}: {Math.round(tts.volume * 100)}%</Label
+							>
+							<Slider
+								id="tts-volume"
+								type="single"
+								min={0}
+								max={1}
+								step={0.1}
+								bind:value={tts.volume}
+							/>
+							<p class="tts-settings__hint">{t('ai-assistant.tts.volume.range')}</p>
+						</div>
+					</div>
+				{:else if tts.provider === 'elevenlabs'}
+					<!-- ElevenLabs hang felülbírálás -->
+					{#if tts.elevenLabsVoices.length > 0}
+						<div class="tts-settings__field">
+							<Label for="elevenlabs-voice">{t('ai-assistant.tts.voice.label')}</Label>
+							<select
+								id="elevenlabs-voice"
+								bind:value={tts.selectedVoiceOverride}
+								class="tts-settings__select"
+							>
+								<option value={null}>{t('ai-assistant.tts.voice.default')}</option>
+								{#each tts.elevenLabsVoices as voice (voice.voice_id)}
+									<option value={voice.voice_id}>
+										{voice.name} ({voice.category})
+									</option>
+								{/each}
+							</select>
+							<p class="tts-settings__hint">
+								{t('ai-assistant.tts.voice.hint')}
+							</p>
+						</div>
+					{/if}
+
+					<!-- Hangerő (ElevenLabs esetén csak ez) -->
+					<div class="tts-settings__field">
+						<Label for="tts-volume"
+							>{t('ai-assistant.tts.volume.label')}: {Math.round(tts.volume * 100)}%</Label
+						>
+						<Slider
+							id="tts-volume"
+							type="single"
+							min={0}
+							max={1}
+							step={0.1}
+							bind:value={tts.volume}
+						/>
+						<p class="tts-settings__hint">{t('ai-assistant.tts.volume.hint')}</p>
+					</div>
 				{/if}
-			{/if}
 
-			<!-- Hangerő (mindkét provider-nél) -->
-			<div class="tts-settings__field">
-				<Label for="tts-volume">Hangerő: {Math.round(tts.volume * 100)}%</Label>
-				<Slider id="tts-volume" type="single" min={0} max={1} step={0.1} bind:value={tts.volume} />
-				<p class="tts-settings__hint">Felolvasás hangereje</p>
-			</div>
-
-			<!-- Automatikus felolvasás -->
-			<div class="tts-settings__field">
-				<div class="flex items-center justify-between">
-					<Label for="tts-autoplay">Automatikus felolvasás</Label>
-					<label class="tts-settings__switch">
-						<input id="tts-autoplay" type="checkbox" bind:checked={tts.autoPlay} />
-						<span class="tts-settings__slider"></span>
-					</label>
+				<!-- Automatikus felolvasás -->
+				<div class="tts-settings__field">
+					<div class="flex items-center justify-between">
+						<Label for="tts-autoplay">{t('ai-assistant.tts.autoPlay.label')}</Label>
+						<Switch id="tts-autoplay" bind:checked={tts.autoPlay} />
+					</div>
+					<p class="tts-settings__hint">{t('ai-assistant.tts.autoPlay.hint')}</p>
 				</div>
-				<p class="tts-settings__hint">Automatikusan felolvassa az új asszisztens válaszokat</p>
-			</div>
-
-			<!-- Teszt gomb -->
-			<div class="tts-settings__actions">
-				<Button variant="outline" onclick={handleTest} disabled={saving}>
-					<Play class="mr-2 h-4 w-4" />
-					Teszt felolvasás
-				</Button>
-			</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -230,6 +308,7 @@
 	.tts-settings {
 		display: flex;
 		flex-direction: column;
+		width: 100%;
 		height: 100%;
 		overflow-y: auto;
 	}
@@ -260,85 +339,130 @@
 		}
 	}
 
-	.tts-settings__disabled {
+	.tts-settings__disabled-info {
+		margin: 1.5rem;
+		border: 1px solid var(--color-amber-300);
+		border-radius: 0.5rem;
+		background: var(--color-amber-50);
+		padding: 1rem;
+	}
+
+	:global(.dark) .tts-settings__disabled-info {
+		border-color: var(--color-amber-700);
+		background: rgba(251, 191, 36, 0.1);
+	}
+
+	.tts-settings__disabled-header {
 		display: flex;
-		flex-direction: column;
-		justify-content: center;
 		align-items: center;
-		gap: 1rem;
-		padding: 3rem 1.5rem;
-		color: var(--color-neutral-600);
-		text-align: center;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.tts-settings__disabled-icon {
-		opacity: 0.5;
-		font-size: 4rem;
+		font-size: 1.125rem;
+		line-height: 1;
 	}
 
-	.tts-settings__disabled h3 {
-		margin: 0;
-		color: var(--color-neutral-900);
+	.tts-settings__disabled-label {
+		color: var(--color-amber-800);
 		font-weight: 600;
-		font-size: 1.25rem;
-	}
-
-	:global(.dark) .tts-settings__disabled h3 {
-		color: var(--color-neutral-100);
-	}
-
-	.tts-settings__disabled p {
-		margin: 0;
-		max-width: 400px;
 		font-size: 0.875rem;
+	}
+
+	:global(.dark) .tts-settings__disabled-label {
+		color: var(--color-amber-400);
+	}
+
+	.tts-settings__disabled-message {
+		margin: 0;
+		color: var(--color-amber-700);
+		font-size: 0.8125rem;
+		line-height: 1.5;
+	}
+
+	:global(.dark) .tts-settings__disabled-message {
+		color: var(--color-amber-300);
 	}
 
 	.tts-settings__content {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-		padding: 1.5rem;
-		max-width: 600px;
 	}
 
-	.tts-settings__info {
-		border: 1px solid var(--color-primary-200);
+	.tts-settings__provider-info {
+		margin-bottom: 0.5rem;
+		border: 1px solid var(--color-neutral-200);
 		border-radius: 0.5rem;
-		background: var(--color-primary-50);
+		background: var(--color-neutral-50);
 		padding: 1rem;
 	}
 
-	:global(.dark) .tts-settings__info {
-		border-color: var(--color-primary-800);
-		background: rgba(var(--color-primary-900-rgb), 0.2);
+	:global(.dark) .tts-settings__provider-info {
+		border-color: var(--color-neutral-700);
+		background: var(--color-neutral-800);
 	}
 
-	.tts-settings__info-item {
+	.tts-settings__provider-header {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
+		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 	}
 
-	.tts-settings__info-label {
-		color: var(--color-neutral-700);
+	.tts-settings__provider-icon {
+		font-size: 1.125rem;
+		line-height: 1;
+	}
+
+	.tts-settings__provider-label {
+		color: var(--color-neutral-600);
 		font-weight: 500;
+		font-size: 0.8125rem;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
 	}
 
-	:global(.dark) .tts-settings__info-label {
-		color: var(--color-neutral-300);
+	:global(.dark) .tts-settings__provider-label {
+		color: var(--color-neutral-400);
 	}
 
-	.tts-settings__info-value {
-		color: var(--color-primary-700);
+	.tts-settings__provider-value {
+		margin-bottom: 0.5rem;
+		color: var(--color-neutral-900);
 		font-weight: 600;
+		font-size: 1rem;
 	}
 
-	:global(.dark) .tts-settings__info-value {
-		color: var(--color-primary-400);
+	:global(.dark) .tts-settings__provider-value {
+		color: var(--color-neutral-100);
+	}
+
+	.tts-settings__provider-note {
+		margin: 0;
+		color: var(--color-neutral-500);
+		font-size: 0.75rem;
+		line-height: 1.4;
+	}
+
+	:global(.dark) .tts-settings__provider-note {
+		color: var(--color-neutral-500);
 	}
 
 	.tts-settings__field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.tts-settings__sliders {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.5rem;
+	}
+
+	.tts-settings__slider-field {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -384,66 +508,5 @@
 		margin: 0;
 		color: var(--color-neutral-500);
 		font-size: 0.8125rem;
-	}
-
-	.tts-settings__actions {
-		display: flex;
-		gap: 0.75rem;
-		margin-top: 1rem;
-	}
-
-	/* Toggle Switch */
-	.tts-settings__switch {
-		display: inline-block;
-		position: relative;
-		width: 44px;
-		height: 24px;
-	}
-
-	.tts-settings__switch input {
-		display: none;
-		opacity: 0;
-		width: 0;
-		height: 0;
-	}
-
-	.tts-settings__slider {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		transition: 0.3s;
-		cursor: pointer;
-		border-radius: 24px;
-		background-color: var(--color-neutral-300);
-	}
-
-	.tts-settings__slider:before {
-		position: absolute;
-		bottom: 3px;
-		left: 3px;
-		transition: 0.3s;
-		border-radius: 50%;
-		background-color: white;
-		width: 18px;
-		height: 18px;
-		content: '';
-	}
-
-	input:checked + .tts-settings__slider {
-		background-color: var(--color-primary-500);
-	}
-
-	input:checked + .tts-settings__slider:before {
-		transform: translateX(20px);
-	}
-
-	:global(.dark) .tts-settings__slider {
-		background-color: var(--color-neutral-600);
-	}
-
-	:global(.dark) input:checked + .tts-settings__slider {
-		background-color: var(--color-primary-600);
 	}
 </style>

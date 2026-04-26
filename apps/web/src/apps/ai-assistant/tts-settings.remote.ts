@@ -17,6 +17,7 @@ import { DEFAULT_USER_SETTINGS } from '$lib/types/settings';
 const emptySchema = v.object({});
 
 const TTSSettingsSchema = v.object({
+	enabled: v.boolean(),
 	autoPlay: v.boolean(),
 	rate: v.pipe(v.number(), v.minValue(0.1), v.maxValue(10)),
 	pitch: v.pipe(v.number(), v.minValue(0), v.maxValue(2)),

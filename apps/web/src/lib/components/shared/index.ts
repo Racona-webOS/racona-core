@@ -9,3 +9,4 @@ export { default as AppContentArea } from './AppContentArea.svelte';
 export { default as AppLayout } from './AppLayout.svelte';
 export { default as PluginLayoutWrapper } from './PluginLayoutWrapper.svelte';
 export { default as UniversalIcon } from './UniversalIcon.svelte';
+export { default as ContentSection } from './ContentSection.svelte';

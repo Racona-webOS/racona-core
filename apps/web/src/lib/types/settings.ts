@@ -34,6 +34,8 @@ export interface DesktopSettings {
 }
 
 export interface TTSSettings {
+	/** User-level TTS engedélyezés (felülbírálhatja az admin beállítást) */
+	enabled: boolean;
 	/** Automatikus felolvasás új válaszoknál */
 	autoPlay: boolean;
 	/** Felolvasás sebessége (0.1 - 10) - csak browser provider-nél */
@@ -71,6 +73,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
 	startMenu: DEFAULTS.START_MENU,
 	desktop: DEFAULTS.DESKTOP,
 	tts: {
+		enabled: true,
 		autoPlay: false,
 		rate: 1.0,
 		pitch: 1.0,

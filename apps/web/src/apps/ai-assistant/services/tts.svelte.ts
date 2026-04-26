@@ -39,11 +39,15 @@ class TTSService {
 	isGloballyEnabled = $state(true); // TTS Provider globális engedélyezése (admin beállítás)
 
 	// User settings (felülbírálások)
+	userEnabled = $state(true); // User-level engedélyezés (felülbírálhatja az admin beállítást)
 	autoPlay = $state(false);
 	rate = $state(1.0);
 	pitch = $state(1.0);
 	volume = $state(1.0);
 	selectedVoiceOverride = $state<string | null>(null);
+
+	// Derived: TTS ténylegesen engedélyezve van-e (admin ÉS user is engedélyezte)
+	isEnabled = $derived(this.isGloballyEnabled && this.userEnabled);
 
 	// Derived values (merge admin + user)
 	provider = $derived(this.#adminProvider);
@@ -150,6 +154,7 @@ class TTSService {
 
 	/** User settings betöltése (felülbírálások) */
 	loadUserSettings(settings: TTSSettings): void {
+		this.userEnabled = settings.enabled ?? true;
 		this.autoPlay = settings.autoPlay;
 		this.rate = settings.rate;
 		this.pitch = settings.pitch;
@@ -157,6 +162,7 @@ class TTSService {
 		this.selectedVoiceOverride = settings.selectedVoiceOverride ?? null;
 
 		console.log('[TTS] User settings betöltve:', {
+			enabled: this.userEnabled,
 			autoPlay: this.autoPlay,
 			rate: this.rate,
 			pitch: this.pitch,
@@ -168,6 +174,7 @@ class TTSService {
 	/** Aktuális user settings lekérése */
 	getUserSettings(): TTSSettings {
 		return {
+			enabled: this.userEnabled,
 			autoPlay: this.autoPlay,
 			rate: this.rate,
 			pitch: this.pitch,
@@ -178,7 +185,7 @@ class TTSService {
 
 	/** Szöveg felolvasása */
 	speak(text: string, messageId: string): void {
-		if (!this.isGloballyEnabled) return;
+		if (!this.isEnabled) return;
 
 		// Ha már beszél, állítsuk le
 		if (this.status === 'speaking') {
