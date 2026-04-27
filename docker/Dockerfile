@@ -27,8 +27,6 @@ COPY packages/cli/package.json ./packages/cli/
 COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY examples/plugins/weather/package.json ./examples/plugins/weather/
-COPY examples/plugins/map-example/package.json ./examples/plugins/map-example/
-COPY examples/plugins/shared-libs-example/package.json ./examples/plugins/shared-libs-example/
 
 # Függőségek telepítése frozen lockfile-lal a reprodukálhatóságért
 RUN bun install --frozen-lockfile
