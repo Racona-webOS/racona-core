@@ -10,13 +10,12 @@
 # ---------------------------------------------------------------------------
 # 1. Fázis: Függőségek telepítése
 # ---------------------------------------------------------------------------
-FROM oven/bun:1 AS deps
+FROM oven/bun:1.3.13 AS deps
 
 WORKDIR /app
 
 # Először csak a package.json és lockfile fájlokat másoljuk a cache optimalizáláshoz.
 # Ha a függőségek nem változnak, ez a réteg cache-ből jön.
-# Updated: 2026-04-27 - Fixed Bun 1.3.13 compatibility
 COPY package.json bun.lock ./
 
 # Workspace package.json fájlok — szükségesek a workspace feloldáshoz
@@ -28,13 +27,14 @@ COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 
-# Függőségek telepítése frozen lockfile-lal a reprodukálhatóságért
-RUN bun install --frozen-lockfile
+# Függőségek telepítése
+# Note: --frozen-lockfile removed due to platform-specific lockfile differences between macOS and Linux
+RUN bun install
 
 # ---------------------------------------------------------------------------
 # 2. Fázis: Alkalmazás build
 # ---------------------------------------------------------------------------
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.3.13 AS builder
 
 WORKDIR /app
 
@@ -57,6 +57,9 @@ COPY packages/cli ./packages/cli
 COPY examples/plugins/sdk-demo ./examples/plugins/sdk-demo
 COPY examples/plugins/todo-list ./examples/plugins/todo-list
 COPY examples/plugins/weather ./examples/plugins/weather
+
+# TypeScript telepítése az SDK build-hez (devDependency, de szükséges a build során)
+RUN bun add -d typescript
 
 # SDK build (szükséges a SvelteKit build-hez)
 RUN cd packages/sdk && bun run build
@@ -107,7 +110,8 @@ COPY --from=builder --chown=racona:nodejs /app/packages/database/drizzle.config.
 COPY --from=builder --chown=racona:nodejs /app/packages/database/tsconfig.json ./packages/database/tsconfig.json
 
 # Csak production függőségek telepítése (dev dependencies nélkül)
-RUN bun install --production --frozen-lockfile
+# Note: --frozen-lockfile removed due to platform-specific lockfile differences
+RUN bun install --production
 
 # Varlock az apps/web/node_modules/.bin-ben elérhető (apps/web workspace dependency)
 
