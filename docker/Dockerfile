@@ -16,6 +16,7 @@ WORKDIR /app
 
 # Először csak a package.json és lockfile fájlokat másoljuk a cache optimalizáláshoz.
 # Ha a függőségek nem változnak, ez a réteg cache-ből jön.
+# Updated: 2026-04-27 - Fixed Bun 1.3.13 compatibility
 COPY package.json bun.lock ./
 
 # Workspace package.json fájlok — szükségesek a workspace feloldáshoz
@@ -29,9 +30,8 @@ COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 COPY examples/plugins/map-example/package.json ./examples/plugins/map-example/
 COPY examples/plugins/shared-libs-example/package.json ./examples/plugins/shared-libs-example/
 
-# Függőségek telepítése
-# Note: --frozen-lockfile removed due to Bun version compatibility issues
-RUN bun install
+# Függőségek telepítése frozen lockfile-lal a reprodukálhatóságért
+RUN bun install --frozen-lockfile
 
 # ---------------------------------------------------------------------------
 # 2. Fázis: Alkalmazás build
