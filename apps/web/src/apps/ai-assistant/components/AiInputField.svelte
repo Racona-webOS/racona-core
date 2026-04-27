@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 	import { getAiAssistantStore } from '../stores/aiAssistantStore.svelte.js';
+	import { T } from '$lib/i18n';
 	import MessageInputBar from './MessageInputBar.svelte';
 
 	interface Props {
@@ -35,7 +36,7 @@
 		<div class="clear-button-container">
 			{#if aiStore.hasMessages}
 				<button class="clear-button" onclick={handleClearHistory} type="button">
-					Beszélgetés törlése
+					<T key="ai-assistant.input.clearHistory" />
 				</button>
 			{/if}
 		</div>

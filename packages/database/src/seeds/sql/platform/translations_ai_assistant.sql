@@ -17,6 +17,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'ai-assistant', 'input.label', 'Kérdés beviteli mező'),
 ('hu', 'ai-assistant', 'input.send', 'Küldés'),
 ('hu', 'ai-assistant', 'input.tooLong', 'A kérdés túl hosszú (maximum {max} karakter).'),
+('hu', 'ai-assistant', 'input.clearHistory', 'Beszélgetés törlése'),
 ('hu', 'ai-assistant', 'avatar.title', 'Avatar beállítások'),
 ('hu', 'ai-assistant', 'tts.title', 'Felolvasás beállítások'),
 ('hu', 'ai-assistant', 'tts.testButton', 'Teszt felolvasás')
@@ -37,6 +38,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'ai-assistant', 'input.label', 'Question input field'),
 ('en', 'ai-assistant', 'input.send', 'Send'),
 ('en', 'ai-assistant', 'input.tooLong', 'Question is too long (maximum {max} characters).'),
+('en', 'ai-assistant', 'input.clearHistory', 'Clear conversation'),
 ('en', 'ai-assistant', 'avatar.title', 'Avatar Settings'),
 ('en', 'ai-assistant', 'tts.title', 'Text-to-Speech Settings'),
 ('en', 'ai-assistant', 'tts.testButton', 'Test Playback')
