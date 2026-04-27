@@ -687,8 +687,8 @@ That's it!
 							model,
 							messages,
 							max_tokens: advancedParams.maxTokens,
-							temperature: advancedParams.temperature,
-							top_p: advancedParams.topP
+							temperature: advancedParams.temperature
+							// Megjegyzés: Anthropic API nem támogatja a temperature és top_p egyidejű használatát
 						})
 					});
 

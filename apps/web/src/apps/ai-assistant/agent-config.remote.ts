@@ -424,8 +424,8 @@ export const testAgentConnection = command(
 							model,
 							messages: [{ role: 'user', content: 'Hello' }],
 							max_tokens: maxTokens,
-							temperature: temperature,
-							top_p: topP
+							temperature: temperature
+							// Megjegyzés: Anthropic API nem támogatja a temperature és top_p egyidejű használatát
 						})
 					});
 
