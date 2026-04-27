@@ -62,6 +62,13 @@
 		"hideWhen": "singleLocale"
 	},
 	{
+		"labelKey": "menu.authentication",
+		"href": "#authentication",
+		"icon": "KeyRound",
+		"component": "AuthSettings",
+		"requiredPermission": "settings.admin.auth"
+	},
+	{
 		"labelKey": "menu.aiAssistant",
 		"href": "#",
 		"icon": "Binary",

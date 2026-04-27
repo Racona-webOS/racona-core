@@ -39,6 +39,7 @@ INSERT INTO auth.permissions (id, name, description, resource_id) VALUES
   (24, 'settings.view', 'Beállítások megtekintése', 7),
   (25, 'settings.update', 'Beállítások módosítása', 7),
   (29, 'settings.admin.aiAssistant', 'AI asszisztens beállítások kezelése', 7),
+  (30, 'settings.admin.auth', 'Hitelesítési beállítások kezelése', 7),
 
   -- Log management
   (26, 'log.error.view', 'Hibanapló megtekintése', 8),

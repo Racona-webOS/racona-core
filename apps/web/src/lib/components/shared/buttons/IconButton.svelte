@@ -8,11 +8,12 @@
 		icon: Snippet;
 		variant?: ButtonVariant;
 		onclick?: () => void;
+		disabled?: boolean;
 	}
 
-	let { text, icon, onclick, variant = 'default' }: Props = $props();
+	let { text, icon, onclick, variant = 'default', disabled = false }: Props = $props();
 </script>
 
-<Button {variant} size="sm" {onclick}>
+<Button {variant} size="sm" {onclick} {disabled}>
 	{@render icon()}{text}
 </Button>

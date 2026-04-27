@@ -1007,3 +1007,27 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'admin.knowledgeBase.statusUnavailable', 'Status unavailable'),
 ('en', 'settings', 'admin.knowledgeBase.retry', 'Retry')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Auth beállítások (AuthSettings.svelte)
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'settings', 'menu.authentication', 'Hitelesítés'),
+('hu', 'settings', 'admin.auth.title', 'Hitelesítési beállítások'),
+('hu', 'settings', 'admin.auth.description', 'Regisztráció és social login beállítások kezelése'),
+('hu', 'settings', 'admin.auth.registrationEnabled', 'Regisztráció engedélyezése'),
+('hu', 'settings', 'admin.auth.registrationEnabledDescription', 'Engedélyezi az új felhasználók regisztrációját a rendszerben'),
+('hu', 'settings', 'admin.auth.socialLoginEnabled', 'Social login engedélyezése'),
+('hu', 'settings', 'admin.auth.socialLoginEnabledDescription', 'Engedélyezi a bejelentkezést külső szolgáltatókon keresztül (Google, stb.)'),
+('hu', 'settings', 'admin.auth.saveSuccess', 'Hitelesítési beállítások mentve'),
+('hu', 'settings', 'admin.auth.saveError', 'Hiba a beállítások mentése során'),
+('hu', 'settings', 'admin.auth.loadError', 'Hiba a beállítások betöltése során'),
+('en', 'settings', 'menu.authentication', 'Authentication'),
+('en', 'settings', 'admin.auth.title', 'Authentication Settings'),
+('en', 'settings', 'admin.auth.description', 'Manage registration and social login settings'),
+('en', 'settings', 'admin.auth.registrationEnabled', 'Enable Registration'),
+('en', 'settings', 'admin.auth.registrationEnabledDescription', 'Allow new users to register in the system'),
+('en', 'settings', 'admin.auth.socialLoginEnabled', 'Enable Social Login'),
+('en', 'settings', 'admin.auth.socialLoginEnabledDescription', 'Allow login through external providers (Google, etc.)'),
+('en', 'settings', 'admin.auth.saveSuccess', 'Authentication settings saved'),
+('en', 'settings', 'admin.auth.saveError', 'Error saving settings'),
+('en', 'settings', 'admin.auth.loadError', 'Error loading settings')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

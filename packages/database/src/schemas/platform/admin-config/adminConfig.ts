@@ -49,3 +49,13 @@ export interface AIAssistantConfig {
 		language?: string; // Nyelv kód
 	};
 }
+
+/**
+ * Authentication Configuration Type
+ *
+ * Ez a típus definiálja az 'auth' config_key-hez tartozó config_data struktúrát
+ */
+export interface AuthConfig {
+	registrationEnabled: boolean; // Regisztráció engedélyezése/letiltása
+	socialLoginEnabled: boolean; // Social provider bejelentkezés engedélyezése/letiltása
+}

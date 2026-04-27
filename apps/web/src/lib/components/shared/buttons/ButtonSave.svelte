@@ -6,11 +6,12 @@
 	interface Props {
 		text: string;
 		onclick?: () => void;
+		disabled?: boolean;
 	}
 
-	let { text, onclick }: Props = $props();
+	let { text, onclick, disabled = false }: Props = $props();
 </script>
 
-<IconButton {text} {onclick}>
+<IconButton {text} {onclick} {disabled}>
 	{#snippet icon()}<Save />{/snippet}
 </IconButton>

@@ -43,7 +43,6 @@ export const baseAuthConfig: Omit<BetterAuthOptions, 'plugins'> = {
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: config.FEATURES.EMAIL_VERIFICATION_ENABLED,
-		disableSignUp: !config.REGISTRATION_ENABLED,
 		sendResetPassword: async ({ user, url, token }) => {
 			console.log('[Auth] sendResetPassword called for user:', user.email);
 			console.log('[Auth] Reset URL:', url);
