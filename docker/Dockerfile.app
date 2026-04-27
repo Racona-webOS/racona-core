@@ -18,12 +18,12 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY packages/cli/package.json ./packages/cli/
+COPY packages/ai-avatar/package.json ./packages/ai-avatar/
 COPY examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 
 RUN bun install --frozen-lockfile
-RUN bun add -d typescript
 
 # ---------------------------------------------------------------------------
 # 2. Fázis: Build
@@ -35,6 +35,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=deps /app/packages/sdk/node_modules ./packages/sdk/node_modules
 
 COPY package.json bun.lock ./
 COPY .env.example ./.env
@@ -68,6 +69,7 @@ COPY --from=builder --chown=racona:nodejs /app/apps/web/package.json ./apps/web/
 COPY --from=builder --chown=racona:nodejs /app/packages/database/package.json ./packages/database/
 COPY --from=builder --chown=racona:nodejs /app/packages/sdk/package.json ./packages/sdk/
 COPY --from=builder --chown=racona:nodejs /app/packages/cli/package.json ./packages/cli/
+COPY --from=deps --chown=racona:nodejs /app/packages/ai-avatar/package.json ./packages/ai-avatar/
 COPY --from=deps --chown=racona:nodejs /app/examples/plugins/sdk-demo/package.json ./examples/plugins/sdk-demo/
 COPY --from=deps --chown=racona:nodejs /app/examples/plugins/todo-list/package.json ./examples/plugins/todo-list/
 COPY --from=deps --chown=racona:nodejs /app/examples/plugins/weather/package.json ./examples/plugins/weather/
