@@ -7,6 +7,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-27
+
+### Added
+
+- **AI Assistant**: Complete AI-powered assistant system with chat interface, knowledge base integration, and customizable AI avatars
+  - Multi-provider support (OpenAI, Anthropic, Google Gemini)
+  - Text-to-Speech (TTS) with browser and ElevenLabs providers
+  - Knowledge base search with vector embeddings
+  - AI avatar installation and management
+  - Global admin configuration for AI agent and TTS settings
+  - Real-time chat interface with message history
+  - Configurable AI parameters (temperature, max tokens, top-p)
+- **Authentication Settings**: Admin panel for managing authentication options
+  - Toggle registration on/off from Settings app
+  - Toggle social login (Google) on/off from Settings app
+  - Database-backed configuration (replaces environment variables)
+  - Auto-save on toggle for better UX
+
+### Changed
+
+- Authentication configuration moved from environment variables to database
+- `REGISTRATION_ENABLED` and `SOCIAL_LOGIN_ENABLED` env variables deprecated (now managed via Settings > Authentication)
+
+### Fixed
+
+- Button component: restored missing `login` variant
+- IconButton and ButtonSave components: added `disabled` prop support
+
 ## [0.3.2] - 2026-04-15
 
 ### Changed

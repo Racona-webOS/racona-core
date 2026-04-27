@@ -7,6 +7,33 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [0.4.0] - 2026-04-27
+
+### Hozzáadva
+
+- **AI Asszisztens**: Teljes körű AI-alapú asszisztens rendszer chat felülettel, tudásbázis integrációval és testreszabható AI avatárokkal
+  - Több szolgáltató támogatása (OpenAI, Anthropic, Google Gemini)
+  - Szövegfelolvasás (TTS) böngésző és ElevenLabs szolgáltatókkal
+  - Tudásbázis keresés vektor beágyazásokkal
+  - AI avatar telepítés és kezelés
+  - Globális admin konfiguráció AI ügynök és TTS beállításokhoz
+  - Valós idejű chat felület üzenet előzményekkel
+  - Konfigurálható AI paraméterek (kreativitás, max tokenek, top-p)
+- **Hitelesítési Beállítások**: Admin panel a hitelesítési opciók kezeléséhez
+  - Regisztráció be/kikapcsolása a Beállítások alkalmazásból
+  - Social login (Google) be/kikapcsolása a Beállítások alkalmazásból
+  - Adatbázis-alapú konfiguráció (környezeti változók helyett)
+  - Automatikus mentés kapcsolóra kattintáskor a jobb UX érdekében
+
+### Változtatva
+
+- Hitelesítési konfiguráció áthelyezve környezeti változókból az adatbázisba
+- `REGISTRATION_ENABLED` és `SOCIAL_LOGIN_ENABLED` környezeti változók elavultak (mostantól Beállítások > Hitelesítés menüpontban kezelhetők)
+
+### Javítva
+
+- IconButton és ButtonSave komponensek: `disabled` prop támogatás hozzáadva
+
 ## [0.3.2] - 2026-04-15
 
 ### Változtatva
