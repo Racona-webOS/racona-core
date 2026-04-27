@@ -29,8 +29,9 @@ COPY examples/plugins/weather/package.json ./examples/plugins/weather/
 COPY examples/plugins/map-example/package.json ./examples/plugins/map-example/
 COPY examples/plugins/shared-libs-example/package.json ./examples/plugins/shared-libs-example/
 
-# Függőségek telepítése frozen lockfile-lal a reprodukálhatóságért
-RUN bun install --frozen-lockfile
+# Függőségek telepítése
+# Note: --frozen-lockfile removed due to Bun version compatibility issues
+RUN bun install
 
 # ---------------------------------------------------------------------------
 # 2. Fázis: Alkalmazás build
