@@ -320,9 +320,13 @@ function generateAppSvelte(config: PluginConfig): string {
 	 * Automatikusan beolvassa a menu.json-t, a locale fájlokat és a komponenseket.
 	 */
 
+	import { onMount } from 'svelte';
 	import menuData from '../menu.json';
 
 	let { pluginId = '__PLUGIN_ID__' }: { pluginId?: string } = $props();
+
+	// --- ActionBar (standalone dev mode) ---
+	let actionBarItems = $state<Array<{ label: string; onClick: () => void; variant?: string }>>([]);
 
 	// --- Komponensek ---
 	const componentModules = import.meta.glob<{ default: any }>(
@@ -391,6 +395,20 @@ function generateAppSvelte(config: PluginConfig): string {
 	let activeId = $state(menuItems[0]?.id ?? '');
 	let activeItem = $derived(menuItems.find((m) => m.id === activeId) ?? menuItems[0]);
 	let ActiveComponent = $derived(activeItem ? componentMap[activeItem.componentName] : null);
+
+	// --- ActionBar setup (standalone dev mode) ---
+	onMount(() => {
+		const sdk = (window as any).__webOS_instances?.get(pluginId) ?? (window as any).webOS;
+		if (sdk?.ui) {
+			// Hook into MockUIService to render ActionBar
+			sdk.ui._setActionBarFn = (items: typeof actionBarItems) => {
+				actionBarItems = items;
+			};
+			sdk.ui._clearActionBarFn = () => {
+				actionBarItems = [];
+			};
+		}
+	});
 </script>
 
 <div class="layout">
@@ -424,6 +442,19 @@ function generateAppSvelte(config: PluginConfig): string {
 		{/if}
 	</aside>
 	<main class="content">
+		{#if actionBarItems.length > 0}
+			<div class="action-bar">
+				{#each actionBarItems as item (item.label)}
+					<button
+						class="action-btn"
+						class:primary={item.variant === 'default'}
+						onclick={item.onClick}
+					>
+						{item.label}
+					</button>
+				{/each}
+			</div>
+		{/if}
 		{#if ActiveComponent}
 			{#key \`\${activeId}-\${currentLocale}\`}
 				<!-- svelte-ignore svelte_component_deprecated -->
@@ -501,6 +532,41 @@ function generateAppSvelte(config: PluginConfig): string {
 	.content {
 		flex: 1;
 		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.action-bar {
+		display: flex;
+		gap: 0.5rem;
+		padding: 1rem;
+		border-bottom: 1px solid var(--color-border, #e2e8f0);
+		background: var(--color-background, #ffffff);
+	}
+
+	.action-btn {
+		border: 1px solid var(--color-border, #e2e8f0);
+		background: transparent;
+		padding: 0.5rem 1rem;
+		border-radius: 0.375rem;
+		cursor: pointer;
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: all 0.15s ease;
+	}
+
+	.action-btn:hover {
+		background: var(--color-accent, #f1f5f9);
+	}
+
+	.action-btn.primary {
+		background: var(--color-primary, #3730a3);
+		color: #ffffff;
+		border-color: var(--color-primary, #3730a3);
+	}
+
+	.action-btn.primary:hover {
+		opacity: 0.9;
 	}
 
 	.no-component {
@@ -566,6 +632,25 @@ function generateAppSvelte(config: PluginConfig): string {
 		color: var(--color-primary, #3730a3);
 		border-color: var(--color-primary-border, #c7d2fe);
 		font-weight: 600;
+	}
+
+	:global(.dark) .action-bar {
+		background: var(--color-background, oklch(26.448% 0.00003 271.152));
+		border-color: var(--color-border, oklch(1 0 0 / 10%));
+	}
+
+	:global(.dark) .action-btn {
+		border-color: var(--color-border, oklch(1 0 0 / 10%));
+		color: var(--color-foreground, oklch(0.985 0 0));
+	}
+
+	:global(.dark) .action-btn:hover {
+		background: var(--color-accent, oklch(0.269 0 0));
+	}
+
+	:global(.dark) .action-btn.primary {
+		background: var(--color-primary, #3730a3);
+		color: #ffffff;
 	}
 </style>
 `;

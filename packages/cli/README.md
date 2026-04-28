@@ -151,6 +151,15 @@ MIT
 
 ## Changelog
 
+### [0.4.0] - 2026-04-28
+
+- **Added**: ActionBar support in sidebar template — generated `App.svelte` now includes ActionBar rendering for standalone dev mode
+  - `onMount` hook connects to `MockUIService` callbacks (`_setActionBarFn`, `_clearActionBarFn`)
+  - ActionBar buttons render in a top bar above the main content area
+  - Full styling support (light + dark mode) with CSS variables
+  - Works seamlessly in both standalone mode (dev) and production (Racona)
+  - Developers can use `sdk.ui.setActionBar([...])` to add action buttons to their plugins
+
 ### [0.3.2] - 2026-04-15
 
 - **Changed**: Brand name and documentation updates
