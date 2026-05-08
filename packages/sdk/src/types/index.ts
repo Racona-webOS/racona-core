@@ -26,6 +26,8 @@ export interface ActionBarItem {
 	onClick: () => void;
 	/** Visual variant */
 	variant?: 'default' | 'outline' | 'destructive' | 'ghost';
+	/** Button size */
+	size?: 'default' | 'sm' | 'lg' | 'xl' | 'icon';
 	/** Optional icon name (lucide) */
 	icon?: string;
 	/** Whether the button is disabled */
@@ -303,6 +305,10 @@ export interface WebOSComponents {
 	Input?: unknown;
 	/** Button komponens */
 	Button?: unknown;
+	/** Checkbox komponens — shadcn-svelte alapú (bits-ui). */
+	Checkbox?: unknown;
+	/** DatePicker komponens — dátum kiválasztó, @internationalized/date alapú */
+	DatePicker?: unknown;
 	/** Component registry — egyéb komponensek */
 	[key: string]: unknown;
 }

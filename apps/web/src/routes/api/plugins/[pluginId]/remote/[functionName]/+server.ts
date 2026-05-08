@@ -45,8 +45,74 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		// 	throw error(401, 'Unauthorized');
 		// }
 
-		// Átmeneti mock user
-		const userId = 'user-123';
+		// Átmeneti mock user - de lekérdezzük a valódi user jogosultságait
+		console.log(
+			'[RemoteFunctionHandler] DEBUG - locals.user:',
+			JSON.stringify(locals.user, null, 2)
+		);
+		const userId = locals.user?.id || 'user-123';
+		console.log('[RemoteFunctionHandler] DEBUG - userId:', userId, 'type:', typeof userId);
+
+		// User jogosultságok lekérdezése az adatbázisból
+		let userPermissions: string[] = [];
+		if (locals.user?.id) {
+			console.log(
+				'[RemoteFunctionHandler] DEBUG - Querying user permissions for user ID:',
+				locals.user.id
+			);
+			try {
+				// Konvertáljuk number-re, ha string
+				const userIdNum =
+					typeof locals.user.id === 'string' ? parseInt(locals.user.id, 10) : locals.user.id;
+
+				console.log(
+					'[RemoteFunctionHandler] DEBUG - Converted userIdNum:',
+					userIdNum,
+					'type:',
+					typeof userIdNum
+				);
+
+				// Ellenőrizzük, hogy van-e Rendszergazda (System Administrator) role-ja
+				// Role ID 1 = Rendszergazda/System Administrator
+				const roleResult = await pool.query(
+					`SELECT r.id, r.name FROM auth.user_roles ur
+					 JOIN auth.roles r ON ur.role_id = r.id
+					 WHERE ur.user_id = $1 AND r.id = 1`,
+					[userIdNum]
+				);
+
+				console.log(
+					'[RemoteFunctionHandler] DEBUG - Role query result:',
+					JSON.stringify(roleResult.rows, null, 2)
+				);
+
+				// Ha van Rendszergazda role (ID 1), akkor admin jogosultságot adunk
+				if (roleResult.rows.length > 0) {
+					userPermissions = ['admin'];
+					console.log(
+						'[RemoteFunctionHandler] DEBUG - User is admin (Rendszergazda), permissions set to:',
+						userPermissions
+					);
+				} else {
+					console.log('[RemoteFunctionHandler] DEBUG - User is NOT admin');
+				}
+			} catch (err) {
+				console.error('[RemoteFunctionHandler] Error fetching user permissions:', err);
+				console.error(
+					'[RemoteFunctionHandler] Error stack:',
+					err instanceof Error ? err.stack : 'No stack'
+				);
+			}
+		} else {
+			console.log(
+				'[RemoteFunctionHandler] DEBUG - Skipping user permissions query. locals.user?.id:',
+				locals.user?.id,
+				'type:',
+				typeof locals.user?.id
+			);
+		}
+
+		console.log('[RemoteFunctionHandler] DEBUG - Final userPermissions:', userPermissions);
 
 		// 2. Request body parsing
 		const body = await request.json();
@@ -78,8 +144,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// 4. Jogosultság ellenőrzés
-		const permissions = (plugin.pluginPermissions as string[]) || [];
-		if (!permissions.includes('remote_functions')) {
+		const pluginPermissions = (plugin.pluginPermissions as string[]) || [];
+		if (!pluginPermissions.includes('remote_functions')) {
 			throw error(
 				403,
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have 'remote_functions' permission`
@@ -92,7 +158,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			functionName,
 			functionParams,
 			userId,
-			permissions
+			pluginPermissions,
+			userPermissions
 		);
 
 		// 6. Sikeres válasz
@@ -124,23 +191,40 @@ async function executeRemoteFunction(
 	functionName: string,
 	params: unknown,
 	userId: string,
-	permissions: string[]
+	pluginPermissions: string[],
+	userPermissions: string[]
 ): Promise<unknown> {
 	try {
 		// Plugin server könyvtár útvonala
 		const pluginDir = path.join(process.cwd(), 'uploads', 'plugins', pluginId);
+
+		// .js preferált, fallback .ts (Node.js 22.6+/23+/24+ natívan támogatja a .ts fájlokat)
 		const serverFunctionsPathJs = path.join(pluginDir, 'server', 'functions.js');
 		const serverFunctionsPathTs = path.join(pluginDir, 'server', 'functions.ts');
 
-		// .js preferált, fallback .ts (dev módban)
-		const { existsSync } = await import('fs');
+		const { existsSync, statSync } = await import('fs');
 		const serverFunctionsPath = existsSync(serverFunctionsPathJs)
 			? serverFunctionsPathJs
 			: serverFunctionsPathTs;
 
+		// Fájl mtime-je a URL query-be kerül, így plugin újratelepítéskor (a
+		// `uploads/plugins/<id>/server/functions.ts` fájl módosult) a Node új
+		// URL-ként importálja, és nem a cache-elt régi verziót használja.
+		// Ha a fájl nem változott, ugyanaz az URL marad → cache találat.
+		let mtime = 0;
+		try {
+			mtime = statSync(serverFunctionsPath).mtimeMs;
+		} catch {
+			/* fallback: cache-buster nélkül */
+		}
+
+		// file:// URL séma - működik Windows, macOS, Linux-on
+		const base = new URL(`file://${path.resolve(serverFunctionsPath)}`).href;
+		const fileUrl = mtime > 0 ? `${base}?v=${mtime}` : base;
+
 		// Dinamikus import a server függvényekhez
 		/* @vite-ignore */
-		const serverModule = await import(serverFunctionsPath);
+		const serverModule = await import(fileUrl);
 
 		// Függvény ellenőrzés
 		if (!serverModule[functionName] || typeof serverModule[functionName] !== 'function') {
@@ -150,7 +234,7 @@ async function executeRemoteFunction(
 		}
 
 		// Email service létrehozása (csak notifications jogosultsággal rendelkező pluginok számára)
-		const emailService = createPluginEmailService(pluginId, permissions);
+		const emailService = createPluginEmailService(pluginId, pluginPermissions);
 
 		// pg Pool-kompatibilis DB interfész a pluginok számára
 		// A Drizzle ORM mögötti pg Pool-t használjuk, így a pluginok
@@ -166,9 +250,18 @@ async function executeRemoteFunction(
 			pluginId,
 			userId,
 			db: pluginDb,
-			permissions,
+			permissions: userPermissions, // User jogosultságok (pl. 'admin')
+			pluginPermissions, // Plugin jogosultságok (pl. 'remote_functions', 'notifications')
 			...(emailService ? { email: emailService } : {})
 		};
+
+		console.log('[RemoteFunctionHandler] DEBUG - Context created:', {
+			pluginId,
+			userId,
+			permissions: userPermissions,
+			pluginPermissions,
+			functionName
+		});
 
 		// Függvény végrehajtása timeout-tal (30 másodperc)
 		const result = await Promise.race([
@@ -180,6 +273,8 @@ async function executeRemoteFunction(
 				)
 			)
 		]);
+
+		console.log('[RemoteFunctionHandler] DEBUG - Function executed successfully:', functionName);
 
 		return result;
 	} catch (err) {

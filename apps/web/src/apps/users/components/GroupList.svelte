@@ -160,7 +160,7 @@
 </script>
 
 {#snippet actionBarContent()}
-	<Button variant="default" size="sm" onclick={openCreateDialog}>
+	<Button variant="default" size="lg" onclick={openCreateDialog}>
 		<Plus class="mr-2 size-4" />
 		{t('users.groups.create.button')}
 	</Button>

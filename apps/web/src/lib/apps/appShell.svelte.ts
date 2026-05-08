@@ -27,6 +27,7 @@ import { getAppContext } from '$lib/services/client/appContext';
 import { localizeMenuItems } from '$lib/apps/localization';
 import { getTranslationStore } from '$lib/i18n/store.svelte';
 import { getWindowManager } from '$lib/stores';
+import { getCapabilitiesVersion } from '$lib/stores/pluginCapabilitiesStore.svelte';
 import { getContext, untrack } from 'svelte';
 
 /** Svelte context kulcs az AppShell elérhetőségéhez dinamikusan betöltött komponensekből. */
@@ -180,11 +181,12 @@ export function createAppShell(options: AppShellOptions): AppShellReturn {
 			});
 	}
 
-	// Lokalizált menü — reaktívan frissül nyelv váltáskor
+	// Lokalizált menü — reaktívan frissül nyelv váltáskor ÉS plugin-capability változáskor
 	// Plugin esetén a namespace plugin:appName, különben csak appName
 	const namespace = isPlugin ? `plugin:${appName}` : appName;
 	const menuItems = $derived.by(() => {
 		void translationStore.currentLocale;
+		void getCapabilitiesVersion();
 		return localizeMenuItems(namespace, rawMenuData);
 	});
 

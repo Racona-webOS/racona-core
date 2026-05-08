@@ -10,6 +10,7 @@ import { getI18nService } from '$lib/i18n/service.js';
 import { getTranslationStore } from '$lib/i18n/store.svelte.js';
 import { hasPermission } from '$lib/stores/permissionStore.svelte.js';
 import { isDevMode } from '$lib/stores/devModeStore.svelte.js';
+import { hasPluginCapability } from '$lib/stores/pluginCapabilitiesStore.svelte.js';
 
 /**
  * Ellenőrzi, hogy egy hideWhen feltétel teljesül-e.
@@ -41,11 +42,28 @@ function shouldHideMenuItem(hideWhen?: string): boolean {
  * Ellenőrzi, hogy a menüpontot el kell-e rejteni jogosultság hiánya miatt.
  *
  * @param requiredPermission - A szükséges jogosultság neve (pl. "log.error.view")
- * @returns true, ha a menüpontot el kell rejteni (nincs meg a jogosultság)
+ * @returns true, ha a menüpontot el kell rejteni (nincs meg a jogosultsága)
  */
 function shouldHideByPermission(requiredPermission?: string): boolean {
 	if (!requiredPermission) return false;
 	return !hasPermission(requiredPermission);
+}
+
+/**
+ * Ellenőrzi, hogy a menüpontot el kell-e rejteni plugin-capability hiánya miatt.
+ *
+ * Csak pluginoknál (namespace: "plugin:<pluginId>") van értelme. Beépített
+ * appoknál a mező ignorálódik (nincs pluginId, tehát nincs capability halmaz).
+ *
+ * @param namespace - Az app namespace-e (pl. "plugin:racona-work")
+ * @param requiredCapability - A szükséges plugin-capability (pl. "project.create")
+ * @returns true, ha a menüpontot el kell rejteni
+ */
+function shouldHideByCapability(namespace: string, requiredCapability?: string): boolean {
+	if (!requiredCapability) return false;
+	if (!namespace.startsWith('plugin:')) return false; // beépített appnál ignoráljuk
+	const pluginId = namespace.slice('plugin:'.length);
+	return !hasPluginCapability(pluginId, requiredCapability);
 }
 
 /**
@@ -98,12 +116,21 @@ export function localizeMenuItem(namespace: string, item: RawMenuItem): MenuItem
 		component: item.component,
 		props: item.props,
 		separator: item.separator,
-		hidden: shouldHideMenuItem(item.hideWhen) || shouldHideByPermission(item.requiredPermission)
+		hidden:
+			shouldHideMenuItem(item.hideWhen) ||
+			shouldHideByPermission(item.requiredPermission) ||
+			shouldHideByCapability(namespace, item.requiredCapability)
 	};
 
 	// Rekurzívan lokalizáljuk a gyerek elemeket
 	if (item.children && item.children.length > 0) {
 		localizedItem.children = item.children.map((child) => localizeMenuItem(namespace, child));
+
+		// Szülő menüpont akkor is rejtett, ha MINDEN gyereke rejtett
+		// (pl. egy "Beállítások" fölé ne rakjunk üres csoportot).
+		if (!localizedItem.hidden && localizedItem.children.every((c) => c.hidden)) {
+			localizedItem.hidden = true;
+		}
 	}
 
 	return localizedItem;

@@ -57,6 +57,8 @@ export interface PluginManifest {
 	isPublic?: boolean;
 	/** Rendezési sorrend */
 	sortOrder?: number;
+	/** Sidebar komponens neve (opcionális) */
+	sidebarComponent?: string;
 }
 
 // ============================================================================

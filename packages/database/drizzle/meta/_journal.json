@@ -50,6 +50,13 @@
       "when": 1776864243247,
       "tag": "0006_funny_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778074656247,
+      "tag": "0007_giant_plazm",
+      "breakpoints": true
     }
   ]
 }

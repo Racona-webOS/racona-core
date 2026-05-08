@@ -49,6 +49,6 @@
 		"prettier": "~3.8.1",
 		"prettier-plugin-css-order": "^2.2.0",
 		"prettier-plugin-svelte": "^3.5.0",
-		"prettier-plugin-tailwindcss": "^0.7.2"
+		"prettier-plugin-tailwindcss": "^0.8.0"
 	}
 }

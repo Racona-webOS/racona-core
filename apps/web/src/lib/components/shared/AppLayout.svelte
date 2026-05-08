@@ -36,6 +36,8 @@
 		isPlugin?: boolean;
 		/** Külső action bar snippet (plugin módban használatos). */
 		externalActionBar?: Snippet;
+		/** Egyedi sidebar footer snippet (plugin módban használatos). */
+		customFooter?: Snippet;
 	}
 
 	let {
@@ -45,7 +47,8 @@
 		sidebarWidth = 230,
 		searchable = false,
 		isPlugin = false,
-		externalActionBar
+		externalActionBar,
+		customFooter
 	}: Props = $props();
 
 	// Shell context beállítása, hogy a dinamikusan betöltött komponensek is elérhessék
@@ -79,7 +82,7 @@
 
 <I18nProvider namespaces={allNamespaces}>
 	<div class="app-layout">
-		<AppSideBar appName={shell.appName} width={sidebarWidth}>
+		<AppSideBar appName={shell.appName} width={sidebarWidth} {customFooter}>
 			<AppSideBarMenu
 				items={shell.menuItems}
 				activeHref={shell.activeMenuItem ?? undefined}

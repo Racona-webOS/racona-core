@@ -7,9 +7,9 @@
  * Használat: bun run package
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { execSync } from 'node:child_process';
+import AdmZip from 'adm-zip';
 
 const ROOT = resolve(import.meta.dir);
 
@@ -40,16 +40,50 @@ const entries = ['manifest.json', 'dist'];
 if (existsSync(join(ROOT, 'locales'))) entries.push('locales');
 if (existsSync(join(ROOT, 'assets'))) entries.push('assets');
 if (existsSync(join(ROOT, 'menu.json'))) entries.push('menu.json');
-if (existsSync(join(ROOT, 'server'))) entries.push('server');
+// A server mappa már a dist-ben van lefordítva, nem kell külön csomagolni
 if (existsSync(join(ROOT, 'migrations'))) entries.push('migrations');
-// Exclude dev-only seed files from the package
-const zipArgs =
-	entries.join(' ') +
-	(existsSync(join(ROOT, 'migrations', 'dev')) ? ' --exclude "migrations/dev/*"' : '');
+
+// Rekurzív fájl hozzáadás függvény
+function addDirectoryToZip(zip, dirPath, zipPath = '') {
+	const files = readdirSync(dirPath);
+	for (const file of files) {
+		const fullPath = join(dirPath, file);
+		const zipFilePath = zipPath ? join(zipPath, file) : file;
+
+		// Kihagyjuk a dev seed fájlokat
+		if (fullPath.includes('migrations/dev') || fullPath.includes('migrations\\dev')) {
+			continue;
+		}
+
+		const stat = statSync(fullPath);
+		if (stat.isDirectory()) {
+			addDirectoryToZip(zip, fullPath, zipFilePath);
+		} else {
+			zip.addLocalFile(fullPath, zipPath);
+		}
+	}
+}
+
 try {
-	execSync(`zip -r "${outputPath}" ${zipArgs}`, { cwd: ROOT, stdio: 'inherit' });
+	const zip = new AdmZip();
+
+	// Fájlok és mappák hozzáadása
+	for (const entry of entries) {
+		const entryPath = join(ROOT, entry);
+		if (existsSync(entryPath)) {
+			const stat = statSync(entryPath);
+			if (stat.isDirectory()) {
+				addDirectoryToZip(zip, entryPath, entry);
+			} else {
+				zip.addLocalFile(entryPath);
+			}
+		}
+	}
+
+	// ZIP mentése
+	zip.writeZip(outputPath);
 	console.log(`\n✅ Csomag elkészült: ${outputName}`);
-} catch {
-	console.error('❌ ZIP létrehozása sikertelen — ellenőrizd, hogy a "zip" parancs elérhető-e');
+} catch (error) {
+	console.error('❌ ZIP létrehozása sikertelen:', error.message);
 	process.exit(1);
 }

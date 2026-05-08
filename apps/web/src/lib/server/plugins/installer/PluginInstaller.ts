@@ -142,6 +142,9 @@ export class PluginInstaller {
 	 */
 	async registerInAppRegistry(manifest: PluginManifest): Promise<void> {
 		try {
+			console.log(`[PluginInstaller] Manifest sidebarComponent: ${manifest.sidebarComponent}`);
+			console.log(`[PluginInstaller] Full manifest:`, JSON.stringify(manifest, null, 2));
+
 			// Ellenőrizzük, hogy már létezik-e
 			const existing = await db
 				.select({ id: apps.id })
@@ -172,9 +175,9 @@ export class PluginInstaller {
 				description,
 				version: manifest.version,
 				icon: manifest.icon,
-				iconStyle: manifest.iconStyle || 'cover', // Pluginok esetén alapértelmezett cover
+				iconStyle: manifest.iconStyle || 'cover',
 				category: manifest.category || 'plugin',
-				permissions: [], // App permissions (üres pluginoknak)
+				permissions: [],
 				multiInstance: manifest.multiInstance ?? false,
 				defaultSize: manifest.defaultSize || { width: 800, height: 600 },
 				minSize: manifest.minSize || { width: 400, height: 300 },
@@ -198,7 +201,8 @@ export class PluginInstaller {
 				pluginMinWebosVersion: manifest.minWebOSVersion,
 				pluginStatus: 'active',
 				pluginInstalledAt: new Date(),
-				pluginUpdatedAt: null
+				pluginUpdatedAt: null,
+				sidebarComponent: manifest.sidebarComponent || null
 			});
 
 			console.log(`[PluginInstaller] Registered plugin in app registry: ${manifest.id}`);

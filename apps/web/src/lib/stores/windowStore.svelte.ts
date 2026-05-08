@@ -278,7 +278,8 @@ export class WindowManager {
 					window_obj,
 					appData,
 					menuData.menu,
-					menuData.layout ?? {}
+					menuData.layout ?? {},
+					menuData.sidebarComponent ?? null
 				);
 			} else {
 				// Ha nincs menü, használjuk a Web Component módot
@@ -299,7 +300,8 @@ export class WindowManager {
 		window_obj: WindowState,
 		appData: any,
 		menuData: any[],
-		layout: Record<string, string> = {}
+		layout: Record<string, string> = {},
+		sidebarComponent: string | null = null
 	) {
 		try {
 			// WebOS SDK inicializálása
@@ -316,7 +318,9 @@ export class WindowManager {
 				createActionsColumn
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
+			const { DatePicker } = await import('$lib/components/ui/date-picker');
 			const { Button } = await import('$lib/components/ui/button');
+			const { Checkbox } = await import('$lib/components/ui/checkbox');
 			const ContentSection = await import('$lib/components/shared/ContentSection.svelte');
 
 			const user = {
@@ -344,7 +348,8 @@ export class WindowManager {
 					createActionsColumn,
 					Input,
 					Button,
-					ContentSection: ContentSection.default
+					DatePicker,
+					Checkbox
 				}
 			);
 
@@ -372,12 +377,14 @@ export class WindowManager {
 			(window_obj as any).pluginMenuData = menuData;
 			(window_obj as any).pluginId = pluginId;
 			(window_obj as any).pluginLayout = layout;
+			(window_obj as any).pluginSidebarComponent = sidebarComponent;
 			(window_obj as any).isPluginWithLayout = true;
 			window_obj.component = PluginLayoutWrapper.default as any;
 			window_obj.isLoading = false;
 			this.windows = [...this.windows];
 
 			console.log('[Plugin Loader] Plugin with layout loaded successfully');
+			console.log('[Plugin Loader] Sidebar component:', sidebarComponent);
 		} catch (error) {
 			console.error(`Failed to load plugin with layout ${pluginId}:`, error);
 			throw error;
@@ -411,7 +418,9 @@ export class WindowManager {
 				createActionsColumn
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
+			const { DatePicker } = await import('$lib/components/ui/date-picker');
 			const { Button } = await import('$lib/components/ui/button');
+			const { Checkbox } = await import('$lib/components/ui/checkbox');
 			const ContentSection = await import('$lib/components/shared/ContentSection.svelte');
 
 			const user = {
@@ -439,6 +448,8 @@ export class WindowManager {
 					createActionsColumn,
 					Input,
 					Button,
+					DatePicker,
+					Checkbox,
 					ContentSection: ContentSection.default
 				},
 				true // devMode — ne indítson API hívást a fordításokhoz
@@ -621,6 +632,9 @@ export class WindowManager {
 				const PluginLayoutWrapper =
 					await import('$lib/components/shared/PluginLayoutWrapper.svelte');
 
+				// SidebarComponent a manifestből
+				const sidebarComponent = manifest.sidebarComponent || null;
+
 				// IIFE bundle is kell — a komponensek factory function-jeit regisztrálja
 				const entry = manifest.entry || 'dist/index.iife.js';
 				const bundleResponse = await fetch(`${devUrl}/${entry}`, {
@@ -666,6 +680,7 @@ export class WindowManager {
 
 				(window_obj as any).pluginMenuData = devMenuData;
 				(window_obj as any).pluginId = pluginId;
+				(window_obj as any).pluginSidebarComponent = sidebarComponent;
 				(window_obj as any).isPluginWithLayout = true;
 				window_obj.component = PluginLayoutWrapper.default as any;
 				window_obj.isLoading = false;
@@ -676,6 +691,7 @@ export class WindowManager {
 				this.windows = [...this.windows];
 
 				console.log(`[DevPlugin] Layout módban betöltve: ${pluginId} (${devUrl})`);
+				console.log(`[DevPlugin] Sidebar component:`, sidebarComponent);
 				return;
 			}
 
@@ -763,6 +779,7 @@ export class WindowManager {
 				createActionsColumn
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
+			const { DatePicker } = await import('$lib/components/ui/date-picker');
 			const { Button } = await import('$lib/components/ui/button');
 			const ContentSection = await import('$lib/components/shared/ContentSection.svelte');
 
@@ -792,6 +809,7 @@ export class WindowManager {
 					createActionsColumn,
 					Input,
 					Button,
+					DatePicker,
 					ContentSection: ContentSection.default
 				}
 			);

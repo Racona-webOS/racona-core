@@ -1,6 +1,6 @@
 {
 	"name": "@racona/sdk",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"exports": {
 		".": "./src/index.ts",
 		"./dev": "./src/dev/index.ts",

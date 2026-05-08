@@ -1346,17 +1346,33 @@ const __dirname = import.meta.dir;
 
 console.log('🔨 Building ${config.displayName} plugin...\\n');
 
-// 1. Build main plugin
+// 1. Build server functions (TypeScript → JavaScript)
+const serverDir = resolve(__dirname, 'server');
+if (existsSync(serverDir)) {
+	console.log('📦 Building server functions...');
+	try {
+		execSync('tsc server/functions.ts --outDir dist/server --module esnext --target es2020 --moduleResolution bundler --skipLibCheck', {
+			stdio: 'inherit',
+			cwd: __dirname
+		});
+		console.log('✅ Server functions built successfully\\n');
+	} catch (error) {
+		console.error('❌ Failed to build server functions');
+		process.exit(1);
+	}
+}
+
+// 2. Build main plugin
 console.log('📦 Building main plugin...');
 try {
-	execSync('BUILD_MODE=main vite build', { stdio: 'inherit', cwd: __dirname });
+	execSync('cross-env BUILD_MODE=main vite build', { stdio: 'inherit', cwd: __dirname });
 	console.log('✅ Main plugin built successfully\\n');
 } catch (error) {
 	console.error('❌ Failed to build main plugin');
 	process.exit(1);
 }
 
-// 2. Build components
+// 3. Build components
 const componentsDir = resolve(__dirname, 'src/components');
 if (existsSync(componentsDir)) {
 	const files = readdirSync(componentsDir);
@@ -1368,7 +1384,7 @@ if (existsSync(componentsDir)) {
 		for (const file of svelteFiles) {
 			console.log(\`  - Building \${file}...\`);
 			try {
-				execSync(\`BUILD_MODE=components COMPONENT_FILE=\${file} vite build\`, {
+				execSync(\`cross-env BUILD_MODE=components COMPONENT_FILE=\${file} vite build\`, {
 					stdio: 'inherit',
 					cwd: __dirname
 				});
@@ -2316,6 +2332,8 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 			vite: '^6.0.0',
 			typescript: '^5.7.0',
 			'vite-plugin-css-injected-by-js': '^4.0.0',
+			'cross-env': '^10.0.0',
+			'adm-zip': '^0.5.17',
 			...(hasDb ? { pg: '^8.0.0', '@types/pg': '^8.0.0' } : {})
 		}
 	};

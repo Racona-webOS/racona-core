@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
 		children: any;
 		appName: string;
 		width?: number | 'auto';
+		customFooter?: Snippet;
 	}
 
-	let { children, appName, width = 230 }: Props = $props();
+	let { children, appName, width = 230, customFooter }: Props = $props();
 
 	let isCollapsed = $state(false);
 
@@ -36,6 +38,11 @@
 		<div class="app-sidebar-content">
 			{@render children()}
 		</div>
+		{#if customFooter}
+			<div class="app-sidebar-footer">
+				{@render customFooter()}
+			</div>
+		{/if}
 	</div>
 	<button
 		class="sidebar-toggle"
@@ -61,7 +68,9 @@
 	}
 
 	.app-sidebar {
+		display: flex;
 		flex-shrink: 0;
+		flex-direction: column;
 		transition:
 			width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
 			max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -77,10 +86,10 @@
 	}
 
 	.app-sidebar-content {
+		flex: 1;
 		padding: 1rem;
 		width: var(--sidebar-width);
 		max-width: var(--sidebar-max-width);
-		height: 100%;
 		overflow-y: auto;
 
 		&::-webkit-scrollbar {
@@ -99,6 +108,14 @@
 		&::-webkit-scrollbar-thumb:hover {
 			background: var(--color-neutral-400);
 		}
+	}
+
+	.app-sidebar-footer {
+		flex-shrink: 0;
+		border-top: 1px solid var(--color-neutral-300);
+		padding: 1rem;
+		width: var(--sidebar-width);
+		max-width: var(--sidebar-max-width);
 	}
 
 	.app-sidebar-container.collapsed .app-sidebar {
@@ -161,6 +178,10 @@
 				&::-webkit-scrollbar-thumb:hover {
 					background: var(--color-neutral-500);
 				}
+			}
+
+			.app-sidebar-footer {
+				border-top-color: var(--color-neutral-700);
 			}
 
 			.sidebar-toggle:hover .icon-wrapper {

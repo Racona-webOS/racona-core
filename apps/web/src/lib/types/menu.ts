@@ -77,6 +77,20 @@ export interface RawMenuItem {
 	 * Formátum: "resource.feature.action" (pl. "log.error.view")
 	 */
 	requiredPermission?: string;
+
+	/**
+	 * Plugin-specifikus képesség, ami szükséges a menüpont megjelenítéséhez.
+	 * Csak pluginok használják — a plugin a saját adatbázisából vezeti le a
+	 * szervezet-szintű képesség halmazt, és a 'plugin-capabilities-changed'
+	 * eseménnyel publikálja a core felé.
+	 *
+	 * Ellentétben a `requiredPermission`-nel (ami a globális core
+	 * auth.permissions alapján szűr), ez a mező a plugin saját
+	 * capability-névtérén (pl. "project.create") működik.
+	 *
+	 * Formátum: "group.action" (pl. "project.create", "roles.manage")
+	 */
+	requiredCapability?: string;
 }
 
 /**

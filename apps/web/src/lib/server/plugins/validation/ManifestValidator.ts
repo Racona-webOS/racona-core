@@ -98,7 +98,8 @@ const pluginManifestSchema = v.object({
 	locales: v.optional(v.array(v.string())),
 	signature: v.optional(v.string()),
 	isPublic: v.optional(v.boolean()),
-	sortOrder: v.optional(v.number())
+	sortOrder: v.optional(v.number()),
+	sidebarComponent: v.optional(v.string())
 });
 
 /**

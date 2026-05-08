@@ -94,7 +94,8 @@ export const apps = schema.table(
 		pluginMinWebosVersion: varchar('plugin_min_webos_version', { length: 20 }),
 		pluginStatus: varchar('plugin_status', { length: 20 }).default('active'),
 		pluginInstalledAt: timestamp('plugin_installed_at', { withTimezone: true }),
-		pluginUpdatedAt: timestamp('plugin_updated_at', { withTimezone: true })
+		pluginUpdatedAt: timestamp('plugin_updated_at', { withTimezone: true }),
+		sidebarComponent: varchar('sidebar_component', { length: 100 }) // Sidebar komponens neve (opcionális)
 	},
 	(table) => ({
 		appTypeIdx: index('idx_apps_app_type').on(table.appType),

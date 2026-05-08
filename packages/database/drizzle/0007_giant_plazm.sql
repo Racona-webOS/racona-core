@@ -1,0 +1,1 @@
+ALTER TABLE "platform"."apps" ADD COLUMN "sidebar_component" varchar(100);
