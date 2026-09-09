@@ -26,8 +26,13 @@ export interface ActionBarItem {
 	onClick: () => void;
 	/** Visual variant */
 	variant?: 'default' | 'outline' | 'destructive' | 'ghost';
-	/** Button size */
-	size?: 'default' | 'sm' | 'lg' | 'xl' | 'icon';
+	/**
+	 * Button size.
+	 *
+	 * A core Button ténylegesen támogatott méretei. A korábbi 'xl' nem szerepelt
+	 * közöttük, így az azt használó gomb méretosztály nélkül renderelődött.
+	 */
+	size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
 	/** Optional icon name (lucide) */
 	icon?: string;
 	/** Whether the button is disabled */
