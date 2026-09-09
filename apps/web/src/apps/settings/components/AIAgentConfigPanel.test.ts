@@ -71,6 +71,17 @@ function enabledConfig(overrides: Record<string, unknown> = {}) {
 	};
 }
 
+/**
+ * Egy csúszka fogantyúja (a bits-ui Slider a korlátokat ezen közli:
+ * aria-valuemin / aria-valuemax / aria-valuenow).
+ *
+ * @param id - A Slider komponensre adott id.
+ * @returns A fogantyú eleme, vagy null ha még nincs kirenderelve.
+ */
+function sliderThumb(id: string): HTMLElement | null {
+	return document.querySelector(`#${id} [role="slider"]`);
+}
+
 describe('AIAgentConfigPanel', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -221,38 +232,28 @@ describe('AIAgentConfigPanel', () => {
 		});
 	});
 
-	it('should validate advanced parameters', async () => {
+	it('should constrain advanced parameters to the allowed ranges', async () => {
 		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
-			const maxTokensInput = screen.getByLabelText(/settings\.admin\.aiAgent\.maxTokens/);
-			const temperatureInput = screen.getByLabelText(/settings\.admin\.aiAgent\.temperature/);
-			const topPInput = screen.getByLabelText(/settings\.admin\.aiAgent\.topP/);
-			expect(maxTokensInput).toBeInTheDocument();
-			expect(temperatureInput).toBeInTheDocument();
-			expect(topPInput).toBeInTheDocument();
+			expect(sliderThumb('max-tokens')).toBeInTheDocument();
 		});
 
-		// Test invalid values
-		const maxTokensInput = screen.getByLabelText(/settings\.admin\.aiAgent\.maxTokens/);
-		const temperatureInput = screen.getByLabelText(/settings\.admin\.aiAgent\.temperature/);
-		const topPInput = screen.getByLabelText(/settings\.admin\.aiAgent\.topP/);
+		// A paraméterek csúszkák, nem szabadon írható mezők — a komponensben
+		// megadott korlátok tartják őket érvényes tartományban. (A handleSave
+		// tartomány-ellenőrzései megmaradnak, azok a felületet megkerülő
+		// adatokra védenek.)
+		expect(sliderThumb('max-tokens')).toHaveAttribute('aria-valuemin', '100');
+		expect(sliderThumb('max-tokens')).toHaveAttribute('aria-valuemax', '100000');
+		expect(sliderThumb('max-tokens')).toHaveAttribute('aria-valuenow', '2000');
 
-		await fireEvent.input(maxTokensInput, { target: { value: '0' } });
-		await fireEvent.input(temperatureInput, { target: { value: '3' } });
-		await fireEvent.input(topPInput, { target: { value: '2' } });
+		expect(sliderThumb('temperature')).toHaveAttribute('aria-valuemin', '0');
+		expect(sliderThumb('temperature')).toHaveAttribute('aria-valuemax', '2');
+		expect(sliderThumb('temperature')).toHaveAttribute('aria-valuenow', '0.7');
 
-		// Fill required fields
-		const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
-		const modelInput = screen.getByLabelText('settings.admin.aiAgent.model');
-		await fireEvent.input(apiKeyInput, { target: { value: 'sk-test123' } });
-		await fireEvent.input(modelInput, { target: { value: 'gpt-4' } });
-
-		const saveButton = screen.getByText('common.buttons.save');
-		await fireEvent.click(saveButton);
-
-		// Should show validation errors
-		expect(toast.error).toHaveBeenCalledWith('settings.admin.aiAgent.validation.maxTokensRange');
+		expect(sliderThumb('top-p')).toHaveAttribute('aria-valuemin', '0');
+		expect(sliderThumb('top-p')).toHaveAttribute('aria-valuemax', '1');
+		expect(sliderThumb('top-p')).toHaveAttribute('aria-valuenow', '0.9');
 	});
 
 	it('should save configuration successfully', async () => {
