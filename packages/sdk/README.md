@@ -194,6 +194,10 @@ MIT
 
 ## Changelog
 
+### [0.5.1] - 2026-09-09
+
+- **Docs**: changelog entry for `0.5.0` added to this README — the `0.5.0` package page shipped without it
+
 ### [0.5.0] - 2026-09-09
 
 First release to reach the registries with the `DatePicker` (0.3.3) and `Checkbox` (0.4.0) components — those versions were documented but never published. Upgrading from `0.3.2` brings all three releases.
