@@ -9,7 +9,6 @@
 	import { cn } from '$lib/utils/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
 
 	let {
 		value = $bindable(''),
@@ -32,8 +31,11 @@
 	const df = new DateFormatter(locale, { dateStyle: 'long' });
 
 	let open = $state(false);
+	let triggerEl = $state<HTMLDivElement | undefined>();
+	let dropdownTop = $state(0);
+	let dropdownLeft = $state(0);
+	let dropdownWidth = $state(240);
 
-	// Belső DateValue state — a Calendar bind:value-hoz
 	let calendarValue = $state<DateValue | undefined>(value ? tryParseDate(value) : undefined);
 
 	function tryParseDate(s: string): DateValue | undefined {
@@ -44,7 +46,6 @@
 		}
 	}
 
-	// calendarValue változásakor frissítjük a külső string value-t és bezárjuk a popover-t
 	$effect(() => {
 		const next = calendarValue ? calendarValue.toString() : '';
 		if (next !== value) {
@@ -53,7 +54,6 @@
 		}
 	});
 
-	// Külső value változásakor frissítjük a belső state-et
 	$effect(() => {
 		const parsed = value ? tryParseDate(value) : undefined;
 		const current = calendarValue ? calendarValue.toString() : '';
@@ -61,34 +61,75 @@
 			calendarValue = parsed;
 		}
 	});
+
+	function toggle(e: MouseEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		if (disabled) return;
+		if (!open && triggerEl) {
+			const rect = triggerEl.getBoundingClientRect();
+			dropdownTop = rect.bottom + 4;
+			dropdownLeft = rect.left;
+			dropdownWidth = Math.max(rect.width, 240);
+		}
+		open = !open;
+	}
+
+	function closeOnOutside(e: MouseEvent) {
+		const target = e.target as HTMLElement;
+		if (!target.closest('.date-picker-root')) {
+			open = false;
+		}
+	}
 </script>
 
-<Popover.Root bind:open>
-	<Popover.Trigger>
-		{#snippet child({ props })}
-			<Button
-				variant="outline"
-				class={cn(
-					'w-full justify-start text-start font-normal',
-					!calendarValue && 'text-muted-foreground',
-					className
-				)}
-				{disabled}
-				{...props}
-			>
-				<CalendarIcon class="me-2 size-4 shrink-0" />
-				{calendarValue ? df.format(calendarValue.toDate(getLocalTimeZone())) : placeholder}
-			</Button>
-		{/snippet}
-	</Popover.Trigger>
-	<Popover.Content class="z-200 w-auto p-0" align="start">
-		<Calendar
-			type="single"
-			{locale}
-			bind:value={calendarValue}
-			{minValue}
-			{maxValue}
-			initialFocus
-		/>
-	</Popover.Content>
-</Popover.Root>
+<svelte:window onclick={closeOnOutside} />
+
+<div
+	bind:this={triggerEl}
+	class={cn('date-picker-root', className)}
+	style="position: relative; display: inline-block; width: 100%;"
+>
+	<Button
+		variant="outline"
+		class={cn(
+			'w-full justify-start text-start font-normal',
+			!calendarValue && 'text-muted-foreground'
+		)}
+		{disabled}
+		onclick={toggle}
+	>
+		<CalendarIcon class="me-2 size-4 shrink-0" />
+		{calendarValue ? df.format(calendarValue.toDate(getLocalTimeZone())) : placeholder}
+	</Button>
+
+	{#if open}
+		<div
+			class="date-picker-dropdown"
+			role="dialog"
+			aria-modal="true"
+			style="top: {dropdownTop}px; left: {dropdownLeft}px; min-width: {dropdownWidth}px;"
+		>
+			<Calendar
+				type="single"
+				{locale}
+				bind:value={calendarValue}
+				{minValue}
+				{maxValue}
+				initialFocus
+			/>
+		</div>
+	{/if}
+</div>
+
+<style>
+	.date-picker-dropdown {
+		position: fixed;
+		z-index: 9999;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+		border: 1px solid var(--color-border, #e2e8f0);
+		border-radius: 0.5rem;
+		background: var(--color-popover, white);
+		padding: 0;
+	}
+</style>
