@@ -107,6 +107,10 @@
 			if (componentFactory && typeof componentFactory === 'function') {
 				console.log('[AppContentArea] Factory already on window, using directly:', factoryName);
 			} else {
+				// Megvárjuk a shared Svelte runtime-ot, mielőtt az IIFE-t végrehajtjuk
+				const { sharedLibrariesReady } = await import('$lib/sdk/shared-libraries');
+				await sharedLibrariesReady();
+
 				// Plugin komponens betöltése az API-n keresztül (production mód)
 				console.log('[AppContentArea] Fetching plugin component from API:', componentName);
 				const response = await fetch(`/api/plugins/${appName}/components/${componentName}`);

@@ -67,8 +67,11 @@
 		if (browser && !isInitialized) {
 			isInitialized = true;
 
-			// Initialize shared libraries for plugins
-			initializeSharedLibraries();
+			// Initialize shared libraries for plugins (async — Svelte runtime
+			// modulokat dinamikusan tölti, hogy az SSR ne értelmezze)
+			initializeSharedLibraries().catch((err) => {
+				console.error('[Desktop] Shared libraries init failed:', err);
+			});
 
 			themeManager = getThemeManager();
 			desktopStore.loadShortcuts();

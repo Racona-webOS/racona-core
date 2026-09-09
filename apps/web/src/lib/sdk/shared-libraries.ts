@@ -31,6 +31,11 @@ import { cn } from '$lib/utils';
 /**
  * Shared libraries registry.
  * Ezek a library-k automatikusan elérhetők lesznek minden plugin számára.
+ *
+ * A Svelte runtime (svelte, svelte/internal/client) megosztása kritikus,
+ * de ezek dinamikusan, csak browserben töltődnek be (lásd
+ * `initializeSharedLibraries`), hogy az SSR build ne próbálja a
+ * `svelte/internal/client`-et szerver oldalon kiértékelni.
  */
 export const SHARED_LIBRARIES = {
 	// ─── Icons ──────────────────────────────────────────────────────
@@ -61,9 +66,29 @@ export type SharedLibraryName = keyof SharedLibraries;
 
 /**
  * Initialize shared libraries on the global window object.
- * Ez a függvény a Desktop komponens mount-jakor fut le.
+ * Ez a függvény a Desktop komponens mount-jakor fut le, browserben.
+ *
+ * A Svelte runtime modulokat (svelte, svelte/internal/client) dinamikus
+ * importtal töltjük be, mert ezek SSR környezetben nem értelmezhetők
+ * (csak kliens oldali API-k).
  */
-export function initializeSharedLibraries(): void {
+let initPromise: Promise<void> | null = null;
+
+export function initializeSharedLibraries(): Promise<void> {
+	if (initPromise) return initPromise;
+	initPromise = doInitialize();
+	return initPromise;
+}
+
+/**
+ * Vár a shared libraries inicializálódására.
+ * A plugin loader hívja, mielőtt egy plugint mountolna.
+ */
+export function sharedLibrariesReady(): Promise<void> {
+	return initPromise ?? initializeSharedLibraries();
+}
+
+async function doInitialize(): Promise<void> {
 	if (typeof window === 'undefined') {
 		console.warn('[Shared Libraries] Cannot initialize in non-browser environment');
 		return;
@@ -75,13 +100,34 @@ export function initializeSharedLibraries(): void {
 		return;
 	}
 
-	// Regisztráljuk a shared libraries-t
-	(window as any).__RACONA_SHARED_LIBS__ = SHARED_LIBRARIES;
+	// Svelte runtime betöltése dinamikusan (csak browserben).
+	// A `svelte/internal/client` nem exportál típusokat — runtime-only modul.
+	const [svelte, svelteInternalClient] = await Promise.all([
+		import('svelte'),
+		// @ts-expect-error - svelte/internal/client has no .d.ts (runtime-only)
+		import('svelte/internal/client')
+	]);
 
-	console.log('[Shared Libraries] Initialized:', Object.keys(SHARED_LIBRARIES).join(', '));
+	const allLibraries = {
+		...SHARED_LIBRARIES,
+		svelte,
+		'svelte/internal/client': svelteInternalClient
+	};
+
+	// Regisztráljuk a shared libraries-t
+	(window as any).__RACONA_SHARED_LIBS__ = allLibraries;
+
+	// A Svelte runtime modulokat külön globálban is kitesszük, hogy az
+	// IIFE-be fordított pluginok rollupOptions.output.globals-on keresztül
+	// ezekre a JS-azonosítókra tudjanak hivatkozni (a Vite IIFE globals
+	// érték JS azonosító kell legyen, nem string indexelt window kulcs).
+	(window as any).__RACONA_SVELTE__ = svelte;
+	(window as any).__RACONA_SVELTE_INTERNAL_CLIENT__ = svelteInternalClient;
+
+	console.log('[Shared Libraries] Initialized:', Object.keys(allLibraries).join(', '));
 
 	// Verzió információk logolása (ha elérhető)
-	Object.entries(SHARED_LIBRARIES).forEach(([name, lib]) => {
+	Object.entries(allLibraries).forEach(([name, lib]) => {
 		const version = (lib as any)?.version || (lib as any)?.VERSION;
 		if (version) {
 			console.log(`  - ${name}@${version}`);

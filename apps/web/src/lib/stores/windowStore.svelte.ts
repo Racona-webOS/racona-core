@@ -258,6 +258,14 @@ export class WindowManager {
 				throw new Error('Window not found');
 			}
 
+			// Megvárjuk, hogy a shared libraries (Svelte runtime) be legyenek
+			// töltve a window-ra. Ez kritikus, mert a plugin IIFE bundle-ek
+			// __RACONA_SVELTE__ és __RACONA_SVELTE_INTERNAL_CLIENT__ globálokra
+			// hivatkoznak — ha ezek még undefined, a custom element registráció
+			// hibára futna.
+			const { sharedLibrariesReady } = await import('$lib/sdk/shared-libraries');
+			await sharedLibrariesReady();
+
 			// Plugin metaadatok lekérése az apps API-n keresztül
 			const metaResponse = await fetch(`/api/apps/${pluginId}`);
 			if (!metaResponse.ok) {
@@ -394,6 +402,10 @@ export class WindowManager {
 		try {
 			const devUrl = (window_obj.parameters?.devUrl as string).replace(/\/$/, '');
 			const pluginId = componentName.replace('dev:', '');
+
+			// Megvárjuk a shared libraries (Svelte runtime) inicializálását.
+			const { sharedLibrariesReady } = await import('$lib/sdk/shared-libraries');
+			await sharedLibrariesReady();
 
 			// Manifest lekérése a dev szerverről
 			const manifestResponse = await fetch(`${devUrl}/manifest.json`, {
