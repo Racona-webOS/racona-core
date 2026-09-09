@@ -17,7 +17,7 @@
 	import type { KnowledgeBaseStatus, KnowledgeBaseLocale } from '$lib/server/ai-assistant/types.js';
 	import { RefreshCw, Database, Clock, FileText, Languages } from 'lucide-svelte';
 
-	const { t } = useI18n('settings');
+	const { t } = useI18n();
 
 	// -------------------------------------------------------------------------
 	// Állapot
