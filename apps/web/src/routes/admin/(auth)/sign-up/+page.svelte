@@ -2,7 +2,7 @@
 	import { authClient } from '$lib/auth/client';
 	import { writable, derived } from 'svelte/store';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
+	import { Input, PasswordInput } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { useI18n } from '$lib/i18n/hooks';
 	import { getContext } from 'svelte';
@@ -494,9 +494,8 @@
 
 		<div class="grid gap-2">
 			<Label for="password">{t('auth.signUp.password')}</Label>
-			<Input
+			<PasswordInput
 				id="password"
-				type="password"
 				required
 				bind:value={$password}
 				onblur={handlePasswordValidation}
@@ -528,9 +527,8 @@
 
 		<div class="grid gap-2">
 			<Label for="confirmPassword">{t('auth.signUp.confirmPassword')}</Label>
-			<Input
+			<PasswordInput
 				id="confirmPassword"
-				type="password"
 				required
 				bind:value={$confirmPassword}
 				onblur={handleConfirmPasswordValidation}

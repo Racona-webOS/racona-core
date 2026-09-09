@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
+	import { Input, PasswordInput } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { authClient } from '$lib/auth/client';
 	import { goto } from '$app/navigation';
@@ -225,9 +225,8 @@
 
 		<div class="grid gap-2">
 			<Label for="newPassword">{t('auth.resetPassword.newPassword')}</Label>
-			<Input
+			<PasswordInput
 				id="newPassword"
-				type="password"
 				required
 				bind:value={newPassword}
 				disabled={isLoading || !token}
@@ -255,9 +254,8 @@
 
 		<div class="grid gap-2">
 			<Label for="confirmPassword">{t('auth.resetPassword.confirmPassword')}</Label>
-			<Input
+			<PasswordInput
 				id="confirmPassword"
-				type="password"
 				required
 				bind:value={confirmPassword}
 				disabled={isLoading || !token}

@@ -2,7 +2,7 @@
 	import { authClient } from '$lib/auth/client';
 	import { checkUserExists } from '$lib/auth/check-user.remote';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
+	import { Input, PasswordInput } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import type { PageData } from './$types';
 	import { getContext } from 'svelte';
@@ -346,7 +346,7 @@
 				{t('auth.signIn.forgotPassword')}
 			</a>
 		</div>
-		<Input id="password" type="password" required bind:value={password} onkeydown={handleKeyDown} />
+		<PasswordInput id="password" required bind:value={password} onkeydown={handleKeyDown} />
 	</div>
 	<Button type="button" class="w-full" onclick={handleSignIn} disabled={isLoading} variant="login">
 		{#if isLoading}
