@@ -13,6 +13,7 @@ jobs:
 
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -42,12 +43,10 @@ jobs:
           CURRENT=$(node -p "require('./package.json').version")
           PUBLISHED=$(npm view @racona/cli version 2>/dev/null || echo "none")
           if [ "$CURRENT" != "$PUBLISHED" ]; then
-            npm publish --access public
+            npm publish --access public --provenance
           else
             echo "Version $CURRENT already published on npm, skipping."
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
