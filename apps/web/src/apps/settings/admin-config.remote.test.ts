@@ -143,7 +143,7 @@ describe('Admin Config Remote Actions', () => {
 			(decrypt as Mock).mockResolvedValue('decrypted_key');
 			(maskApiKey as Mock).mockReturnValue('sk-****1234');
 
-			const result = await adminConfigRemote.getAIAssistantConfig();
+			const result = await adminConfigRemote.getAIAssistantConfig({});
 
 			expect(result.success).toBe(true);
 			expect(result.config?.aiAgent.apiKeyEncrypted).toBe('sk-****1234');
@@ -156,7 +156,7 @@ describe('Admin Config Remote Actions', () => {
 				locals: { user: mockNonAdminUser }
 			});
 
-			const result = await adminConfigRemote.getAIAssistantConfig();
+			const result = await adminConfigRemote.getAIAssistantConfig({});
 
 			expect(result.success).toBe(false);
 			expect(result.error).toBe('Unauthorized: Admin role required');
@@ -515,7 +515,7 @@ describe('Admin Config Remote Actions', () => {
 			(decrypt as Mock).mockResolvedValue('sk-plaintext1234567890');
 			(maskApiKey as Mock).mockReturnValue('sk-****7890');
 
-			const result = await adminConfigRemote.getAIAssistantConfig();
+			const result = await adminConfigRemote.getAIAssistantConfig({});
 
 			expect(decrypt).toHaveBeenCalledWith('encrypted_key');
 			expect(maskApiKey).toHaveBeenCalledWith('sk-plaintext1234567890');

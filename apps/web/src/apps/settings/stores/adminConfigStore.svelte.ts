@@ -5,36 +5,21 @@
  * Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7
  */
 
-import type { AIAssistantConfig, UsageMetrics } from '@racona/database/schemas';
+import type { AIAssistantConfig } from '@racona/database/schemas';
 import {
 	getAIAssistantConfig,
 	updateAIAssistantConfig,
 	testAIAgentConnection,
-	testTTSProviderConnection,
-	getUsageMetrics,
-	getUsageTrends
+	testTTSProviderConnection
 } from '../admin-config.remote';
 
 interface AdminConfigState {
 	// AI Assistant konfiguráció
 	aiAssistantConfig: AIAssistantConfig | null;
 
-	// Usage metrikák
-	usageMetrics: UsageMetrics[];
-	usageTrends: Array<{
-		period: string;
-		serviceType: string;
-		providerName: string;
-		totalRequests: number;
-		totalTokens: number | null;
-		totalCharacters: number | null;
-		totalCost: number;
-	}>;
-
 	// Loading states
 	loading: boolean;
 	loadingConfig: boolean;
-	loadingMetrics: boolean;
 	loadingTest: boolean;
 
 	// Error states
@@ -48,11 +33,8 @@ interface AdminConfigState {
 
 const initialState: AdminConfigState = {
 	aiAssistantConfig: null,
-	usageMetrics: [],
-	usageTrends: [],
 	loading: false,
 	loadingConfig: false,
-	loadingMetrics: false,
 	loadingTest: false,
 	error: null,
 	testError: null,
@@ -72,7 +54,7 @@ export class AdminConfigStore {
 		this.state.error = null;
 
 		try {
-			const result = await getAIAssistantConfig();
+			const result = await getAIAssistantConfig({});
 
 			if (result.success && result.config) {
 				this.state.aiAssistantConfig = result.config;
@@ -235,72 +217,6 @@ export class AdminConfigStore {
 	}
 
 	/**
-	 * Usage metrikák betöltése
-	 * Requirements: 8.1, 8.2
-	 */
-	async loadUsageMetrics(
-		configKey: string = 'ai_assistant',
-		startDate?: string,
-		endDate?: string
-	): Promise<void> {
-		this.state.loadingMetrics = true;
-		this.state.error = null;
-
-		try {
-			const result = await getUsageMetrics({
-				configKey,
-				startDate,
-				endDate
-			});
-
-			if (result.success && result.metrics) {
-				this.state.usageMetrics = result.metrics;
-			} else {
-				this.state.error = result.error || 'Failed to load usage metrics';
-			}
-		} catch (error) {
-			console.error('Error loading usage metrics:', error);
-			this.state.error = 'Failed to load usage metrics';
-		} finally {
-			this.state.loadingMetrics = false;
-		}
-	}
-
-	/**
-	 * Usage trendek betöltése
-	 * Requirements: 8.3
-	 */
-	async loadUsageTrends(
-		configKey: string = 'ai_assistant',
-		period: 'daily' | 'weekly' | 'monthly' = 'daily',
-		startDate?: string,
-		endDate?: string
-	): Promise<void> {
-		this.state.loadingMetrics = true;
-		this.state.error = null;
-
-		try {
-			const result = await getUsageTrends({
-				configKey,
-				period,
-				startDate,
-				endDate
-			});
-
-			if (result.success && result.trends) {
-				this.state.usageTrends = result.trends;
-			} else {
-				this.state.error = result.error || 'Failed to load usage trends';
-			}
-		} catch (error) {
-			console.error('Error loading usage trends:', error);
-			this.state.error = 'Failed to load usage trends';
-		} finally {
-			this.state.loadingMetrics = false;
-		}
-	}
-
-	/**
 	 * Cache invalidálás és újratöltés
 	 * Requirements: 6.7
 	 */
@@ -362,7 +278,6 @@ export class AdminConfigStore {
 		return (
 			this.state.loading ||
 			this.state.loadingConfig ||
-			this.state.loadingMetrics ||
 			this.state.loadingTest
 		);
 	}
