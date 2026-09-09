@@ -24,6 +24,7 @@ import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
 import { getPluginDir } from '$lib/server/plugins/utils/filesystem';
+import { toClientError } from '$lib/server/plugins/utils/remote-error';
 import { getEmailManager } from '$lib/server/email/init';
 import type { EmailResult } from '$lib/server/email/types';
 
@@ -132,12 +133,24 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			throw err;
 		}
 
-		console.error(`[RemoteFunctionHandler] ${pluginId}/${functionName} failed:`, err);
+		// Üzleti logika hiba (pl. "nincs szabadságkeret") — az üzenet a kliensé.
+		// Váratlan hiba (adatbázis, programhiba) — csak általános üzenet megy ki,
+		// a részletek a logba kerülnek, a hivatkozási azonosító köti össze a kettőt.
+		const clientError = toClientError(err);
 
-		// Üzleti logika hiba (pl. "nincs szabadságkeret") — 200-as válasz, kliens kezeli
+		console.error(
+			`[RemoteFunctionHandler] ${pluginId}/${functionName} failed` +
+				(clientError.reference ? ` (ref: ${clientError.reference})` : '') +
+				':',
+			err
+		);
+
 		return json({
 			success: false,
-			error: err instanceof Error ? err.message : 'Remote function execution failed'
+			error: clientError.message,
+			...(clientError.internal
+				? { errorCode: PluginErrorCode.SERVER_ERROR, reference: clientError.reference }
+				: {})
 		});
 	}
 };
