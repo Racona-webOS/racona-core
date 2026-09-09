@@ -34,3 +34,9 @@ docs_tmp
 apps/web/uploads/plugins
 packages/ai-avatar/installers
 apps/web/uploads/ai-avatar
+
+# Buildelt Docker image exportok
+*.tar.zst
+
+# Knowledge base csomagolt export (a hu/ .md forrásokból generált)
+apps/web/static/knowledge-base/*.zip
