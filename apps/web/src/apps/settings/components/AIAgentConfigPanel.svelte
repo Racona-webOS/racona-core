@@ -250,6 +250,7 @@
 			variant="outline"
 			text={isTesting ? t('common.testing') : t('settings.admin.aiAgent.testConnection')}
 			onclick={handleTestConnection}
+			disabled={isTesting || isSaving}
 		>
 			{#snippet icon()}<TestTube />{/snippet}
 		</IconButton>
@@ -257,6 +258,7 @@
 	<ButtonSave
 		text={isSaving ? t('common.saving') : t('common.buttons.save')}
 		onclick={handleSave}
+		disabled={isTesting || isSaving}
 	/>
 {/snippet}
 
