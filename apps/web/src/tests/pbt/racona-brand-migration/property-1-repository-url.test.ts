@@ -2,12 +2,16 @@
 // Validates: Requirements 1.6
 
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import * as fc from 'fast-check';
 import { describe, it } from 'vitest';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+// A `new URL('.', import.meta.url)` mintát a Vite statikusan felismeri és
+// asset-URL-lé írja át, így teszt alatt http://localhost:3000/... jött ki
+// belőle, amit a fileURLToPath elutasít. A dirname(fileURLToPath(...)) alak
+// nem esik bele ebbe az átírásba.
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Beolvassa a megadott csomagnévhez tartozó package.json fájlt.
@@ -15,7 +19,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
  */
 function readPackageJson(pkgName: string): Record<string, unknown> {
 	const pkgMap: Record<string, string> = {
-		'@racona/cli': resolve(__dirname, '../../../../../../packages/create-racona-app/package.json'),
+		'@racona/cli': resolve(__dirname, '../../../../../../packages/cli/package.json'),
 		'@racona/sdk': resolve(__dirname, '../../../../../../packages/sdk/package.json')
 	};
 
