@@ -270,13 +270,19 @@ export interface WebOSComponents {
 	/**
 	 * renderComponent — Svelte komponens renderelése TanStack cell contextben.
 	 * Standalone módban: marker objektumot ad vissza.
+	 *
+	 * A paraméterek `any`-k, mert a core-beli (bits-ui) implementáció generikus
+	 * `Component<T>`-et vár — `unknown` paraméterrel az a függvény nem lenne
+	 * értékadható erre a mezőre (kontravariancia).
 	 */
-	renderComponent?: (component: unknown, props: Record<string, unknown>) => unknown;
+	renderComponent?: (component: any, props?: any) => unknown;
 	/**
 	 * renderSnippet — Svelte snippet renderelése TanStack cell contextben.
 	 * Standalone módban: a snippet render() függvényét hívja meg.
+	 *
+	 * A paraméterek `any`-k — lásd renderComponent.
 	 */
-	renderSnippet?: (snippet: unknown, props: unknown) => unknown;
+	renderSnippet?: (snippet: any, props?: any) => unknown;
 	/**
 	 * createActionsColumn — akció oszlop factory függvény.
 	 * Primary + dropdown gomb csoport minden sorban.
