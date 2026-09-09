@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import { toast } from 'svelte-sonner';
-import AIAgentConfigPanel from './AIAgentConfigPanel.svelte';
+import AIAgentConfigPanelHost from './AIAgentConfigPanel.test-host.svelte';
 
 // Mock dependencies
 vi.mock('svelte-sonner', () => ({
@@ -35,27 +35,48 @@ const { mockGetAIAssistantConfig, mockUpdateAIAssistantConfig, mockTestAIAgentCo
 		mockTestAIAgentConnection: vi.fn()
 	}));
 
-// A komponens az ActionBar-t Svelte contextből kéri (getActionBar); teszt
-// környezetben nincs provider, ezért mockoljuk.
-vi.mock('$lib/apps/actionBar.svelte', () => ({
-	getActionBar: () => ({ set: vi.fn(), clear: vi.fn() })
-}));
-
 vi.mock('../admin-config.remote', () => ({
 	getAIAssistantConfig: mockGetAIAssistantConfig,
 	updateAIAssistantConfig: mockUpdateAIAssistantConfig,
 	testAIAgentConnection: mockTestAIAgentConnection
 }));
 
+/**
+ * Alapértelmezett konfiguráció a tesztekhez: engedélyezett AI Agent, üres
+ * kulcs/modell mezőkkel.
+ *
+ * Az űrlap a komponensben az `{#if enabled}` ág mögött van, ezért a mezőket
+ * vizsgáló tesztek csak engedélyezett állapotban látják őket. A mezők üresen
+ * indulnak, hogy a kötelező mezők validációja is tesztelhető maradjon; az
+ * advancedParams a komponens saját alapértékeit tükrözi.
+ */
+function enabledConfig(overrides: Record<string, unknown> = {}) {
+	return {
+		success: true,
+		config: {
+			enabled: true,
+			aiAgent: {
+				provider: 'openai',
+				apiKeyEncrypted: '',
+				model: '',
+				baseUrl: '',
+				advancedParams: {
+					maxTokens: 2000,
+					temperature: 0.7,
+					topP: 0.9
+				},
+				...overrides
+			}
+		}
+	};
+}
+
 describe('AIAgentConfigPanel', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		// Default mock responses
-		mockGetAIAssistantConfig.mockResolvedValue({
-			success: false,
-			error: 'Configuration not found'
-		});
+		// Default: engedélyezett, még kitöltetlen konfiguráció
+		mockGetAIAssistantConfig.mockResolvedValue(enabledConfig());
 	});
 
 	afterEach(() => {
@@ -63,12 +84,12 @@ describe('AIAgentConfigPanel', () => {
 	});
 
 	it('should render component with default state', async () => {
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			expect(screen.getByText('settings.admin.aiAgent.title')).toBeInTheDocument();
 			expect(screen.getByText('settings.admin.aiAgent.description')).toBeInTheDocument();
-			expect(screen.getByText('settings.admin.aiAgent.inactive')).toBeInTheDocument();
+			expect(screen.getByText('settings.admin.aiAgent.active')).toBeInTheDocument();
 		});
 	});
 
@@ -92,7 +113,7 @@ describe('AIAgentConfigPanel', () => {
 
 		mockGetAIAssistantConfig.mockResolvedValue(mockConfig);
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			expect(screen.getByText('settings.admin.aiAgent.active')).toBeInTheDocument();
@@ -102,7 +123,7 @@ describe('AIAgentConfigPanel', () => {
 	});
 
 	it('should handle provider selection', async () => {
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const providerSelect = screen.getByLabelText('settings.admin.aiAgent.provider');
@@ -119,7 +140,7 @@ describe('AIAgentConfigPanel', () => {
 	});
 
 	it('should validate required fields before testing connection', async () => {
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const testButton = screen.getByText('settings.admin.aiAgent.testConnection');
@@ -139,7 +160,7 @@ describe('AIAgentConfigPanel', () => {
 			message: 'Connection successful'
 		});
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
@@ -176,7 +197,7 @@ describe('AIAgentConfigPanel', () => {
 			error: 'Invalid API key'
 		});
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
@@ -201,21 +222,21 @@ describe('AIAgentConfigPanel', () => {
 	});
 
 	it('should validate advanced parameters', async () => {
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
-			const maxTokensInput = screen.getByLabelText('settings.admin.aiAgent.maxTokens');
-			const temperatureInput = screen.getByLabelText('settings.admin.aiAgent.temperature');
-			const topPInput = screen.getByLabelText('settings.admin.aiAgent.topP');
+			const maxTokensInput = screen.getByLabelText(/settings\.admin\.aiAgent\.maxTokens/);
+			const temperatureInput = screen.getByLabelText(/settings\.admin\.aiAgent\.temperature/);
+			const topPInput = screen.getByLabelText(/settings\.admin\.aiAgent\.topP/);
 			expect(maxTokensInput).toBeInTheDocument();
 			expect(temperatureInput).toBeInTheDocument();
 			expect(topPInput).toBeInTheDocument();
 		});
 
 		// Test invalid values
-		const maxTokensInput = screen.getByLabelText('settings.admin.aiAgent.maxTokens');
-		const temperatureInput = screen.getByLabelText('settings.admin.aiAgent.temperature');
-		const topPInput = screen.getByLabelText('settings.admin.aiAgent.topP');
+		const maxTokensInput = screen.getByLabelText(/settings\.admin\.aiAgent\.maxTokens/);
+		const temperatureInput = screen.getByLabelText(/settings\.admin\.aiAgent\.temperature/);
+		const topPInput = screen.getByLabelText(/settings\.admin\.aiAgent\.topP/);
 
 		await fireEvent.input(maxTokensInput, { target: { value: '0' } });
 		await fireEvent.input(temperatureInput, { target: { value: '3' } });
@@ -239,7 +260,7 @@ describe('AIAgentConfigPanel', () => {
 			success: true
 		});
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
@@ -260,6 +281,7 @@ describe('AIAgentConfigPanel', () => {
 
 		await waitFor(() => {
 			expect(mockUpdateAIAssistantConfig).toHaveBeenCalledWith({
+				enabled: true,
 				aiAgent: {
 					provider: 'openai',
 					apiKey: 'sk-test123',
@@ -286,7 +308,7 @@ describe('AIAgentConfigPanel', () => {
 			error: 'Database error'
 		});
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
@@ -316,7 +338,7 @@ describe('AIAgentConfigPanel', () => {
 			() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1000))
 		);
 
-		render(AIAgentConfigPanel);
+		render(AIAgentConfigPanelHost);
 
 		await waitFor(() => {
 			const apiKeyInput = screen.getByLabelText('settings.admin.aiAgent.apiKey');
