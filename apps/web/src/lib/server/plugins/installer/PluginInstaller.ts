@@ -452,7 +452,7 @@ export class PluginInstaller {
 	 * Plugin migrációs SQL fájlok futtatása sorrendben.
 	 * Csak azokat futtatja, amelyek még nem szerepelnek a migrations táblában.
 	 */
-	private async runMigrations(pluginId: string, schemaName: string): Promise<void> {
+	async runMigrations(pluginId: string, schemaName: string): Promise<void> {
 		const pluginDir = getPluginDir(pluginId);
 		const migrationsDir = path.join(pluginDir, 'migrations');
 
@@ -553,7 +553,7 @@ export class PluginInstaller {
 	 *
 	 * PostgreSQL séma nevekben nem lehet kötőjel, ezért aláhúzásra cseréljük.
 	 */
-	private sanitizeSchemaName(pluginId: string): string {
+	sanitizeSchemaName(pluginId: string): string {
 		// Kötőjeleket aláhúzásra cseréljük, minden mást eltávolítunk
 		const sanitized = pluginId.replace(/-/g, '_').replace(/[^a-z0-9_]/g, '');
 		return `app__${sanitized}`;

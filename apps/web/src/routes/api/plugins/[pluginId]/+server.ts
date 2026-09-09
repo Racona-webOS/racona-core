@@ -2,9 +2,12 @@
  * Plugin API Endpoint.
  *
  * DELETE /api/plugins/[pluginId]
- *
  * Eltávolít egy telepített plugint. Sima fetch hívással érhető el,
  * nem SvelteKit command-ként, hogy ne invalidálja a layout load-ot.
+ *
+ * PUT /api/plugins/[pluginId]
+ * Frissít egy telepített plugint multipart/form-data kéréssel (file mező).
+ * Requirements: 8.1–8.11
  */
 
 import { json, error } from '@sveltejs/kit';
@@ -12,11 +15,21 @@ import type { RequestHandler } from './$types';
 import db from '$lib/server/database';
 import { client as pool } from '$lib/server/database';
 import { apps } from '@racona/database/schemas';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
 import { desktopShortcuts, translations } from '@racona/database/schemas';
+import { writeFile, unlink, mkdir } from 'fs/promises';
+import path from 'path';
+import {
+	PLUGIN_PACKAGE_EXTENSION_WITH_DOT,
+	PLUGIN_MAX_SIZE,
+	PLUGIN_TEMP_DIR
+} from '$lib/server/plugins/config';
+import { PluginErrorCode } from '@racona/database';
+import { pluginUpdateValidator, pluginUpdater } from '$lib/server/plugins/installer/PluginUpdater';
+import { activityLogService } from '$lib/server/activity-log/service';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése
@@ -109,5 +122,114 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			},
 			{ status: 500 }
 		);
+	}
+};
+
+// ============================================================================
+// PUT /api/plugins/[pluginId] — Plugin frissítés
+// ============================================================================
+
+/**
+ * Plugin frissítése feltöltött .raconapkg csomaggal.
+ *
+ * Requirements: 8.1–8.11
+ */
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
+	// Req 8.2: Autentikáció ellenőrzése
+	if (!locals.user?.id) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const userId = locals.user.id;
+
+	// Req 8.3: Jogosultság ellenőrzése
+	const permissions = await permissionRepository.findPermissionsForUser(parseInt(userId));
+	if (!permissions.includes('plugin.manual.install')) {
+		throw error(403, 'Insufficient permissions');
+	}
+
+	const { pluginId } = params;
+
+	// Req 8.4: Plugin létezésének ellenőrzése
+	const plugin = await db.query.apps.findFirst({
+		where: and(eq(apps.appId, pluginId), eq(apps.appType, 'plugin'))
+	});
+
+	if (!plugin) {
+		throw error(404, 'Plugin not found');
+	}
+
+	// Formdata beolvasása
+	const formData = await request.formData();
+	const file = formData.get('file') as File | null;
+
+	// Req 8.7: Nincs fájl
+	if (!file) {
+		return json({ success: false, error: 'MISSING_FILE' }, { status: 400 });
+	}
+
+	// Req 8.5: Kiterjesztés előellenőrzés
+	if (!file.name.endsWith(PLUGIN_PACKAGE_EXTENSION_WITH_DOT)) {
+		return json({ success: false, error: PluginErrorCode.INVALID_EXTENSION }, { status: 400 });
+	}
+
+	// Req 8.6: Méretellenőrzés
+	if (PLUGIN_MAX_SIZE && file.size > PLUGIN_MAX_SIZE) {
+		return json({ success: false, error: PluginErrorCode.FILE_TOO_LARGE }, { status: 400 });
+	}
+
+	// Req 8.11: Ideiglenes fájlnév előállítása (safeFilename-ből kiszűrjük az
+	// /, \, .. karaktersorozatokat és a vezérlőkaraktereket)
+	const safeFilename = file.name
+		// eslint-disable-next-line no-control-regex
+		.replace(/[/\\]/g, '')
+		.replace(/\.\./g, '')
+		// eslint-disable-next-line no-control-regex
+		.replace(/[\x00-\x1f\x7f]/g, '');
+
+	const timestamp = Date.now();
+	const tempFileName = `plugin-update-${userId}-${timestamp}-${safeFilename}`;
+
+	// Temp könyvtár létrehozása ha szükséges
+	await mkdir(PLUGIN_TEMP_DIR, { recursive: true });
+
+	const tempFilePath = path.join(PLUGIN_TEMP_DIR, tempFileName);
+
+	try {
+		// Req 8.10 (try-finally): Fájl ideiglenes mentése
+		const arrayBuffer = await file.arrayBuffer();
+		await writeFile(tempFilePath, Buffer.from(arrayBuffer));
+
+		// Req 8.8: Frissítési validáció
+		const report = await pluginUpdateValidator.validateForUpdate(tempFilePath, pluginId);
+
+		if (!report.valid || !report.manifest) {
+			return json({ success: false, errors: report.errors }, { status: 400 });
+		}
+
+		// Req 8.1: Frissítés végrehajtása
+		const result = await pluginUpdater.update(tempFilePath, report.manifest, pluginId);
+
+		if (result.success) {
+			// Req 10.4: Activity log bejegyzés
+			activityLogService.log({
+				actionKey: 'plugin.updated',
+				userId,
+				resourceType: 'plugin',
+				resourceId: pluginId,
+				context: { oldVersion: result.oldVersion, newVersion: result.newVersion }
+			});
+
+			return json(
+				{ success: true, oldVersion: result.oldVersion, newVersion: result.newVersion },
+				{ status: 200 }
+			);
+		} else {
+			// Req 8.9: Frissítési hiba (rollback után)
+			return json({ success: false, error: result.error }, { status: 500 });
+		}
+	} finally {
+		// Req 8.10: Ideiglenes fájl törlése minden esetben (sikeres és hibás esetben is)
+		await unlink(tempFilePath).catch(() => {});
 	}
 };

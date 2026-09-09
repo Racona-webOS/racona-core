@@ -4,7 +4,9 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import ContentSection from '$lib/components/shared/ContentSection.svelte';
 	import { IconButton } from '$lib/components/shared/buttons';
-	import { ArrowLeft, Package, Trash2, Shield } from 'lucide-svelte/icons';
+	import { ArrowLeft, Package, Trash2, Shield, RefreshCw } from 'lucide-svelte/icons';
+	import PluginUpdate from './PluginUpdate.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
 	import { useI18n } from '$lib/i18n/hooks';
@@ -35,6 +37,14 @@
 	// Check if user has permission to uninstall plugins
 	const canUninstall = $derived(hasPermission('plugin.manual.install'));
 
+	// Frissítési jogosultság: plugin.manual.install engedély + aktív plugin állapot (Requirement: 9.1)
+	const canUpdate = $derived(
+		hasPermission('plugin.manual.install') && plugin?.pluginStatus === 'active'
+	);
+
+	// Frissítési UI állapot (Requirement: 9.1)
+	let showUpdateUI = $state(false);
+
 	// Uninstall confirmation dialog state
 	let uninstallDialogOpen = $state(false);
 	let uninstalling = $state(false);
@@ -50,6 +60,25 @@
 
 	function cancelUninstall() {
 		uninstallDialogOpen = false;
+	}
+
+	// Frissítési UI megnyitása (Requirement: 9.1)
+	function handleUpdateClick() {
+		showUpdateUI = true;
+	}
+
+	// Sikeres frissítés callback (Requirements: 9.3, 9.4)
+	async function handleUpdateSuccess(oldVersion: string, newVersion: string) {
+		toast.success(t('plugin-manager.update.successMessage', { oldVersion, newVersion }));
+		const appRegistry = getClientAppRegistry();
+		await appRegistry.refresh();
+		await loadPlugin();
+		showUpdateUI = false;
+	}
+
+	// Frissítés megszakítása callback
+	function handleUpdateCancel() {
+		showUpdateUI = false;
 	}
 
 	async function confirmUninstall() {
@@ -128,6 +157,11 @@
 </script>
 
 {#snippet pluginActions()}
+	{#if canUpdate}
+		<IconButton text={t('plugin-manager.detail.update')} onclick={handleUpdateClick}>
+			{#snippet icon()}<RefreshCw />{/snippet}
+		</IconButton>
+	{/if}
 	<IconButton
 		variant="destructive"
 		text={t('plugin-manager.detail.uninstall')}
@@ -280,6 +314,26 @@
 		</ContentSection>
 	</div>
 {/if}
+
+<!-- Frissítési UI — Dialog modálban (Requirements: 9.1, 9.3, 9.4) -->
+<Dialog.Root bind:open={showUpdateUI}>
+	<Dialog.Content class="max-w-xl">
+		<Dialog.Header>
+			<Dialog.Title>{t('plugin-manager.update.modalTitle')}</Dialog.Title>
+		</Dialog.Header>
+		{#if plugin}
+			<PluginUpdate
+				pluginId={plugin.appId}
+				currentVersion={plugin.version}
+				pluginName={typeof plugin.name === 'object'
+					? plugin.name[locale] || plugin.name['hu']
+					: plugin.appId}
+				onSuccess={handleUpdateSuccess}
+				onCancel={handleUpdateCancel}
+			/>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>
 
 <!-- Uninstall confirmation dialog -->
 <ConfirmDialog

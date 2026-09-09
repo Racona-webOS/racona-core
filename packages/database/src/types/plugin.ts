@@ -220,6 +220,20 @@ export interface UpdateResult {
 }
 
 /**
+ * Backup metaadatok — a frissítés előtt készített biztonsági mentés adatai
+ */
+export interface BackupMeta {
+	/** Plugin azonosítója */
+	pluginId: string;
+	/** Backup könyvtár abszolút elérési útja (PLUGIN_DIRS.BACKUPS/<pluginId>_<timestamp>) */
+	backupPath: string;
+	/** Unix milliszekundumos időbélyeg */
+	timestamp: number;
+	/** A mentett plugin verziója (szemantikus verzió, pl. '0.7.0') */
+	version: string;
+}
+
+/**
  * Eltávolítási eredmény
  */
 export interface RemoveResult {
@@ -498,6 +512,8 @@ export enum PluginErrorCode {
 	// Frissítési hibák
 	VERSION_NOT_GREATER = 'VERSION_NOT_GREATER',
 	UPDATE_FAILED = 'UPDATE_FAILED',
+	INVALID_PACKAGE = 'INVALID_PACKAGE',
+	PLUGIN_DIR_NOT_FOUND = 'PLUGIN_DIR_NOT_FOUND',
 
 	// Betöltési hibák
 	PLUGIN_NOT_FOUND = 'PLUGIN_NOT_FOUND',
