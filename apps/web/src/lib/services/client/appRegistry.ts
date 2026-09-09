@@ -190,7 +190,7 @@ export class ClientAppRegistryService implements ClientAppRegistry {
 	 */
 	async getAppsByCategory(category: string): Promise<AppMetadata[]> {
 		try {
-			const result = await withTimeout(getUserAppsByCategory({ category }).run());
+			const result = await withTimeout(getUserAppsByCategory({ category }));
 
 			if (result.success && result.apps) {
 				return result.apps;
@@ -223,7 +223,7 @@ export class ClientAppRegistryService implements ClientAppRegistry {
 		}
 
 		try {
-			const result = await withTimeout(searchUserApps({ query }).run());
+			const result = await withTimeout(searchUserApps({ query }));
 
 			if (result.success && result.apps) {
 				return result.apps;
