@@ -5,6 +5,23 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-09
+
+> Ez az első kiadás, amely a `DatePicker` (0.3.3) és a `Checkbox` (0.4.0)
+> komponenst is elviszi a registrykbe: azok a verziók a changelogban szerepeltek,
+> de nem lettek publikálva. A legutóbbi publikált verzió a 0.3.2 volt.
+
+### Added
+
+- **Típus-exportok a csomag gyökeréből**: `UserInfo`, `WindowControls`, `ThemeColors`, `CallOptions`, `Transaction`, `NotificationOptions`, `ToastType`, `WebOSComponents`, `WebOSSDKInterface`, `MockSDKConfig`. Eddig csak a `DialogOptions`, `DialogResult` és `ActionBarItem` volt elérhető, a többi típust a plugin szerzők nem tudták importálni.
+- **`ActionBarItem.size`**: gombméret az action bar elemeihez.
+- **`WebOSComponents.Checkbox` és `WebOSComponents.DatePicker`**: a core rendszer Checkbox és DatePicker komponense (lásd a 0.4.0 és 0.3.3 bejegyzést).
+
+### Fixed
+
+- **`renderComponent` és `renderSnippet` típusa**: a paraméterek `unknown` helyett `any`. Az `unknown` paraméter azt ígérte, hogy a függvény bármit elfogad, a core-beli (bits-ui) implementáció viszont generikus `Component<T>`-et, illetve `Snippet<[TProps]>`-et vár — kontravariancia miatt nem volt értékadható a mezőre.
+- **`ActionBarItem.size` értékkészlete**: a korábbi `'xl'` méretet a core Button soha nem támogatta, az azt használó gomb méretosztály nélkül renderelődött. A típus mostantól a Button tényleges méreteit tükrözi: `'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg'`.
+
 ## [0.4.0] - 2026-05-07
 
 ### Added
