@@ -6,3 +6,17 @@
 
 	--startmenu-margin: 0px;
 }
+
+/*
+ * Dialog / AlertDialog z-index override
+ *
+ * Az app ablakok (Window.svelte) baseZIndex=100-tól indulnak,
+ * a bits-ui alapértelmezett z-50 (=50) alá kerülnek.
+ * 9000+ értékkel biztosítjuk, hogy a dialógusok minden ablak felett jelennek meg.
+ */
+[data-slot="dialog-overlay"],
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-overlay"],
+[data-slot="alert-dialog-content"] {
+	z-index: 9000 !important;
+}
