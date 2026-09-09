@@ -3,7 +3,16 @@
  *
  * POST /api/plugins/:pluginId/remote/:functionName
  *
- * Task 9.7: Remote függvény hívás endpoint
+ * A plugin `server/functions.{js,ts}` moduljának egy exportált függvényét
+ * futtatja a szerveren, `(params, context)` szignatúrával.
+ *
+ * A context tartalma:
+ *   - pluginId, userId
+ *   - db: pg Pool (query / connect) — nincs sémára korlátozva
+ *   - permissions: a hívó user core jogosultságai (pl. 'plugin.manual.install'),
+ *     rendszergazda esetén kiegészítve az 'admin' jelzővel
+ *   - pluginPermissions: a plugin manifest jogosultságai
+ *   - email: csak 'notifications' joggal rendelkező pluginnak
  */
 
 import { json, error } from '@sveltejs/kit';
@@ -14,8 +23,25 @@ import { client as pool } from '$lib/server/database';
 import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 import path from 'path';
+import { getPluginDir } from '$lib/server/plugins/utils/filesystem';
 import { getEmailManager } from '$lib/server/email/init';
 import type { EmailResult } from '$lib/server/email/types';
+
+/**
+ * A rendszergazda szerep azonosítója.
+ * A seed (packages/database/src/seeds/sql/auth/roles.sql) fix id-val hozza létre
+ * a "Rendszergazda / System Administrator" szerepet, ezért az id stabil.
+ */
+const SYSTEM_ADMIN_ROLE_ID = 1;
+
+/** A context.permissions-ben a rendszergazdát jelző érték (a pluginok erre építenek). */
+const ADMIN_PERMISSION = 'admin';
+
+/** Remote függvény futási időkorlátja (ms) */
+const REMOTE_FUNCTION_TIMEOUT_MS = 30_000;
+
+/** Érvényes JS azonosító — a modul exportjai közül csak ilyet hívunk */
+const FUNCTION_NAME_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 /**
  * Plugin email service interfész
@@ -38,87 +64,24 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const { pluginId, functionName } = params;
 
 	try {
-		// 1. Autentikáció ellenőrzés
-		// TODO: Integrálni a meglévő auth rendszerrel
-		// const user = locals.user;
-		// if (!user) {
-		// 	throw error(401, 'Unauthorized');
-		// }
+		// 1. Autentikáció (a hooks is védi az /api/plugins/ útvonalakat, itt explicit)
+		if (!locals.user?.id) {
+			throw error(401, 'Unauthorized');
+		}
+		const userId = String(locals.user.id);
 
-		// Átmeneti mock user - de lekérdezzük a valódi user jogosultságait
-		console.log(
-			'[RemoteFunctionHandler] DEBUG - locals.user:',
-			JSON.stringify(locals.user, null, 2)
-		);
-		const userId = locals.user?.id || 'user-123';
-		console.log('[RemoteFunctionHandler] DEBUG - userId:', userId, 'type:', typeof userId);
-
-		// User jogosultságok lekérdezése az adatbázisból
-		let userPermissions: string[] = [];
-		if (locals.user?.id) {
-			console.log(
-				'[RemoteFunctionHandler] DEBUG - Querying user permissions for user ID:',
-				locals.user.id
-			);
-			try {
-				// Konvertáljuk number-re, ha string
-				const userIdNum =
-					typeof locals.user.id === 'string' ? parseInt(locals.user.id, 10) : locals.user.id;
-
-				console.log(
-					'[RemoteFunctionHandler] DEBUG - Converted userIdNum:',
-					userIdNum,
-					'type:',
-					typeof userIdNum
-				);
-
-				// Ellenőrizzük, hogy van-e Rendszergazda (System Administrator) role-ja
-				// Role ID 1 = Rendszergazda/System Administrator
-				const roleResult = await pool.query(
-					`SELECT r.id, r.name FROM auth.user_roles ur
-					 JOIN auth.roles r ON ur.role_id = r.id
-					 WHERE ur.user_id = $1 AND r.id = 1`,
-					[userIdNum]
-				);
-
-				console.log(
-					'[RemoteFunctionHandler] DEBUG - Role query result:',
-					JSON.stringify(roleResult.rows, null, 2)
-				);
-
-				// Ha van Rendszergazda role (ID 1), akkor admin jogosultságot adunk
-				if (roleResult.rows.length > 0) {
-					userPermissions = ['admin'];
-					console.log(
-						'[RemoteFunctionHandler] DEBUG - User is admin (Rendszergazda), permissions set to:',
-						userPermissions
-					);
-				} else {
-					console.log('[RemoteFunctionHandler] DEBUG - User is NOT admin');
-				}
-			} catch (err) {
-				console.error('[RemoteFunctionHandler] Error fetching user permissions:', err);
-				console.error(
-					'[RemoteFunctionHandler] Error stack:',
-					err instanceof Error ? err.stack : 'No stack'
-				);
-			}
-		} else {
-			console.log(
-				'[RemoteFunctionHandler] DEBUG - Skipping user permissions query. locals.user?.id:',
-				locals.user?.id,
-				'type:',
-				typeof locals.user?.id
-			);
+		if (!FUNCTION_NAME_PATTERN.test(functionName)) {
+			throw error(400, 'Invalid function name');
 		}
 
-		console.log('[RemoteFunctionHandler] DEBUG - Final userPermissions:', userPermissions);
+		// 2. A hívó core jogosultságai
+		const userPermissions = await resolveCallerPermissions(userId);
 
-		// 2. Request body parsing
-		const body = await request.json();
-		const { params: functionParams } = body;
+		// 3. Request body parsing
+		const body = await request.json().catch(() => ({}));
+		const functionParams = (body as { params?: unknown })?.params;
 
-		// 3. Plugin ellenőrzés
+		// 4. Plugin ellenőrzés
 		const pluginResult = await db
 			.select({
 				pluginStatus: apps.pluginStatus,
@@ -143,7 +106,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			throw error(403, `${PluginErrorCode.PLUGIN_INACTIVE}: Plugin is not active`);
 		}
 
-		// 4. Jogosultság ellenőrzés
+		// 5. Plugin jogosultság ellenőrzés
 		const pluginPermissions = (plugin.pluginPermissions as string[]) || [];
 		if (!pluginPermissions.includes('remote_functions')) {
 			throw error(
@@ -152,7 +115,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			);
 		}
 
-		// 5. Remote függvény betöltése és végrehajtása
+		// 6. Remote függvény betöltése és végrehajtása
 		const result = await executeRemoteFunction(
 			pluginId,
 			functionName,
@@ -162,18 +125,14 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			userPermissions
 		);
 
-		// 6. Sikeres válasz
-		return json({
-			success: true,
-			result
-		});
+		return json({ success: true, result });
 	} catch (err) {
-		console.error(`[RemoteFunctionHandler] Error executing ${functionName}:`, err);
-
-		// SvelteKit error (404, 403 stb.) — ezeket továbbadjuk
+		// SvelteKit error (401, 403, 404 stb.) — ezeket továbbadjuk
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err;
 		}
+
+		console.error(`[RemoteFunctionHandler] ${pluginId}/${functionName} failed:`, err);
 
 		// Üzleti logika hiba (pl. "nincs szabadságkeret") — 200-as válasz, kliens kezeli
 		return json({
@@ -182,6 +141,54 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		});
 	}
 };
+
+/**
+ * A hívó user core jogosultságai a plugin context számára.
+ *
+ * Role-ok és group-ok alapján összegyűjtött permission nevek, kiegészítve az
+ * 'admin' jelzővel, ha a user rendszergazda szerepben van. Hiba esetén üres
+ * lista — a plugin ilyenkor a legszűkebb jogokkal fut.
+ */
+async function resolveCallerPermissions(userId: string): Promise<string[]> {
+	const userIdNum = Number.parseInt(userId, 10);
+	if (!Number.isInteger(userIdNum)) {
+		return [];
+	}
+
+	try {
+		const [adminResult, permissionResult] = await Promise.all([
+			pool.query(
+				`SELECT 1 FROM auth.user_roles WHERE user_id = $1 AND role_id = $2 LIMIT 1`,
+				[userIdNum, SYSTEM_ADMIN_ROLE_ID]
+			),
+			pool.query(
+				`SELECT DISTINCT p.name
+				   FROM auth.permissions p
+				  WHERE p.id IN (
+				        SELECT rp.permission_id
+				          FROM auth.role_permissions rp
+				          JOIN auth.user_roles ur ON ur.role_id = rp.role_id
+				         WHERE ur.user_id = $1
+				        UNION
+				        SELECT gp.permission_id
+				          FROM auth.group_permissions gp
+				          JOIN auth.user_groups ug ON ug.group_id = gp.group_id
+				         WHERE ug.user_id = $1
+				  )`,
+				[userIdNum]
+			)
+		]);
+
+		const permissions = (permissionResult.rows as Array<{ name: string }>).map((r) => r.name);
+		if (adminResult.rows.length > 0) {
+			permissions.unshift(ADMIN_PERMISSION);
+		}
+		return permissions;
+	} catch (err) {
+		console.error('[RemoteFunctionHandler] Failed to resolve caller permissions:', err);
+		return [];
+	}
+}
 
 /**
  * Remote függvény végrehajtása
@@ -195,10 +202,9 @@ async function executeRemoteFunction(
 	userPermissions: string[]
 ): Promise<unknown> {
 	try {
-		// Plugin server könyvtár útvonala
-		const pluginDir = path.join(process.cwd(), 'uploads', 'plugins', pluginId);
+		const pluginDir = getPluginDir(pluginId);
 
-		// .js preferált, fallback .ts (Node.js 22.6+/23+/24+ natívan támogatja a .ts fájlokat)
+		// .js preferált, fallback .ts (Bun és Node.js 22.6+ natívan támogatja a .ts fájlokat)
 		const serverFunctionsPathJs = path.join(pluginDir, 'server', 'functions.js');
 		const serverFunctionsPathTs = path.join(pluginDir, 'server', 'functions.ts');
 
@@ -208,7 +214,7 @@ async function executeRemoteFunction(
 			: serverFunctionsPathTs;
 
 		// Fájl mtime-je a URL query-be kerül, így plugin újratelepítéskor (a
-		// `uploads/plugins/<id>/server/functions.ts` fájl módosult) a Node új
+		// `uploads/plugins/<id>/server/functions.ts` fájl módosult) a runtime új
 		// URL-ként importálja, és nem a cache-elt régi verziót használja.
 		// Ha a fájl nem változott, ugyanaz az URL marad → cache találat.
 		let mtime = 0;
@@ -226,8 +232,11 @@ async function executeRemoteFunction(
 		/* @vite-ignore */
 		const serverModule = await import(fileUrl);
 
-		// Függvény ellenőrzés
-		if (!serverModule[functionName] || typeof serverModule[functionName] !== 'function') {
+		// Csak a modul saját exportjai hívhatók (prototípus-lánc, pl. constructor, nem)
+		const fn = Object.prototype.hasOwnProperty.call(serverModule, functionName)
+			? serverModule[functionName]
+			: undefined;
+		if (typeof fn !== 'function') {
 			throw new Error(
 				`${PluginErrorCode.REMOTE_ERROR}: Function '${functionName}' not found in plugin`
 			);
@@ -250,36 +259,29 @@ async function executeRemoteFunction(
 			pluginId,
 			userId,
 			db: pluginDb,
-			permissions: userPermissions, // User jogosultságok (pl. 'admin')
-			pluginPermissions, // Plugin jogosultságok (pl. 'remote_functions', 'notifications')
+			permissions: userPermissions,
+			pluginPermissions,
 			...(emailService ? { email: emailService } : {})
 		};
 
-		console.log('[RemoteFunctionHandler] DEBUG - Context created:', {
-			pluginId,
-			userId,
-			permissions: userPermissions,
-			pluginPermissions,
-			functionName
-		});
-
-		// Függvény végrehajtása timeout-tal (30 másodperc)
-		const result = await Promise.race([
-			serverModule[functionName](params, context),
-			new Promise((_, reject) =>
-				setTimeout(
-					() => reject(new Error(`${PluginErrorCode.REMOTE_CALL_TIMEOUT}: Function timeout`)),
-					30000
-				)
-			)
-		]);
-
-		console.log('[RemoteFunctionHandler] DEBUG - Function executed successfully:', functionName);
-
-		return result;
+		// Függvény végrehajtása időkorláttal. Az időtúllépés a választ utasítja el,
+		// a már futó függvényt nem szakítja meg.
+		let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+		try {
+			return await Promise.race([
+				fn(params, context),
+				new Promise((_, reject) => {
+					timeoutHandle = setTimeout(
+						() =>
+							reject(new Error(`${PluginErrorCode.REMOTE_CALL_TIMEOUT}: Function timeout`)),
+						REMOTE_FUNCTION_TIMEOUT_MS
+					);
+				})
+			]);
+		} finally {
+			if (timeoutHandle) clearTimeout(timeoutHandle);
+		}
 	} catch (err) {
-		console.error(`[RemoteFunctionHandler] Execution error:`, err);
-
 		if (err instanceof Error && err.message.includes('Cannot find module')) {
 			throw new Error(
 				`${PluginErrorCode.REMOTE_ERROR}: Server functions file not found for plugin`
@@ -305,7 +307,7 @@ export function _prefixTemplateName(pluginId: string, templateName: string): str
 /**
  * Plugin email service létrehozása
  * Csak notifications jogosultsággal rendelkező pluginok számára elérhető.
- * A template nevet automatikusan prefixeli: 'employee_welcome' → 'ely-work:employee_welcome'
+ * A template nevet automatikusan prefixeli: 'employee_welcome' → 'racona-work:employee_welcome'
  */
 function createPluginEmailService(
 	pluginId: string,
