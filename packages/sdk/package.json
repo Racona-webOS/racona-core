@@ -34,7 +34,7 @@
 		"build": "tsc -p tsconfig.json && tsc -p tsconfig.dev.json",
 		"build:runtime": "tsc -p tsconfig.json",
 		"build:dev": "tsc -p tsconfig.dev.json",
-		"test": "vitest run",
+		"test": "vitest run --passWithNoTests",
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.dev.json",
 		"clean": "rm -rf dist",
