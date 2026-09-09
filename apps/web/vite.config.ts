@@ -48,10 +48,15 @@ export default defineConfig({
 	ssr: {
 		noExternal: ['three', '@threlte/core']
 	},
+	// Teszt futtatáskor a Svelte kliens oldali buildjét kell feloldani, különben a
+	// komponens tesztek mount()-ja a szerver buildbe fut ("mount is not available
+	// on the server"). Csak VITEST alatt aktív, a dev/build feloldást nem érinti.
+	resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}', 'src/**/*.svelte.{test,spec}.{js,ts}'],
 		environment: 'jsdom',
 		globals: true,
+		setupFiles: ['./src/lib/test-setup.ts'],
 		server: {
 			deps: {
 				inline: ['svelte']

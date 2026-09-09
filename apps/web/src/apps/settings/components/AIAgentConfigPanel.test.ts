@@ -25,9 +25,21 @@ vi.mock('$lib/i18n/hooks', () => ({
 }));
 
 // Mock remote functions
-const mockGetAIAssistantConfig = vi.fn();
-const mockUpdateAIAssistantConfig = vi.fn();
-const mockTestAIAgentConnection = vi.fn();
+// A vi.mock factory a fájl tetejére hoistolódik, ezért a mockokat is
+// vi.hoisted()-ben kell létrehozni — különben a factory olyan változóra
+// hivatkozna, ami még nincs inicializálva.
+const { mockGetAIAssistantConfig, mockUpdateAIAssistantConfig, mockTestAIAgentConnection } =
+	vi.hoisted(() => ({
+		mockGetAIAssistantConfig: vi.fn(),
+		mockUpdateAIAssistantConfig: vi.fn(),
+		mockTestAIAgentConnection: vi.fn()
+	}));
+
+// A komponens az ActionBar-t Svelte contextből kéri (getActionBar); teszt
+// környezetben nincs provider, ezért mockoljuk.
+vi.mock('$lib/apps/actionBar.svelte', () => ({
+	getActionBar: () => ({ set: vi.fn(), clear: vi.fn() })
+}));
 
 vi.mock('../admin-config.remote', () => ({
 	getAIAssistantConfig: mockGetAIAssistantConfig,
