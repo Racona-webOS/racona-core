@@ -10,7 +10,7 @@
 	"scripts": {
 		"dev": "dotenv -e ../../.env.local -- vite dev",
 		"dev:varlock": "varlock run -- vite dev",
-		"build": "dotenv -e ../../.env -e ../../.env.local -- vite build",
+		"build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 dotenv -e ../../.env -e ../../.env.local -- vite build",
 		"preview": "node server.js",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
