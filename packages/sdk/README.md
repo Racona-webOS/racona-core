@@ -194,6 +194,16 @@ MIT
 
 ## Changelog
 
+### [0.5.0] - 2026-09-09
+
+First release to reach the registries with the `DatePicker` (0.3.3) and `Checkbox` (0.4.0) components — those versions were documented but never published. Upgrading from `0.3.2` brings all three releases.
+
+- **Added**: Type exports from the package root — `UserInfo`, `WindowControls`, `ThemeColors`, `CallOptions`, `Transaction`, `NotificationOptions`, `ToastType`, `WebOSComponents`, `WebOSSDKInterface`, `MockSDKConfig`. Previously only `DialogOptions`, `DialogResult` and `ActionBarItem` were reachable
+- **Added**: `ActionBarItem.size` — button size for action bar items
+- **Added**: `WebOSComponents.Checkbox` and `WebOSComponents.DatePicker`
+- **Fixed**: `renderComponent` and `renderSnippet` parameter types — the previous `unknown` parameters made the core implementation unassignable to these fields
+- **Fixed**: `ActionBarItem.size` value set now mirrors the core Button: `'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg'`. The former `'xl'` was never supported and rendered a button with no size class
+
 ### [0.3.2] - 2026-04-15
 
 - **Changed**: Brand name and documentation updates

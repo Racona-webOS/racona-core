@@ -47,8 +47,6 @@ jobs:
           else
             echo "Version $CURRENT already published on npm, skipping."
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to JSR
         working-directory: packages/sdk
