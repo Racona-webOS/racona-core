@@ -51,6 +51,7 @@ export const EXPECTED_ENV_KEYS = [
 	'APP_NAME',
 	'APP_LOGO_URL',
 	'EMAIL_USE_LOGO',
+	'EMAIL_LOGO_MAX_WIDTH',
 	// Hitelesítés
 	'BETTER_AUTH_SECRET',
 	'BETTER_AUTH_URL',
@@ -277,7 +278,8 @@ export function validateSchema(env: Record<string, unknown>): Record<string, unk
 		{ key: 'VERIFICATION_ROLLOUT_PERCENTAGE', min: 0, max: 100 },
 		{ key: 'PLUGIN_MAX_SIZE', min: 1, max: 104857600 },
 		{ key: 'DEMO_RESET_HOUR', min: 0, max: 23 },
-		{ key: 'BODY_SIZE_LIMIT', min: 1 }
+		{ key: 'BODY_SIZE_LIMIT', min: 1 },
+		{ key: 'EMAIL_LOGO_MAX_WIDTH', min: 1, max: 1000 }
 	];
 	for (const { key, min, max } of numericRangeFields) {
 		const value = env[key];
@@ -362,6 +364,9 @@ export function validEnvArbitrary(): fc.Arbitrary<Record<string, unknown>> {
 			APP_NAME: fc.option(fc.string({ minLength: 1, maxLength: 64 }), { nil: undefined }),
 			APP_LOGO_URL: fc.option(fc.string({ minLength: 1, maxLength: 128 }), { nil: undefined }),
 			EMAIL_USE_LOGO: fc.option(boolStringArb, { nil: undefined }),
+			EMAIL_LOGO_MAX_WIDTH: fc.option(fc.integer({ min: 1, max: 1000 }).map(String), {
+				nil: undefined
+			}),
 			REGISTRATION_ENABLED: fc.option(boolStringArb, { nil: undefined }),
 			SOCIAL_LOGIN_ENABLED: fc.option(boolStringArb, { nil: undefined }),
 			GOOGLE_CLIENT_ID: fc.option(fc.string({ minLength: 1, maxLength: 64 }), { nil: undefined }),

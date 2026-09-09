@@ -9,6 +9,7 @@ export interface BrandingConfig {
 	appUrl?: string;
 	logoUrl?: string;
 	useLogo: boolean;
+	logoMaxWidth: number;
 }
 
 /**
@@ -44,11 +45,24 @@ export function getBaseUrl(requestUrl?: string | URL): string {
 export function getBrandingConfig(requestUrl?: string | URL): BrandingConfig {
 	const baseUrl = getBaseUrl(requestUrl);
 
+	// EMAIL_LOGO_MAX_WIDTH: opcionális, env stringből parseolva (csak ha
+	// érvényes pozitív szám). Default: 100px — visszafogottabb, mint a régi
+	// 150px, és tipikus email logókhoz jó méret.
+	const rawMaxWidth = (env as unknown as Record<string, unknown>).EMAIL_LOGO_MAX_WIDTH;
+	let logoMaxWidth = 100;
+	if (rawMaxWidth !== undefined && rawMaxWidth !== null && rawMaxWidth !== '') {
+		const parsed = Number(rawMaxWidth);
+		if (Number.isFinite(parsed) && parsed > 0) {
+			logoMaxWidth = parsed;
+		}
+	}
+
 	return {
 		appName: env.APP_NAME || 'Racona',
 		appUrl: baseUrl,
 		logoUrl: env.APP_LOGO_URL,
-		useLogo: env.EMAIL_USE_LOGO || false
+		useLogo: env.EMAIL_USE_LOGO || false,
+		logoMaxWidth
 	};
 }
 
@@ -66,7 +80,7 @@ export function getAppBrandingHtml(options?: Partial<BrandingConfig>): string {
 			? config.logoUrl
 			: `${config.appUrl || ''}${config.logoUrl}`;
 
-		return `<img src="${logoUrl}" alt="${config.appName}" style="max-width: 150px; height: auto;" />`;
+		return `<img src="${logoUrl}" alt="${config.appName}" style="max-width: ${config.logoMaxWidth}px; height: auto;" />`;
 	}
 
 	// Otherwise return app name as text
