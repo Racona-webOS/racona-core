@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TemplateEngine } from '../engine';
-import type { EmailTemplateType } from '../types';
+import type { EmailTemplateType } from '../../types';
 
 describe('TemplateEngine - Optional Data Handling', () => {
 	it('should render template with all required data provided', async () => {

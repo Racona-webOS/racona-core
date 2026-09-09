@@ -4,7 +4,7 @@
  */
 
 import type { TTSSettings } from '$lib/types/settings';
-import type { AIAssistantConfig } from '@webos/database';
+import type { AIAssistantConfig } from '@racona/database';
 
 export type TTSVoice = {
 	name: string;

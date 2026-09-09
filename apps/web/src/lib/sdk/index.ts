@@ -25,7 +25,7 @@ export type {
 	ThemeColors,
 	CallOptions,
 	Transaction,
-	SDKNotificationOptions,
+	NotificationOptions as SDKNotificationOptions,
 	ToastType,
 	WebOSComponents,
 	WebOSSDKInterface,
