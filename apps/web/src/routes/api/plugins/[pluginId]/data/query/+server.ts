@@ -11,9 +11,9 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PluginErrorCode } from '@racona/database';
-import db from '$lib/server/database';
+import db, { client as pool } from '$lib/server/database';
 import { apps } from '@racona/database';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ params, request }) => {
 	const { pluginId } = params;
@@ -23,9 +23,15 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		const body = await request.json();
 		const { sql: querySQL, params: queryParams } = body;
 
-		if (!querySQL) {
+		if (!querySQL || typeof querySQL !== 'string') {
 			throw error(400, 'SQL query is required');
 		}
+
+		// Bind paraméterek: opcionális tömb ($1, $2, ... helyettesítéshez)
+		if (queryParams !== undefined && !Array.isArray(queryParams)) {
+			throw error(400, 'params must be an array');
+		}
+		const bindParams: unknown[] = queryParams ?? [];
 
 		// Plugin ellenőrzés
 		const pluginResult = await db
@@ -114,8 +120,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			finalQuery = finalQuery.replace(/UPDATE\s+([a-z_][a-z0-9_]*)/gi, `UPDATE ${schemaName}.$1`);
 		}
 
-		// Query végrehajtása
-		const result = await db.execute(sql.raw(finalQuery));
+		// Query végrehajtása a bind paraméterekkel — a plugin oldali $1, $2, ...
+		// paraméterezés csak így nyújt SQL injection védelmet.
+		const result = await pool.query(finalQuery, bindParams);
 
 		return json({
 			success: true,

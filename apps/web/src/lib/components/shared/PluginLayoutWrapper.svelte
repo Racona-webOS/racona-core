@@ -124,8 +124,10 @@
 			const code = await response.text();
 			console.log(`[PluginLayoutWrapper] Component code received, length: ${code.length}`);
 
-			// Komponens kód futtatása - csak ha még nincs regisztrálva a custom element
-			const tagName = `racona-work-${sidebarComponentName.toLowerCase()}`;
+			// Komponens kód futtatása - csak ha még nincs regisztrálva a custom element.
+			// A tagnév konvenció: <pluginId>-<komponensnév kisbetűvel>
+			// (lásd a plugin komponensek <svelte:options customElement> beállítását).
+			const tagName = `${pluginId}-${sidebarComponentName.toLowerCase()}`;
 			if (!customElements.get(tagName)) {
 				const script = document.createElement('script');
 				script.textContent = code;

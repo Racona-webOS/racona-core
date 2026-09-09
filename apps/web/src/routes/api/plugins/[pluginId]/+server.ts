@@ -16,7 +16,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
-import { desktopShortcuts } from '@racona/database/schemas';
+import { desktopShortcuts, translations } from '@racona/database/schemas';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése
@@ -66,7 +66,15 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			console.error(`[PluginManager] Hiba a plugin séma törlésekor:`, schemaError);
 		}
 
-		// 7. Desktop parancsikonok törlése az adatbázisból (minden felhasználónál)
+		// 7. Plugin fordítások törlése (plugin:<id> namespace)
+		try {
+			await db.delete(translations).where(eq(translations.namespace, `plugin:${pluginId}`));
+			console.log(`[PluginManager] Plugin fordítások törölve: plugin:${pluginId}`);
+		} catch (translationError) {
+			console.error(`[PluginManager] Hiba a plugin fordítások törlésekor:`, translationError);
+		}
+
+		// 8. Desktop parancsikonok törlése az adatbázisból (minden felhasználónál)
 		try {
 			const deleted = await db
 				.delete(desktopShortcuts)
@@ -81,7 +89,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			console.error(`[PluginManager] Hiba a desktop parancsikonok törlésekor:`, shortcutError);
 		}
 
-		// 8. Plugin törlése az adatbázisból
+		// 9. Plugin törlése az adatbázisból
 		await db.delete(apps).where(eq(apps.appId, pluginId));
 
 		console.log(`[PluginManager] Plugin ${pluginId} sikeresen eltávolítva`);

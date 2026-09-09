@@ -30,7 +30,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			.select({
 				pluginStatus: apps.pluginStatus,
 				appType: apps.appType,
-				permissions: apps.permissions
+				pluginPermissions: apps.pluginPermissions
 			})
 			.from(apps)
 			.where(eq(apps.appId, pluginId))
@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			throw error(403, `${PluginErrorCode.PLUGIN_INACTIVE}: Plugin is not active`);
 		}
 
-		const permissions = (pluginResult[0].permissions as unknown as string[]) ?? [];
+		const permissions = pluginResult[0].pluginPermissions ?? [];
 		if (!permissions.includes('database')) {
 			throw error(
 				403,
