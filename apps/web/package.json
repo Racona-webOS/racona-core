@@ -98,7 +98,6 @@
 		"@sentry/sveltekit": "^10.47.0",
 		"@tanstack/table-core": "^8.21.3",
 		"@threlte/core": "^8.5.9",
-		"@types/dompurify": "^3.2.0",
 		"@types/sharp": "^0.32.0",
 		"@varlock/infisical-plugin": "^0.0.6",
 		"@varlock/vite-integration": "^0.2.10",

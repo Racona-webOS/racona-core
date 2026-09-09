@@ -5,7 +5,6 @@
     "": {
       "name": "racona",
       "devDependencies": {
-        "@types/dompurify": "^3.2.0",
         "prettier": "~3.8.1",
         "prettier-plugin-css-order": "^2.2.0",
         "prettier-plugin-svelte": "^3.5.0",
@@ -23,7 +22,6 @@
         "@sentry/sveltekit": "^10.47.0",
         "@tanstack/table-core": "^8.21.3",
         "@threlte/core": "^8.5.9",
-        "@types/dompurify": "^3.2.0",
         "@types/sharp": "^0.32.0",
         "@varlock/infisical-plugin": "^0.0.6",
         "@varlock/vite-integration": "^0.2.10",
@@ -788,8 +786,6 @@
     "@types/cors": ["@types/cors@2.8.19", "", { "dependencies": { "@types/node": "*" } }, "sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg=="],
 
     "@types/deep-eql": ["@types/deep-eql@4.0.2", "", {}, "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw=="],
-
-    "@types/dompurify": ["@types/dompurify@3.2.0", "", { "dependencies": { "dompurify": "*" } }, "sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg=="],
 
     "@types/esrecurse": ["@types/esrecurse@4.3.1", "", {}, "sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw=="],
 

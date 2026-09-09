@@ -94,10 +94,13 @@ export function validateManifest(raw: unknown): ValidationResult {
 	}
 
 	if (errors.length === 0) {
+		// A fenti ellenőrzések minden kötelező mezőt lefedtek, de a fordító ezt
+		// nem tudja követni: az obj típusa Record<string, unknown> maradt, amiből
+		// nincs közvetlen átjárás az AvatarManifest felé.
 		return {
 			valid: true,
 			errors: [],
-			manifest: obj as AvatarManifest
+			manifest: obj as unknown as AvatarManifest
 		};
 	}
 

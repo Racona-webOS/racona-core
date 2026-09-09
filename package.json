@@ -45,7 +45,6 @@
 		"docker:save:app:zstd:arm64": "docker save racona/core-app:latest-arm64 | zstd -9 > ./docker/racona-core-app-arm64.tar.zst"
 	},
 	"devDependencies": {
-		"@types/dompurify": "^3.2.0",
 		"prettier": "~3.8.1",
 		"prettier-plugin-css-order": "^2.2.0",
 		"prettier-plugin-svelte": "^3.5.0",
