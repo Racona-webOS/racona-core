@@ -14,7 +14,7 @@ import {
 } from 'drizzle-orm';
 import { users, accounts, userGroups, groups, userRoles, roles } from '@racona/database/schemas';
 import type { UserSettings } from '$lib/types/settings';
-import { DEFAULT_USER_SETTINGS } from '$lib/types/settings';
+import { DEFAULT_USER_SETTINGS, DEFAULT_TTS_SETTINGS } from '$lib/types/settings';
 import type { UserSelectModel, GroupSelectModel, RoleSelectModel } from '@racona/database/schemas';
 
 /**
@@ -202,7 +202,7 @@ export class UserRepository {
 				...((user.userSettings as Partial<UserSettings>)?.desktop || {})
 			},
 			tts: {
-				...DEFAULT_USER_SETTINGS.tts,
+				...DEFAULT_TTS_SETTINGS,
 				...((user.userSettings as Partial<UserSettings>)?.tts || {})
 			}
 		};

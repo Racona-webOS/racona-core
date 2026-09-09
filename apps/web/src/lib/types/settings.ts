@@ -63,6 +63,24 @@ export interface UserSettings {
 	tts?: TTSSettings;
 }
 
+/**
+ * TTS alapértelmezések.
+ *
+ * Külön konstans, mert a UserSettings.tts opcionális (régebbi, mentett
+ * beállításokban még nem szerepel). Aki teljes TTSSettings-t állít elő
+ * alapértékekből, ezt terítse — a DEFAULT_USER_SETTINGS.tts típusa
+ * `TTSSettings | undefined`, abból nem jön ki kötelező mezőket tartalmazó
+ * objektum.
+ */
+export const DEFAULT_TTS_SETTINGS: TTSSettings = {
+	enabled: true,
+	autoPlay: false,
+	rate: 1.0,
+	pitch: 1.0,
+	volume: 1.0,
+	selectedVoiceOverride: null
+};
+
 export const DEFAULT_USER_SETTINGS: UserSettings = {
 	windowPreview: false,
 	screenshotThumbnailHeight: APP_CONSTANTS.DEFAULT_SCREENSHOT_HEIGHT,
@@ -72,12 +90,5 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
 	taskbar: DEFAULTS.TASKBAR,
 	startMenu: DEFAULTS.START_MENU,
 	desktop: DEFAULTS.DESKTOP,
-	tts: {
-		enabled: true,
-		autoPlay: false,
-		rate: 1.0,
-		pitch: 1.0,
-		volume: 1.0,
-		selectedVoiceOverride: null
-	}
+	tts: DEFAULT_TTS_SETTINGS
 };
