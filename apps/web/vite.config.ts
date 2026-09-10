@@ -44,6 +44,13 @@ export default defineConfig({
 			ignored: ['**/uploads/plugins/**', '**/uploads/plugins-temp/**']
 		}
 	},
+	// A SvelteKit csak a routes fájlokból indítja a függőség-szkennelést, a hooks.client.ts-ből
+	// ($lib/monitoring) dinamikusan importált Sentry SDK-t így a Vite csak az első oldalbetöltéskor
+	// fedezné fel, és utána újratöltené az oldalt ("optimized dependencies changed. reloading").
+	// Ez minden olyan dev indításnál előjön, ami után a deps cache újraépül (pl. build vagy vitest után).
+	optimizeDeps: {
+		include: ['@sentry/sveltekit']
+	},
 	// Three.js SSR kizárás — a three csomag nem kompatibilis a szerver oldali renderelésssel
 	ssr: {
 		noExternal: ['three', '@threlte/core']
