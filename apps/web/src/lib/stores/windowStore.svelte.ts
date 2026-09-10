@@ -323,7 +323,8 @@ export class WindowManager {
 				DataTableFacetedFilter,
 				renderComponent,
 				renderSnippet,
-				createActionsColumn
+				createActionsColumn,
+				DataTableRowActions
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
 			const { DatePicker } = await import('$lib/components/ui/date-picker');
@@ -354,6 +355,7 @@ export class WindowManager {
 					renderComponent,
 					renderSnippet,
 					createActionsColumn,
+					DataTableRowActions,
 					Input,
 					Button,
 					DatePicker,
@@ -427,7 +429,8 @@ export class WindowManager {
 				DataTableFacetedFilter,
 				renderComponent,
 				renderSnippet,
-				createActionsColumn
+				createActionsColumn,
+				DataTableRowActions
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
 			const { DatePicker } = await import('$lib/components/ui/date-picker');
@@ -458,6 +461,7 @@ export class WindowManager {
 					renderComponent,
 					renderSnippet,
 					createActionsColumn,
+					DataTableRowActions,
 					Input,
 					Button,
 					DatePicker,
@@ -788,7 +792,8 @@ export class WindowManager {
 				DataTableFacetedFilter,
 				renderComponent,
 				renderSnippet,
-				createActionsColumn
+				createActionsColumn,
+				DataTableRowActions
 			} = await import('$lib/components/ui/data-table');
 			const { Input } = await import('$lib/components/ui/input');
 			const { DatePicker } = await import('$lib/components/ui/date-picker');
@@ -819,6 +824,7 @@ export class WindowManager {
 					renderComponent,
 					renderSnippet,
 					createActionsColumn,
+					DataTableRowActions,
 					Input,
 					Button,
 					DatePicker,

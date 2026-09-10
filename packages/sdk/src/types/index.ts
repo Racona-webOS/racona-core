@@ -315,6 +315,13 @@ export interface WebOSComponents {
 					icon?: string;
 			  }>)
 	) => unknown;
+	/**
+	 * DataTableRowActions komponens — a createActionsColumn által renderelt
+	 * primary gomb + ⋮ dropdown csoport, táblázaton kívüli listákhoz.
+	 * Props: `actions` (ugyanaz a formátum, mint a createActionsColumn-nál), `row`.
+	 * Standalone módban nem érhető el.
+	 */
+	DataTableRowActions?: unknown;
 	/** Input komponens */
 	Input?: unknown;
 	/** Button komponens */

@@ -99,6 +99,7 @@ Az SDK `components` objektumán keresztül az alábbi komponensek érhetők el:
 - `renderComponent` - Komponens renderelő helper
 - `renderSnippet` - Snippet renderelő helper
 - `createActionsColumn` - Akció oszlop létrehozó
+- `DataTableRowActions` - Az akció oszlop gombcsoportja (primary gomb + ⋮ menü) táblázaton kívüli listákhoz; props: `actions`, `row`
 
 ### Komponensek ellenőrzése
 
