@@ -24,7 +24,12 @@ export function socketIOPlugin(): Plugin {
 					pingInterval: 25000, // 25 seconds
 					connectTimeout: 45000,
 					upgradeTimeout: 10000,
-					transports: ['websocket', 'polling']
+					transports: ['websocket', 'polling'],
+					// A Vite HMR websocket ugyanezen a HTTP szerveren fut. Az engine.io alapból 1 s után
+					// lezár minden nem neki szóló upgrade-et, ha a socketre addig "nem írtak" — Bun alatt
+					// a socket.bytesWritten az upgrade után is 0, így a HMR kapcsolatot is lelőné, amire a
+					// Vite kliens "server connection lost" után végtelen oldal-újratöltésbe esik.
+					destroyUpgrade: false
 				});
 
 				// Import notification repository dynamically
