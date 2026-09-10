@@ -232,13 +232,16 @@ await window.webOS.i18n.setLocale('en');
 ```typescript
 // Értesítés küldése
 await window.webOS.notifications.send({
-	userId: 'user-123',
+	userId: window.webOS.context.user.id,
 	title: 'Cím',
 	message: 'Üzenet',
 	type: 'info' // 'info' | 'success' | 'warning' | 'error'
 });
 
 // Jogosultság szükséges: 'notifications'
+// A bejelentkezett felhasználó mindig küldhet saját magának. Más userId célzásához
+// a felhasználónak notifications.send core jogosultság kell (különben PERMISSION_DENIED).
+// Más felhasználók értesítésére a szerver függvények context.notifications.send()-je való.
 ```
 
 ### Context Service

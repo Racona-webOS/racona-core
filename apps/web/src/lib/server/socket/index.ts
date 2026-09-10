@@ -1,7 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { notificationRepository } from '$lib/server/database/repositories';
-import type { NewNotification } from '@racona/database';
+import type { NewNotification, Notification } from '@racona/database';
 import { logger } from '$lib/server/logging';
 import db from '$lib/server/database';
 import { users } from '@racona/database/schemas';
@@ -190,8 +190,9 @@ export function getSocketIO(): SocketIOServer {
 
 /**
  * Send notification to user(s)
+ * @returns A mentett értesítések (címzettenként egy); csoport célzásnál vagy címzett nélkül üres
  */
-export async function sendNotification(payload: NotificationPayload): Promise<void> {
+export async function sendNotification(payload: NotificationPayload): Promise<Notification[]> {
 	console.log('[sendNotification] Called with payload:', payload);
 	let socketIO: SocketIOServer | null = null;
 
@@ -226,17 +227,19 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
 			// TODO: Implement group notification
 			logger.warn('[Socket.IO] Group notifications not yet implemented');
 			console.log('[sendNotification] Group notifications not yet implemented');
-			return;
+			return [];
 		}
 
 		// Check if we have valid target users
 		if (targetUserIds.length === 0) {
 			logger.warn('[Socket.IO] No target users specified for notification');
 			console.log('[sendNotification] No target users specified');
-			return;
+			return [];
 		}
 
 		console.log('[sendNotification] Target user IDs:', targetUserIds);
+
+		const savedNotifications: Notification[] = [];
 
 		// Save notifications to database and emit to users
 		for (const userId of targetUserIds) {
@@ -263,6 +266,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
 			console.log('[sendNotification] Creating notification in DB:', notification);
 			const saved = await notificationRepository.create(notification);
 			console.log('[sendNotification] Notification saved to DB:', saved);
+			savedNotifications.push(saved);
 
 			// Emit to user's room (only if Socket.IO is available)
 			if (socketIO) {
@@ -287,6 +291,8 @@ export async function sendNotification(payload: NotificationPayload): Promise<vo
 
 			logger.info(`[Socket.IO] Notification sent to user: ${userId}`);
 		}
+
+		return savedNotifications;
 	} catch (error) {
 		console.error('[sendNotification] Error:', error);
 		logger.error('[Socket.IO] Error sending notification:', { context: { error: String(error) } });

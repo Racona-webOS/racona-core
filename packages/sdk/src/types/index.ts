@@ -175,7 +175,10 @@ export interface I18nService {
 
 /** Options for sending a notification */
 export interface NotificationOptions {
-	/** ID of the user to notify */
+	/**
+	 * ID of the user to notify — usually `sdk.context.user.id`.
+	 * Notifying another user requires the current user to hold the core `notifications.send` permission.
+	 */
 	userId: string;
 	/** Notification title */
 	title: string;

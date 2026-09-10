@@ -5,6 +5,11 @@
  *
  * Értesítés küldése a notification center-be a megadott felhasználónak.
  * Property 21: Jogosultság ellenőrzés működik
+ *
+ * A plugin kliens oldali kódja a bejelentkezett felhasználó nevében fut, ezért
+ * a hívó bármikor küldhet saját magának, de más felhasználó célzásához a hívónak
+ * notifications.send core jogosultság kell (mint a POST /api/notifications-nél).
+ * Más felhasználók értesítésére a plugin szerver oldali contextje való.
  */
 
 import { json, error } from '@sveltejs/kit';
@@ -13,7 +18,11 @@ import { PluginErrorCode } from '@racona/database';
 import db from '$lib/server/database';
 import { apps, users } from '@racona/database';
 import { eq } from 'drizzle-orm';
-import { notificationRepository } from '$lib/server/database/repositories';
+import { permissionRepository } from '$lib/server/database/repositories';
+import { sendNotification } from '$lib/server/socket';
+
+/** Más felhasználóknak küldéshez szükséges core jogosultság */
+const NOTIFICATION_SEND_PERMISSION = 'notifications.send';
 
 /** Engedélyezett értesítés típusok (a notifications.type oszlop értékei) */
 const ALLOWED_TYPES = ['info', 'success', 'warning', 'error', 'critical'] as const;
@@ -29,10 +38,16 @@ function parseUserId(raw: unknown): number | null {
 	return null;
 }
 
-export const POST: RequestHandler = async ({ params, request }) => {
+export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const { pluginId } = params;
 
 	try {
+		// Autentikáció (a hooks is védi az /api/plugins/ útvonalakat, itt explicit)
+		if (!locals.user?.id) {
+			throw error(401, 'Unauthorized');
+		}
+		const callerId = parseInt(locals.user.id);
+
 		// Request body parsing
 		const body = await request.json();
 		const { userId: rawUserId, title, message, type = 'info' } = body;
@@ -88,6 +103,18 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			);
 		}
 
+		// Hívó jogosultság — más felhasználó célzása csak notifications.send joggal.
+		// A célfelhasználó létezését csak ezután ellenőrizzük, hogy a 404 ne szivárogtasson.
+		if (userId !== callerId) {
+			const callerPermissions = await permissionRepository.findPermissionsForUser(callerId);
+			if (!callerPermissions.includes(NOTIFICATION_SEND_PERMISSION)) {
+				throw error(
+					403,
+					`${PluginErrorCode.PERMISSION_DENIED}: ${NOTIFICATION_SEND_PERMISSION} permission required to notify other users`
+				);
+			}
+		}
+
 		// Célfelhasználó ellenőrzés — ne keletkezzen árva értesítés
 		const targetUser = await db
 			.select({ id: users.id })
@@ -99,18 +126,18 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			throw error(404, `Target user ${userId} not found`);
 		}
 
-		// Értesítés létrehozása a core notification rendszeren keresztül
-		const notification = await notificationRepository.create({
+		// Értesítés küldése a core notification rendszeren keresztül (adatbázis + valós idejű Socket.IO push)
+		const [notification] = await sendNotification({
 			userId,
 			appName: pluginId,
-			title: { hu: title, en: title },
-			message: { hu: message, en: message },
+			title,
+			message,
 			type: type as NotificationType
 		});
 
 		return json({
 			success: true,
-			notificationId: notification.id
+			notificationId: notification?.id
 		});
 	} catch (err) {
 		console.error(`[NotificationService] Error sending notification:`, err);

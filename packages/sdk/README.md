@@ -132,12 +132,14 @@ await sdk.i18n.ready(); // Wait for translations to load
 ```ts
 // Requires `notifications` permission
 await sdk.notifications.send({
-	userId: 'user-123',
+	userId: sdk.context.user.id,
 	title: 'New message',
 	message: 'You have a new message',
 	type: 'info'
 });
 ```
+
+From client-side plugin code, a user can always notify themselves. Targeting another `userId` requires the current user to hold the core `notifications.send` permission (otherwise `PERMISSION_DENIED`). To notify other users as part of plugin logic, use `context.notifications.send()` in a server function.
 
 ### `context` — Context Service
 

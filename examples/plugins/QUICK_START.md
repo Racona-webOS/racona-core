@@ -113,7 +113,7 @@ const text = window.webOS.i18n.t('welcome');
 
 // Notification
 await window.webOS.notifications.send({
-	userId: 'user-123',
+	userId: window.webOS.context.user.id, // más felhasználónak csak notifications.send joggal
 	title: 'Hello',
 	message: 'World'
 });
