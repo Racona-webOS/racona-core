@@ -111,9 +111,12 @@
 				const { sharedLibrariesReady } = await import('$lib/sdk/shared-libraries');
 				await sharedLibrariesReady();
 
-				// Plugin komponens betöltése az API-n keresztül (production mód)
+				// Plugin komponens betöltése az API-n keresztül (production mód). A no-cache a
+				// korábban max-age-dzsel cache-elt bundle-t is újraellenőrizteti (plugin frissítés után).
 				console.log('[AppContentArea] Fetching plugin component from API:', componentName);
-				const response = await fetch(`/api/plugins/${appName}/components/${componentName}`);
+				const response = await fetch(`/api/plugins/${appName}/components/${componentName}`, {
+					cache: 'no-cache'
+				});
 				if (!response.ok) {
 					throw new Error(`Failed to load plugin component: ${response.statusText}`);
 				}

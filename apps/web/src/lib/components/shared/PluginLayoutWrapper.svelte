@@ -111,8 +111,11 @@
 		try {
 			console.log(`[PluginLayoutWrapper] Loading sidebar component: ${sidebarComponentName}`);
 
-			// Komponens betöltése az API-n keresztül
-			const response = await fetch(`/api/plugins/${pluginId}/components/${sidebarComponentName}`);
+			// Komponens betöltése az API-n keresztül. A no-cache a korábban
+			// max-age-dzsel cache-elt bundle-t is újraellenőrizteti (plugin frissítés után).
+			const response = await fetch(`/api/plugins/${pluginId}/components/${sidebarComponentName}`, {
+				cache: 'no-cache'
+			});
 
 			if (!response.ok) {
 				console.warn(
