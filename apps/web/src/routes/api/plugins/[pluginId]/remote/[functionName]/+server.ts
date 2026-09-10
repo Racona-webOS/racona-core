@@ -13,6 +13,7 @@
  *     rendszergazda esetén kiegészítve az 'admin' jelzővel
  *   - pluginPermissions: a plugin manifest jogosultságai
  *   - email: csak 'notifications' joggal rendelkező pluginnak
+ *   - notifications: csak 'notifications' joggal rendelkező pluginnak
  */
 
 import { json, error } from '@sveltejs/kit';
@@ -27,6 +28,8 @@ import { getPluginDir } from '$lib/server/plugins/utils/filesystem';
 import { toClientError } from '$lib/server/plugins/utils/remote-error';
 import { getEmailManager } from '$lib/server/email/init';
 import type { EmailResult } from '$lib/server/email/types';
+import { sendNotification } from '$lib/server/socket';
+import type { I18nContent } from '$lib/server/socket';
 
 /**
  * A rendszergazda szerep azonosítója.
@@ -56,6 +59,23 @@ export interface _PluginEmailService {
 		data: Record<string, unknown>;
 		locale?: string;
 	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
+}
+
+/**
+ * Plugin notification service interfész
+ * Rendszeren belüli értesítés küldése a megadott felhasználóknak a core
+ * notification rendszerén keresztül (adatbázis + valós idejű Socket.IO push).
+ * Az értesítés appName mezője mindig a plugin ID-ja.
+ */
+export interface _PluginNotificationService {
+	send(params: {
+		userId?: number;
+		userIds?: number[];
+		title: string | I18nContent;
+		message: string | I18nContent;
+		type?: 'info' | 'success' | 'warning' | 'error' | 'critical';
+		data?: Record<string, unknown>;
+	}): Promise<{ success: boolean; error?: string }>;
 }
 
 /**
@@ -257,6 +277,7 @@ async function executeRemoteFunction(
 
 		// Email service létrehozása (csak notifications jogosultsággal rendelkező pluginok számára)
 		const emailService = createPluginEmailService(pluginId, pluginPermissions);
+		const notificationService = createPluginNotificationService(pluginId, pluginPermissions);
 
 		// pg Pool-kompatibilis DB interfész a pluginok számára
 		// A Drizzle ORM mögötti pg Pool-t használjuk, így a pluginok
@@ -274,7 +295,8 @@ async function executeRemoteFunction(
 			db: pluginDb,
 			permissions: userPermissions,
 			pluginPermissions,
-			...(emailService ? { email: emailService } : {})
+			...(emailService ? { email: emailService } : {}),
+			...(notificationService ? { notifications: notificationService } : {})
 		};
 
 		// Függvény végrehajtása időkorláttal. Az időtúllépés a választ utasítja el,
@@ -349,6 +371,59 @@ function createPluginEmailService(
 			} catch (err) {
 				const errorMessage = err instanceof Error ? err.message : 'Unknown email error';
 				console.error(`[PluginEmailService] Email sending failed for ${pluginId}:`, errorMessage);
+				return { success: false, error: errorMessage };
+			}
+		}
+	};
+}
+
+/** Az értesítés típusok, amiket a notifications.type oszlop elfogad */
+const NOTIFICATION_TYPES = ['info', 'success', 'warning', 'error', 'critical'] as const;
+
+/**
+ * Plugin notification service létrehozása
+ * Csak notifications jogosultsággal rendelkező pluginok számára elérhető.
+ * Csak megnevezett felhasználóknak küldhet — broadcast és csoport nem engedélyezett.
+ */
+function createPluginNotificationService(
+	pluginId: string,
+	permissions: string[]
+): _PluginNotificationService | undefined {
+	if (!permissions.includes('notifications')) {
+		return undefined;
+	}
+
+	return {
+		async send({ userId, userIds, title, message, type = 'info', data }) {
+			try {
+				const targets = [...new Set([...(userIds ?? []), ...(userId !== undefined ? [userId] : [])])];
+
+				if (targets.length === 0) {
+					return { success: false, error: 'userId or userIds is required' };
+				}
+				if (!targets.every((id) => Number.isInteger(id) && id > 0)) {
+					return { success: false, error: 'User IDs must be positive integers' };
+				}
+				if (!NOTIFICATION_TYPES.includes(type)) {
+					return { success: false, error: `type must be one of: ${NOTIFICATION_TYPES.join(', ')}` };
+				}
+
+				await sendNotification({
+					userIds: targets,
+					appName: pluginId,
+					title,
+					message,
+					type,
+					data
+				});
+
+				return { success: true };
+			} catch (err) {
+				const errorMessage = err instanceof Error ? err.message : 'Unknown notification error';
+				console.error(
+					`[PluginNotificationService] Notification sending failed for ${pluginId}:`,
+					errorMessage
+				);
 				return { success: false, error: errorMessage };
 			}
 		}

@@ -38,6 +38,10 @@ vi.mock('drizzle-orm', () => ({
 	eq: vi.fn()
 }));
 
+vi.mock('$lib/server/socket', () => ({
+	sendNotification: vi.fn()
+}));
+
 describe('Feature: elywork-plugin-app, Property 10: Email template név automatikus prefixelés', () => {
 	/**
 	 * **Validates: Requirements 12.4**
