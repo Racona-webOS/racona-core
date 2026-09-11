@@ -223,6 +223,100 @@ async function resolveCallerPermissions(userId: string): Promise<string[]> {
 	}
 }
 
+/** A pillanatkép-mappák előtagja a plugin könyvtárában (`.server-<mtime>`). */
+const SERVER_SNAPSHOT_PREFIX = '.server-';
+
+/** Folyamatban lévő vagy kész pillanatképek: mappa → a mappa, ha elkészült. */
+const serverSnapshots = new Map<string, Promise<string>>();
+
+/**
+ * A plugin szerver moduljának importálható URL-je.
+ *
+ * A futtatókörnyezet (Node/Bun, dev módban a Vite SSR is) URL szerint
+ * gyorsítótárazza a modulokat. Ha csak a belépő fájl kapna új URL-t, az általa
+ * importált modulok (pl. `./leave-closing.js`) a régi betöltésből maradnának
+ * meg, és frissítés után a régi és az új kód keveredne: egy új modul a régi
+ * testvérét kapná, amiből hiányzik egy export. Ezért a `server/` mappát a
+ * belépő fájl módosítási idejével jelölt testvérmappába másoljuk
+ * (`<plugin>/.server-<mtime>/`), és onnan importálunk: minden modul új URL-t
+ * kap. Testvérmappa, hogy a `../` és a csomag-importok ugyanoda oldódjanak fel.
+ * Ha a belépő fájl nem változott, ugyanaz a mappa marad → cache találat.
+ *
+ * @param pluginDir - A plugin könyvtára.
+ * @param entryPath - A belépő fájl (`server/functions.{js,ts}`) útvonala.
+ * @returns A pillanatképben lévő belépő fájl `file://` URL-je.
+ */
+async function resolveServerModuleUrl(pluginDir: string, entryPath: string): Promise<string> {
+	const { stat } = await import('fs/promises');
+	let mtime = 0;
+	try {
+		mtime = Math.round((await stat(entryPath)).mtimeMs);
+	} catch {
+		/* fallback: pillanatkép nélkül, közvetlenül */
+	}
+	if (mtime === 0) return new URL(`file://${path.resolve(entryPath)}`).href;
+
+	const snapshotDir = path.join(pluginDir, `${SERVER_SNAPSHOT_PREFIX}${mtime}`);
+	let snapshot = serverSnapshots.get(snapshotDir);
+	if (!snapshot) {
+		snapshot = createServerSnapshot(pluginDir, path.dirname(entryPath), snapshotDir);
+		serverSnapshots.set(snapshotDir, snapshot);
+		// Hiba esetén a következő hívás újrapróbálja
+		snapshot.catch(() => serverSnapshots.delete(snapshotDir));
+	}
+	const dir = await snapshot;
+	return new URL(`file://${path.resolve(dir, path.basename(entryPath))}`).href;
+}
+
+/**
+ * A `server/` mappa másolása a pillanatkép-mappába, majd a régi pillanatképek
+ * törlése. Ideiglenes néven másol és átnevez, hogy egy párhuzamos kérés (vagy
+ * másik folyamat) ne lásson félkész mappát.
+ *
+ * @param pluginDir - A plugin könyvtára.
+ * @param serverDir - A másolandó `server/` mappa.
+ * @param snapshotDir - A pillanatkép-mappa.
+ * @returns A pillanatkép-mappa.
+ */
+async function createServerSnapshot(
+	pluginDir: string,
+	serverDir: string,
+	snapshotDir: string
+): Promise<string> {
+	const { access, cp, readdir, rename, rm } = await import('fs/promises');
+	const exists = (p: string) =>
+		access(p).then(
+			() => true,
+			() => false
+		);
+
+	if (!(await exists(snapshotDir))) {
+		const tmpDir = `${snapshotDir}.tmp-${process.pid}-${Date.now()}`;
+		await cp(serverDir, tmpDir, { recursive: true });
+		try {
+			await rename(tmpDir, snapshotDir);
+		} catch (err) {
+			// Közben egy másik kérés elkészítette: azt használjuk
+			await rm(tmpDir, { recursive: true, force: true });
+			if (!(await exists(snapshotDir))) throw err;
+		}
+	}
+
+	// A régi verziók pillanatképei már nem kellenek (a betöltött modulok a memóriában vannak)
+	for (const entry of await readdir(pluginDir)) {
+		const entryPath = path.join(pluginDir, entry);
+		if (
+			entry.startsWith(SERVER_SNAPSHOT_PREFIX) &&
+			entryPath !== snapshotDir &&
+			!entry.includes('.tmp-')
+		) {
+			await rm(entryPath, { recursive: true, force: true }).catch(() => {});
+			serverSnapshots.delete(entryPath);
+		}
+	}
+	return snapshotDir;
+}
+
 /**
  * Remote függvény végrehajtása
  */
@@ -241,27 +335,13 @@ async function executeRemoteFunction(
 		const serverFunctionsPathJs = path.join(pluginDir, 'server', 'functions.js');
 		const serverFunctionsPathTs = path.join(pluginDir, 'server', 'functions.ts');
 
-		const { existsSync, statSync } = await import('fs');
+		const { existsSync } = await import('fs');
 		const serverFunctionsPath = existsSync(serverFunctionsPathJs)
 			? serverFunctionsPathJs
 			: serverFunctionsPathTs;
 
-		// Fájl mtime-je a URL query-be kerül, így plugin újratelepítéskor (a
-		// `uploads/plugins/<id>/server/functions.ts` fájl módosult) a runtime új
-		// URL-ként importálja, és nem a cache-elt régi verziót használja.
-		// Ha a fájl nem változott, ugyanaz az URL marad → cache találat.
-		let mtime = 0;
-		try {
-			mtime = statSync(serverFunctionsPath).mtimeMs;
-		} catch {
-			/* fallback: cache-buster nélkül */
-		}
-
-		// file:// URL séma - működik Windows, macOS, Linux-on
-		const base = new URL(`file://${path.resolve(serverFunctionsPath)}`).href;
-		const fileUrl = mtime > 0 ? `${base}?v=${mtime}` : base;
-
-		// Dinamikus import a server függvényekhez
+		// Dinamikus import a server függvényekhez, a verzió pillanatképéből
+		const fileUrl = await resolveServerModuleUrl(pluginDir, serverFunctionsPath);
 		/* @vite-ignore */
 		const serverModule = await import(fileUrl);
 
