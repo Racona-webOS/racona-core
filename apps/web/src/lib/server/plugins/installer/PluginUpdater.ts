@@ -116,7 +116,7 @@ export class PluginUpdateValidator {
 			const installedVersion = installedRecord.pluginVersion || '0.0.0';
 
 			// 2. ZIP + manifest alapvalidáció a meglévő PluginValidator segítségével,
-			//    az ID-egyediség ellenőrzése nélkül (az overrideUniquenessCheck-kel vezéreljük)
+			//    az ID-egyediség ellenőrzése nélkül (skipIdUniqueness opcióval)
 			// Req 1.1, 1.7: ZIP struktúra és manifest mezők validálása
 			// Req 1.6: NEM ellenőrzi az ID egyediségét
 			let baseReport: ValidationReport;
@@ -184,26 +184,14 @@ export class PluginUpdateValidator {
 	}
 
 	/**
-	 * Alap ZIP + manifest validáció, ID-egyediség ellenőrzése nélkül.
+	 * Teljes csomagvalidáció, ID-egyediség ellenőrzése nélkül.
 	 *
-	 * A PluginValidator.validate() belső logikáját hívja, de a DUPLICATE_PLUGIN_ID
-	 * hibakódot figyelmen kívül hagyja, mivel frissítésnél az ID már létezik.
+	 * A PluginValidator.validate() minden ellenőrzése lefut (ZIP, manifest, kód szkennelés,
+	 * függőségek, entry point, ikon, locale-ok), csak az ID egyediség marad ki, mivel
+	 * frissítésnél az ID már létezik.
 	 */
 	private async validateBasePackage(packagePath: string): Promise<ValidationReport> {
-		// A meglévő PluginValidator tartalmaz ID-egyediség ellenőrzést is,
-		// amelyet frissítésnél ki kell szűrni.
-		const fullReport = await pluginValidator.validate(packagePath);
-
-		// DUPLICATE_PLUGIN_ID hibákat eltávolítjuk — frissítésnél ez normális
-		const filteredErrors = fullReport.errors.filter(
-			(err) => err.code !== PluginErrorCode.DUPLICATE_PLUGIN_ID
-		);
-
-		return {
-			...fullReport,
-			valid: filteredErrors.length === 0,
-			errors: filteredErrors
-		};
+		return pluginValidator.validate(packagePath, { skipIdUniqueness: true });
 	}
 }
 

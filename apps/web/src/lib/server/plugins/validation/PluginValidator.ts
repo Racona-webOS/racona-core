@@ -15,6 +15,17 @@ import { apps } from '@racona/database';
 import { eq } from 'drizzle-orm';
 
 /**
+ * Validálási opciók
+ */
+export interface PluginValidateOptions {
+	/**
+	 * Plugin ID egyediség ellenőrzésének kihagyása (frissítéskor az ID már létezik).
+	 * Minden más ellenőrzés (kód szkennelés, függőségek, entry point, ikon stb.) lefut.
+	 */
+	skipIdUniqueness?: boolean;
+}
+
+/**
  * Plugin Validator osztály
  *
  * Koordinálja az összes validátort és teljes validációs jelentést készít.
@@ -24,9 +35,13 @@ export class PluginValidator {
 	 * Teljes plugin csomag validálása
 	 *
 	 * @param packagePath - Plugin csomag fájl útvonala (kiterjesztés: környezeti változóból)
+	 * @param options - Validálási opciók (pl. ID egyediség kihagyása frissítéskor)
 	 * @returns Validációs jelentés
 	 */
-	async validate(packagePath: string): Promise<ValidationReport> {
+	async validate(
+		packagePath: string,
+		options: PluginValidateOptions = {}
+	): Promise<ValidationReport> {
 		const startTime = Date.now();
 		const report: ValidationReport = {
 			valid: false,
@@ -69,19 +84,21 @@ export class PluginValidator {
 			const manifest = manifestResult.manifest!;
 			report.manifest = manifest;
 
-			// 3. Plugin ID egyediség ellenőrzés
-			console.log('[PluginValidator] Checking plugin ID uniqueness...');
-			const isUnique = await this.checkPluginIdUniqueness(manifest.id);
+			// 3. Plugin ID egyediség ellenőrzés (frissítéskor kihagyva)
+			if (!options.skipIdUniqueness) {
+				console.log('[PluginValidator] Checking plugin ID uniqueness...');
+				const isUnique = await this.checkPluginIdUniqueness(manifest.id);
 
-			if (!isUnique) {
-				report.errors.push({
-					code: PluginErrorCode.DUPLICATE_PLUGIN_ID,
-					message: `Plugin with ID '${manifest.id}' already exists`,
-					details: {
-						pluginId: manifest.id
-					}
-				});
-				return report;
+				if (!isUnique) {
+					report.errors.push({
+						code: PluginErrorCode.DUPLICATE_PLUGIN_ID,
+						message: `Plugin with ID '${manifest.id}' already exists`,
+						details: {
+							pluginId: manifest.id
+						}
+					});
+					return report;
+				}
 			}
 
 			// 4. Kód szkennelés (párhuzamosan a függőség validálással)
