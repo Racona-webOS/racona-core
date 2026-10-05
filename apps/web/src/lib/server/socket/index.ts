@@ -1,12 +1,19 @@
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, type Socket } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { notificationRepository } from '$lib/server/database/repositories';
+import { chatRepository } from '$lib/server/database/repositories/chatRepository';
 import type { NewNotification, Notification } from '@racona/database';
 import { logger } from '$lib/server/logging';
 import db from '$lib/server/database';
 import { users } from '@racona/database/schemas';
+import { auth } from '$lib/auth';
 
 let io: SocketIOServer | null = null;
+
+// A példányon jelöljük az inicializálást, hogy dev HMR modul-újratöltéskor se kerüljenek fel
+// duplán a middleware-ek és handlerek ugyanarra a global.io-ra
+const INITIALIZED: unique symbol = Symbol.for('racona.socketio.initialized');
+type MarkedSocketIOServer = SocketIOServer & { [INITIALIZED]?: boolean };
 
 // User ID to socket ID mapping
 const userSockets = new Map<string, Set<string>>();
@@ -34,12 +41,50 @@ export interface NotificationPayload {
 }
 
 /**
+ * Socket.IO auth middleware.
+ * A handshake cookie-jaiból oldja fel a Better Auth sessiont (ugyanúgy, mint a hooks.server.ts
+ * a locals.user-t), és a felhasználó azonosítóját a socket.data.userId-ba teszi. Session nélkül
+ * a kapcsolatot elutasítja — a kliens által küldött userId-ban soha nem bízunk.
+ */
+async function authenticateSocket(socket: Socket, next: (err?: Error) => void) {
+	try {
+		const headers = new Headers();
+		const cookie = socket.request.headers.cookie;
+		if (cookie) headers.set('cookie', cookie);
+
+		// disableRefresh: request kontextuson kívül vagyunk, a sveltekitCookies plugin nem tudna
+		// frissített session cookie-t visszaírni (getRequestEvent() itt nem elérhető)
+		const session = await auth.api.getSession({ headers, query: { disableRefresh: true } });
+		const userId = session ? parseInt(session.user.id) : NaN;
+
+		if (!Number.isInteger(userId)) {
+			return next(new Error('Unauthorized'));
+		}
+
+		socket.data.userId = userId;
+		next();
+	} catch (error) {
+		// Érvénytelen/lejárt session esetén a Better Auth cookie-t törölne, ami request kontextus
+		// híján kivételt dob — ez is hitelesítetlen kapcsolat
+		logger.warn(`[Socket.IO] Authentication failed: ${socket.id}`, {
+			context: { error: String(error) }
+		});
+		next(new Error('Unauthorized'));
+	}
+}
+
+/**
  * Initialize Socket.IO server
  * Elfogad egy HTTP szervert (dev) vagy egy már létező SocketIOServer példányt (prod, global.io)
  */
 export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 	if (io) {
 		logger.warn('[Socket.IO] Already initialized');
+		return io;
+	}
+
+	if (serverOrIo instanceof SocketIOServer && (serverOrIo as MarkedSocketIOServer)[INITIALIZED]) {
+		io = serverOrIo;
 		return io;
 	}
 
@@ -62,38 +107,44 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 		});
 	}
 
+	// Minden kapcsolatnak át kell mennie a session alapú hitelesítésen
+	io.use(authenticateSocket);
+
 	io.on('connection', (socket) => {
-		logger.info(`[Socket.IO] Client connected: ${socket.id}`);
+		// Az auth middleware állította be — ez az egyetlen megbízható felhasználó azonosító
+		const userId: number = socket.data.userId;
+		const userIdStr = String(userId);
 
-		// Felhasználó regisztrálása
-		socket.on('register', (userId: string | number) => {
-			if (!userId) {
-				logger.warn(`[Socket.IO] Registration attempt without userId: ${socket.id}`);
-				return;
+		logger.info(`[Socket.IO] Client connected: ${socket.id} (user: ${userId})`);
+
+		// Felhasználó regisztrálása — a payload csak visszafelé kompatibilitás miatt érkezik,
+		// a szobát mindig a session szerinti felhasználó kapja
+		socket.on('register', (claimedUserId?: string | number) => {
+			if (claimedUserId !== undefined && String(claimedUserId) !== userIdStr) {
+				logger.warn(
+					`[Socket.IO] Register userId mismatch: claimed ${claimedUserId}, session ${userId} (socket: ${socket.id})`
+				);
 			}
-
-			const userIdStr = String(userId);
-			const userIdNum = typeof userId === 'number' ? userId : parseInt(userId);
 
 			if (!userSockets.has(userIdStr)) {
 				userSockets.set(userIdStr, new Set());
 			}
 			userSockets.get(userIdStr)!.add(socket.id);
-			socket.join(`user:${userIdNum}`);
+			socket.join(`user:${userId}`);
 
 			const wasOffline = !onlineUsers.has(userIdStr);
 			onlineUsers.add(userIdStr);
 
-			logger.info(`[Socket.IO] User registered: ${userIdNum} (socket: ${socket.id})`);
+			logger.info(`[Socket.IO] User registered: ${userId} (socket: ${socket.id})`);
 
 			// Olvasatlan értesítések száma
-			notificationRepository.getUnreadCount(userIdNum).then((count) => {
+			notificationRepository.getUnreadCount(userId).then((count) => {
 				socket.emit('notification:unread-count', count);
 			});
 
 			// Online státusz broadcast
 			if (wasOffline) {
-				io!.emit('chat:user-online', userIdNum);
+				io!.emit('chat:user-online', userId);
 			}
 
 			// Online felhasználók listája az újonnan csatlakozónak
@@ -104,24 +155,21 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 		socket.on('disconnect', () => {
 			logger.info(`[Socket.IO] Client disconnected: ${socket.id}`);
 
-			for (const [userId, sockets] of userSockets.entries()) {
-				if (sockets.has(socket.id)) {
-					sockets.delete(socket.id);
-					if (sockets.size === 0) {
-						userSockets.delete(userId);
-						onlineUsers.delete(userId);
-						io!.emit('chat:user-offline', parseInt(userId));
-					}
-					logger.info(`[Socket.IO] User unregistered: ${userId} (socket: ${socket.id})`);
-					break;
-				}
+			const sockets = userSockets.get(userIdStr);
+			if (!sockets?.delete(socket.id)) return;
+
+			if (sockets.size === 0) {
+				userSockets.delete(userIdStr);
+				onlineUsers.delete(userIdStr);
+				io!.emit('chat:user-offline', userId);
 			}
+			logger.info(`[Socket.IO] User unregistered: ${userId} (socket: ${socket.id})`);
 		});
 
-		// Értesítés olvasottnak jelölése
+		// Értesítés olvasottnak jelölése — csak a saját értesítését jelölheti
 		socket.on('notification:mark-read', async (notificationId: number) => {
 			try {
-				await notificationRepository.markAsRead(notificationId);
+				await notificationRepository.markAsReadForUser(Number(notificationId), userId);
 				logger.info(`[Socket.IO] Notification marked as read: ${notificationId}`);
 			} catch (error) {
 				logger.error('[Socket.IO] Error marking notification as read:', {
@@ -130,13 +178,12 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 			}
 		});
 
-		// Összes értesítés olvasottnak jelölése
-		socket.on('notification:mark-all-read', async (userId: string | number) => {
+		// Összes értesítés olvasottnak jelölése — a payload userId-t figyelmen kívül hagyjuk
+		socket.on('notification:mark-all-read', async () => {
 			try {
-				const userIdNum = typeof userId === 'number' ? userId : parseInt(userId);
-				await notificationRepository.markAllAsRead(userIdNum);
+				await notificationRepository.markAllAsRead(userId);
 				socket.emit('notification:unread-count', 0);
-				logger.info(`[Socket.IO] All notifications marked as read for user: ${userIdNum}`);
+				logger.info(`[Socket.IO] All notifications marked as read for user: ${userId}`);
 			} catch (error) {
 				logger.error('[Socket.IO] Error marking all notifications as read:', {
 					context: { error: String(error) }
@@ -144,32 +191,75 @@ export function initializeSocketIO(serverOrIo: HTTPServer | SocketIOServer) {
 			}
 		});
 
-		// Chat: üzenet küldése
-		socket.on(
-			'chat:send-message',
-			(data: { recipientId: number; message: unknown; conversationId: string }) => {
-				const { recipientId, message, conversationId } = data;
-				io!.to(`user:${recipientId}`).emit('chat:new-message', { message, conversationId });
-			}
-		);
+		// Chat: az új üzeneteket a sendMessage remote függvény kézbesíti szerver oldalon
+		// (emitChatMessage) — kliens által relayelt üzenetet nem továbbítunk
 
 		// Chat: üzenet olvasottnak jelölése
 		socket.on('chat:mark-read', (conversationId: string) => {
 			logger.info(`[Socket.IO] Messages marked as read in conversation ${conversationId}`);
 		});
 
-		// Chat: gépelés jelző
+		// Beszélgetés → másik résztvevő, csak az ellenőrzött beszélgetések (socketenként)
+		const conversationPartners = new Map<number, number>();
+
+		// Chat: gépelés jelző — a címzett a beszélgetés másik résztvevője, nem a payload recipientId-ja
 		socket.on(
 			'chat:typing',
-			(data: { recipientId: number; conversationId: string; isTyping: boolean }) => {
-				const { recipientId, conversationId, isTyping } = data;
-				io!.to(`user:${recipientId}`).emit('chat:user-typing', { conversationId, isTyping });
+			async (data: { recipientId: number; conversationId: number; isTyping: boolean }) => {
+				try {
+					const conversationId = Number(data?.conversationId);
+					let partnerId = conversationPartners.get(conversationId);
+
+					if (partnerId === undefined) {
+						if (!Number.isInteger(conversationId)) return;
+						const conversation = await chatRepository.getConversationById(conversationId);
+						if (!conversation) return;
+						if (conversation.participant1Id === userId) partnerId = conversation.participant2Id;
+						else if (conversation.participant2Id === userId)
+							partnerId = conversation.participant1Id;
+						else return;
+						conversationPartners.set(conversationId, partnerId);
+					}
+
+					io!.to(`user:${partnerId}`).emit('chat:user-typing', {
+						conversationId,
+						isTyping: Boolean(data.isTyping)
+					});
+				} catch (error) {
+					logger.error('[Socket.IO] Error relaying typing indicator:', {
+						context: { error: String(error) }
+					});
+				}
 			}
 		);
 	});
 
+	(io as MarkedSocketIOServer)[INITIALIZED] = true;
+
+	// Az inicializálás előtt csatlakozott socketek nem mentek át az auth middleware-en és handlerük
+	// sincs — a transport bontásával a kliens automatikusan újracsatlakozik, immár hitelesítve
+	for (const socket of io.of('/').sockets.values()) {
+		socket.conn.close();
+	}
+
 	logger.info('[Socket.IO] Server initialized');
 	return io;
+}
+
+/**
+ * Chat üzenet valós idejű kézbesítése a címzett szobájába.
+ * A sendMessage remote függvény hívja a mentett üzenettel, így a feladó a sessionből jön.
+ */
+export function emitChatMessage(
+	recipientId: number,
+	payload: { message: unknown; conversationId: number }
+): void {
+	try {
+		getSocketIO().to(`user:${recipientId}`).emit('chat:new-message', payload);
+	} catch {
+		// Socket.IO nélkül (pl. dev) a címzett a következő betöltéskor látja az üzenetet
+		logger.warn('[Socket.IO] Server not initialized, chat message not delivered in real time');
+	}
 }
 
 /**

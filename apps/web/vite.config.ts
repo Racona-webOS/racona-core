@@ -6,6 +6,7 @@ import { enhancedImages } from '@sveltejs/enhanced-img';
 import { config as dotenvConfig } from 'dotenv';
 import path from 'path';
 import { validateSchema } from './src/lib/secrets/schema.js';
+import { socketIOPlugin } from './vite-plugin-socketio';
 
 /**
  * Vite plugin: dev módban betölti a .env.local-t és lefuttatja a séma validációt.
@@ -35,6 +36,7 @@ export default defineConfig({
 		devtoolsJson(),
 		tailwindcss(),
 		enhancedImages(),
+		socketIOPlugin(),
 		sveltekit()
 	],
 	envDir: '../..',

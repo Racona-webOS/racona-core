@@ -1,6 +1,7 @@
 import { command, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
 import { chatRepository } from '$lib/server/database/repositories/chatRepository';
+import { emitChatMessage } from '$lib/server/socket';
 import db from '$lib/server/database';
 import { ne } from 'drizzle-orm';
 import { users } from '@racona/database/schemas';
@@ -143,6 +144,9 @@ export const sendMessage = command(sendMessageSchema, async ({ recipientId, cont
 			senderName: sender?.name || 'Unknown',
 			senderImage: sender?.image || null
 		};
+
+		// Valós idejű kézbesítés a címzettnek (a feladó a sessionből jön, nem a klienstől)
+		emitChatMessage(recipientId, { message: messageWithSender, conversationId: conversation.id });
 
 		return { success: true, message: messageWithSender, conversationId: conversation.id };
 	} catch (error) {

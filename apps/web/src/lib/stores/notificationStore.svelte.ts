@@ -68,6 +68,8 @@ class NotificationStore {
 			this.socket = io({
 				path: '/socket.io/',
 				transports: ['websocket', 'polling'],
+				// The server authenticates the socket from the session cookie
+				withCredentials: true,
 				// Reconnection settings
 				reconnection: true,
 				reconnectionAttempts: Infinity,

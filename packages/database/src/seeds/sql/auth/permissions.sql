@@ -46,7 +46,10 @@ INSERT INTO auth.permissions (id, name, description, resource_id) VALUES
   (27, 'log.activity.view', 'Tevékenységnapló megtekintése', 8),
 
   -- Plugin management
-  (28, 'plugin.manual.install', 'Plugin manuális telepítése', 9)
+  (28, 'plugin.manual.install', 'Plugin manuális telepítése', 9),
+
+  -- Notifications
+  (31, 'notifications.send', 'Értesítés küldése más felhasználóknak', 10)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,

@@ -36,7 +36,9 @@ INSERT INTO auth.role_permissions (role_id, permission_id) VALUES
   (2, 26), -- log.error.view
   (2, 27), -- log.activity.view
   -- Plugin permissions
-  (2, 28)  -- plugin.manual.install
+  (2, 28), -- plugin.manual.install
+  -- Notification permissions
+  (2, 31)  -- notifications.send
 ON CONFLICT DO NOTHING;
 
 -- Editor role permissions

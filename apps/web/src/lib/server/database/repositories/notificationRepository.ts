@@ -46,13 +46,13 @@ export const notificationRepository = {
 	},
 
 	/**
-	 * Mark notification as read
+	 * Mark notification as read, only if it belongs to the given user
 	 */
-	async markAsRead(id: number): Promise<Notification | undefined> {
+	async markAsReadForUser(id: number, userId: number): Promise<Notification | undefined> {
 		const [updated] = await db
 			.update(notifications)
 			.set({ isRead: true, readAt: new Date() })
-			.where(eq(notifications.id, id))
+			.where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
 			.returning();
 		return updated;
 	},
@@ -68,10 +68,15 @@ export const notificationRepository = {
 	},
 
 	/**
-	 * Delete a notification
+	 * Delete a notification, only if it belongs to the given user.
+	 * Returns true if a notification was deleted.
 	 */
-	async delete(id: number): Promise<void> {
-		await db.delete(notifications).where(eq(notifications.id, id));
+	async deleteForUser(id: number, userId: number): Promise<boolean> {
+		const deleted = await db
+			.delete(notifications)
+			.where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+			.returning({ id: notifications.id });
+		return deleted.length > 0;
 	},
 
 	/**

@@ -89,6 +89,8 @@ class ChatStore {
 			this.socket = io({
 				path: '/socket.io/',
 				transports: ['websocket', 'polling'],
+				// The server authenticates the socket from the session cookie
+				withCredentials: true,
 				reconnection: true,
 				reconnectionAttempts: Infinity,
 				reconnectionDelay: 1000,
@@ -293,12 +295,7 @@ class ChatStore {
 			const result = await sendMessage({ recipientId, content });
 
 			if (result.success && result.message) {
-				// Emit to socket for real-time delivery
-				this.socket?.emit('chat:send-message', {
-					recipientId,
-					message: result.message,
-					conversationId: result.conversationId
-				});
+				// Real-time delivery to the recipient is done server-side by the sendMessage remote
 
 				// Add to local messages if this is the active conversation
 				if (this.state.activeConversationId === result.conversationId) {
