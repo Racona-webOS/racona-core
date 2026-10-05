@@ -7,6 +7,7 @@
 import type { InstallResult, PluginManifest } from '@racona/database';
 import { PluginErrorCode } from '@racona/database';
 import { getPluginDir, ensureDir, removeDir, safeWriteFile, copyDir } from '../utils/filesystem';
+import { invalidateServerSnapshots } from '../utils/server-snapshot';
 import { zipValidator } from '../validation/ZipValidator';
 import db, { client as pool } from '$lib/server/database';
 import { apps, pluginLogs } from '@racona/database';
@@ -100,6 +101,10 @@ export class PluginInstaller {
 
 			// Jogosultságok beállítása (read/execute)
 			await this.setPermissions(targetDir);
+
+			// A régi szerver pillanatképek törlése: a következő remote hívás a friss
+			// server/ mappát töltse be (a zip megőrzi az mtime-okat, erre nem építünk)
+			await invalidateServerSnapshots(targetDir);
 
 			console.log(`[PluginInstaller] Extracted files to: ${targetDir}`);
 		} catch (error) {
@@ -593,6 +598,7 @@ export class PluginInstaller {
 			// 1. Fájlok törlése
 			const pluginDir = getPluginDir(pluginId);
 			await removeDir(pluginDir);
+			await invalidateServerSnapshots(pluginDir);
 			console.log(`[PluginInstaller] Removed plugin files`);
 
 			// 2. App registry bejegyzés törlése

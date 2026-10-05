@@ -15,6 +15,7 @@ import {
 	removeDir,
 	PLUGIN_DIRS
 } from '../utils/filesystem';
+import { invalidateServerSnapshots } from '../utils/server-snapshot';
 import db from '$lib/server/database';
 import { apps, pluginLogs } from '@racona/database';
 import { eq } from 'drizzle-orm';
@@ -319,6 +320,9 @@ export class PluginUpdater {
 
 			// Req 7.2: Backup visszamásolása az eredeti helyre
 			await copyDir(backupMeta.backupPath, pluginDir);
+
+			// A backupba került (és a frissítés közben készült) pillanatképek elavultak
+			await invalidateServerSnapshots(pluginDir);
 
 			// Req 7.3: Adatbázis mezők visszaállítása
 			await db

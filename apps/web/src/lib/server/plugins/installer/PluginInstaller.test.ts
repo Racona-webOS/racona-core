@@ -62,8 +62,17 @@ vi.mock('drizzle-orm', () => ({
 }));
 
 // Mock adm-zip
+const mockExtractAllTo = vi.hoisted(() => vi.fn());
 vi.mock('adm-zip', () => ({
-	default: vi.fn()
+	default: vi.fn(function () {
+		return { extractAllTo: mockExtractAllTo };
+	})
+}));
+
+// Mock szerver pillanatképek
+const mockInvalidateServerSnapshots = vi.hoisted(() => vi.fn());
+vi.mock('../utils/server-snapshot', () => ({
+	invalidateServerSnapshots: (...args: unknown[]) => mockInvalidateServerSnapshots(...args)
 }));
 
 // Mock validation
@@ -79,6 +88,22 @@ describe('PluginInstaller — email template feldolgozás', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		installer = new PluginInstaller();
+	});
+
+	// --- extractFiles ---
+
+	describe('extractFiles', () => {
+		it('kicsomagolás után törli a plugin szerver pillanatképeit', async () => {
+			mockReaddir.mockResolvedValue([]);
+
+			await installer.extractFiles('/fake/package.zip', 'racona-work');
+
+			expect(mockExtractAllTo).toHaveBeenCalledWith('/fake/plugins/racona-work', true);
+			expect(mockInvalidateServerSnapshots).toHaveBeenCalledWith('/fake/plugins/racona-work');
+			expect(mockInvalidateServerSnapshots.mock.invocationCallOrder[0]).toBeGreaterThan(
+				mockExtractAllTo.mock.invocationCallOrder[0]
+			);
+		});
 	});
 
 	// --- importEmailTemplates ---
