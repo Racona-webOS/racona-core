@@ -29,10 +29,11 @@ Instead of fixed templates, the CLI lets you compose your project from individua
 | `database`         | SQL migrations, `sdk.data.query()` support, local dev database via Docker       |
 | `remote_functions` | `server/functions.ts`, `sdk.remote.call()`, local dev server                    |
 | `notifications`    | `sdk.notifications.send()` support                                              |
+| `scheduler`        | `server/jobs.ts` with an example scheduled job, `scheduledJobs` in the manifest |
 | `i18n`             | `locales/hu.json` + `locales/en.json`, `sdk.i18n.t()` support                   |
 | `datatable`        | DataTable component with insert form, row actions (duplicate/delete), full i18n |
 
-> `database` requires `remote_functions` — selecting `database` automatically enables `remote_functions`.
+> `database` and `scheduler` need the `server/` folder — selecting either one automatically enables `remote_functions`.
 
 ## Interactive Wizard
 
@@ -71,7 +72,8 @@ my-app/
 │       ├── Notifications.svelte # (if notifications)
 │       └── Remote.svelte        # (if remote_functions)
 ├── server/                # (if remote_functions)
-│   └── functions.ts
+│   ├── functions.ts
+│   └── jobs.ts            # (if scheduler)
 ├── migrations/            # (if database)
 │   ├── 001_init.sql
 │   └── dev/
@@ -93,6 +95,31 @@ When `datatable` + `database` + `remote_functions` are all enabled, the generate
 - Full i18n support — all strings use `t()` with translation keys in `locales/`
 
 The generated `server/functions.ts` exports `getItems`, `insertItem`, `deleteItem`, and `duplicateItem` — all scoped to the plugin's own `app__<id>` database schema.
+
+## Scheduler Feature
+
+When `scheduler` is enabled, the project gets the `scheduler` permission, an example job in `manifest.json`, and its handler in `server/jobs.ts`:
+
+```jsonc
+"scheduledJobs": [{
+	"id": "daily-check",
+	"handler": "runDailyCheck",
+	"schedule": "0 7 * * *",
+	"timezone": "Europe/Budapest",
+	"description": { "hu": "…", "en": "…" },
+	"timeoutSeconds": 600,
+	"catchUp": "once"
+}]
+```
+
+- The handler is typed with `ScheduledJobHandler` from `@racona/sdk/server`. It runs without a calling user (`ctx.userId` is `null`, `ctx.permissions` is empty) and logs through `ctx.logger`.
+- Job handlers live in `server/jobs.ts`, not in `server/functions.ts`: the remote endpoint only loads `functions`, so users cannot call a job through `sdk.remote.call()`.
+- The example is idempotent: it processes everything that is due up to the run's day and not done yet, so a missed run that is caught up later, or a repeated manual run, does no work twice. With `database` it uses a `checked_at` column in the generated `items` table.
+- The dev server gets a `POST /api/jobs/:jobId/run` endpoint that calls the handler with a stub system context. The optional `?today=YYYY-MM-DD` query parameter reaches the handler as `params.today`:
+
+```bash
+curl -X POST 'http://localhost:5175/api/jobs/daily-check/run?today=2026-01-31'
+```
 
 ## Database Feature
 
@@ -119,6 +146,9 @@ bun dev
 # Build for production
 bun run build
 
+# Create the installable package (<id>-<version>.raconapkg)
+bun run package
+
 # Test inside Racona (requires Docker)
 # 1. Start Racona: docker compose up -d
 # 2. Open Plugin Manager → Dev Plugins tab
@@ -139,6 +169,10 @@ Pre-configured with `@racona/sdk` as a dependency and Vite build scripts. Includ
 
 Configured to build your plugin as an IIFE bundle (`dist/index.iife.js`) compatible with Racona's plugin loader.
 
+### `server/`
+
+Server code is not compiled. `bun run package` puts the TypeScript sources (`server/`, plus `migrations/` and `email-templates/` when present) into the package, and Racona loads `server/functions.ts` and `server/jobs.ts` from the plugin root and runs them with Bun.
+
 ## Further Reading
 
 - [Racona Developer Documentation](https://docs.racona.hu)
@@ -150,6 +184,14 @@ MIT
 ---
 
 ## Changelog
+
+### [Unreleased]
+
+- **Added**: `scheduler` feature — `server/jobs.ts` with an example `ScheduledJobHandler`, a `scheduledJobs` entry and the `scheduler` permission in `manifest.json`; implies `remote_functions`
+- **Added**: dev server `POST /api/jobs/:jobId/run` endpoint (optional `?today=YYYY-MM-DD` → `params.today`) with a stub system context
+- **Fixed**: `build-package.js` packages `server/` and `email-templates/`; the generated `build-all.js` no longer compiles `server/functions.ts` into `dist/server`, which Racona never loaded
+- **Added**: dev server remote context includes a `notifications` stub, like the core
+- **Fixed**: selecting `database` without `remote_functions` silently dropped `database`; it now enables `remote_functions`, as documented
 
 ### [0.4.0] - 2026-04-28
 

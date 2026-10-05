@@ -5,6 +5,22 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`scheduler` feature**: generates `server/jobs.ts` with an example `runDailyCheck` handler (typed with `ScheduledJobHandler` from `@racona/sdk/server`, uses `ctx.logger`, returns `{ summary }`), and adds a `scheduledJobs` entry (`daily-check`, `0 7 * * *`, `Europe/Budapest`) and the `scheduler` permission to `manifest.json`
+  - The example is idempotent: it processes everything due up to the run's day that is not done yet. With `database`, the generated `items` table gets a `checked_at` column for this
+  - `normalizeFeatures()` adds `remote_functions` when `scheduler` is selected (the handlers live in `server/`)
+  - Available in the wizard and via `--features scheduler`
+- **Dev server `POST /api/jobs/:jobId/run`**: runs the handler named in `manifest.json` `scheduledJobs` from `server/jobs.ts` with a stub system context (`userId: null`, `trigger: 'manual'`, `permissions: []`, console `logger`, abort signal honouring `timeoutSeconds`). Optional `?today=YYYY-MM-DD` is passed as `params.today`. The response includes the result and the logged lines
+- **Dev server remote context**: `notifications` stub next to `email`, like the core
+
+### Fixed
+
+- **`database` without `remote_functions`**: `normalizeFeatures()` silently dropped `database` (e.g. `--features database` generated a project without a database). It now adds `remote_functions`, as the README always said
+- **Server code packaging**: `build-package.js` now packages `server/` and `email-templates/`. The core loads `server/functions.{js,ts}` and `server/jobs.{js,ts}` from the plugin root, so the generated `build-all.js` no longer compiles `server/functions.ts` into `dist/server` (the core never loaded it); the TypeScript sources are shipped and run by Bun
+
 ## [0.4.0] - 2026-04-28
 
 ### Added

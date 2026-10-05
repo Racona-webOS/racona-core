@@ -1,7 +1,8 @@
 /**
  * Plugin csomagoló script
  *
- * Összegyűjti a dist/, locales/, assets/ mappákat és a manifest.json-t,
+ * Összegyűjti a dist/, locales/, assets/, server/, migrations/, email-templates/
+ * mappákat és a manifest.json-t,
  * majd ZIP archívumba tömöríti .raconapkg kiterjesztéssel.
  *
  * Használat: bun run package
@@ -40,8 +41,12 @@ const entries = ['manifest.json', 'dist'];
 if (existsSync(join(ROOT, 'locales'))) entries.push('locales');
 if (existsSync(join(ROOT, 'assets'))) entries.push('assets');
 if (existsSync(join(ROOT, 'menu.json'))) entries.push('menu.json');
-// A server mappa már a dist-ben van lefordítva, nem kell külön csomagolni
+// A core a plugin gyökerében lévő server/functions.{js,ts} és server/jobs.{js,ts}
+// modult tölti be (Bun natívan futtatja a .ts-t), ezért a forrás mappa kell
+if (existsSync(join(ROOT, 'server'))) entries.push('server');
 if (existsSync(join(ROOT, 'migrations'))) entries.push('migrations');
+// A core telepítéskor innen regisztrálja a plugin email sablonjait
+if (existsSync(join(ROOT, 'email-templates'))) entries.push('email-templates');
 
 // Rekurzív fájl hozzáadás függvény
 function addDirectoryToZip(zip, dirPath, zipPath = '') {

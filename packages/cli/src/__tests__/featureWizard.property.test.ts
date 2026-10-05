@@ -17,6 +17,7 @@ const pluginFeatureArb = fc.constantFrom<PluginFeature>(
 	'remote_functions',
 	'datatable',
 	'notifications',
+	'scheduler',
 	'i18n'
 );
 
@@ -56,7 +57,7 @@ describe('hasFeature', () => {
 
 // --- normalizeFeatures properties ---
 
-const pluginFeaturesArb = fc.array(pluginFeatureArb, { minLength: 0, maxLength: 6 });
+const pluginFeaturesArb = fc.array(pluginFeatureArb, { minLength: 0, maxLength: 7 });
 
 describe('normalizeFeatures', () => {
 	// Feature: cli-feature-based-wizard, Property 2: database implies remote_functions
@@ -73,13 +74,13 @@ describe('normalizeFeatures', () => {
 		);
 	});
 
-	// Feature: cli-feature-based-wizard, Property 3: no remote_functions implies no database
-	it('Property 3: ha a bemenet nem tartalmaz "remote_functions"-t, a kimenet sem tartalmaz "database"-t', () => {
+	// Feature: cli-feature-based-wizard, Property 3: database is never dropped
+	it('Property 3: a "database" bemenet a kimenetben is megmarad, "remote_functions" nélkül is', () => {
 		fc.assert(
 			fc.property(pluginFeaturesArb, (features) => {
-				const input = features.filter((f) => f !== 'remote_functions');
+				const input = [...features.filter((f) => f !== 'remote_functions'), 'database' as const];
 				const result = normalizeFeatures(input);
-				return !result.includes('database');
+				return result.includes('database') && result.includes('remote_functions');
 			}),
 			{ numRuns: 100 }
 		);
@@ -100,7 +101,7 @@ describe('normalizeFeatures', () => {
 
 // --- computePermissions properties ---
 
-const validPermissions = new Set(['database', 'remote_functions', 'notifications']);
+const validPermissions = new Set(['database', 'remote_functions', 'notifications', 'scheduler']);
 
 describe('computePermissions', () => {
 	// Feature: cli-feature-based-wizard, Property 5: only valid permission values
@@ -155,6 +156,7 @@ const validFeatureNames = new Set<string>([
 	'remote_functions',
 	'datatable',
 	'notifications',
+	'scheduler',
 	'i18n'
 ]);
 
@@ -179,5 +181,10 @@ describe('parseFeatures', () => {
 			}),
 			{ numRuns: 100 }
 		);
+	});
+
+	it('elfogadja a "scheduler" feature nevet', () => {
+		expect(parseFeatures('scheduler')).toEqual(['scheduler']);
+		expect(parseFeatures('database, scheduler')).toEqual(['database', 'scheduler']);
 	});
 });

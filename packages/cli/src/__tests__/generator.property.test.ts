@@ -16,12 +16,13 @@ const allFeatures: PluginFeature[] = [
 	'remote_functions',
 	'datatable',
 	'notifications',
+	'scheduler',
 	'i18n'
 ];
 
 const featureArb = fc.constantFrom(...allFeatures);
 
-const featuresArb = fc.array(featureArb, { minLength: 0, maxLength: 6 });
+const featuresArb = fc.array(featureArb, { minLength: 0, maxLength: 7 });
 
 const pluginIdArb = fc.stringMatching(/^[a-z][a-z0-9-]*$/);
 
@@ -90,13 +91,13 @@ describe('normalizeFeatures', () => {
 		);
 	});
 
-	// Feature: cli-feature-based-wizard, Property 3: no remote_functions implies no database
-	it('Property 3: ha a bemenet nem tartalmaz "remote_functions"-t, a kimenet sem tartalmaz "database"-t', () => {
+	// Feature: cli-feature-based-wizard, Property 3: database is never dropped
+	it('Property 3: a "database" bemenet a kimenetben is megmarad, "remote_functions" nélkül is', () => {
 		fc.assert(
 			fc.property(featuresArb, (features) => {
-				const input = features.filter((f) => f !== 'remote_functions');
+				const input = [...features.filter((f) => f !== 'remote_functions'), 'database' as const];
 				const result = normalizeFeatures(input);
-				return !result.includes('database');
+				return result.includes('database') && result.includes('remote_functions');
 			}),
 			{ numRuns: 100 }
 		);
@@ -120,7 +121,7 @@ describe('normalizeFeatures', () => {
 describe('computePermissions', () => {
 	// Feature: cli-feature-based-wizard, Property 5: only valid permission values
 	it('Property 5: a kimenet csak érvényes jogosultság értékeket tartalmaz', () => {
-		const validPerms = new Set(['database', 'remote_functions', 'notifications']);
+		const validPerms = new Set(['database', 'remote_functions', 'notifications', 'scheduler']);
 		fc.assert(
 			fc.property(featuresArb, (features) => {
 				const result = computePermissions(features);

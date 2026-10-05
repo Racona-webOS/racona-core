@@ -23,6 +23,7 @@ const VALID_FEATURES = new Set<PluginFeature>([
 	'remote_functions',
 	'datatable',
 	'notifications',
+	'scheduler',
 	'i18n'
 ]);
 
@@ -75,7 +76,7 @@ program
 	)
 	.option(
 		'--features <features>',
-		'Comma-separated feature list: sidebar, database, remote_functions, datatable, notifications, i18n'
+		'Comma-separated feature list: sidebar, database, remote_functions, datatable, notifications, scheduler, i18n'
 	)
 	.option('--no-install', 'Skip dependency installation')
 	.action(

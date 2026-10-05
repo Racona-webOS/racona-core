@@ -19,7 +19,12 @@ import { join, dirname, extname } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import pc from 'picocolors';
-import type { PluginConfig, PluginFeature, PluginManifest } from './types.js';
+import type {
+	ManifestScheduledJob,
+	PluginConfig,
+	PluginFeature,
+	PluginManifest
+} from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -37,15 +42,17 @@ export function hasFeature(config: PluginConfig, feature: PluginFeature): boolea
 }
 
 /**
- * Normalizálja a feature listát: érvényesíti a database → remote_functions kényszert.
- * Ha 'database' szerepel és 'remote_functions' nem, hozzáadja.
+ * Normalizálja a feature listát: a 'database' és a 'scheduler' a server/ mappát
+ * igényli, ezért ha bármelyik szerepel és 'remote_functions' nem, hozzáadja.
  * Pure függvény — mellékhatás nélkül, property-based tesztelhető.
  */
 export function normalizeFeatures(features: PluginFeature[]): PluginFeature[] {
-	if (!features.includes('remote_functions')) {
-		return features.filter((f) => f !== 'database');
+	const result = [...features];
+	const needsServer = result.includes('database') || result.includes('scheduler');
+	if (needsServer && !result.includes('remote_functions')) {
+		result.push('remote_functions');
 	}
-	return [...features];
+	return result;
 }
 
 /**
@@ -56,7 +63,8 @@ export function computePermissions(features: PluginFeature[]): string[] {
 	const permissionMap: Partial<Record<PluginFeature, string>> = {
 		database: 'database',
 		remote_functions: 'remote_functions',
-		notifications: 'notifications'
+		notifications: 'notifications',
+		scheduler: 'scheduler'
 	};
 	const result = new Set<string>();
 	for (const feature of features) {
@@ -64,6 +72,31 @@ export function computePermissions(features: PluginFeature[]): string[] {
 		if (perm) result.add(perm);
 	}
 	return Array.from(result);
+}
+
+/**
+ * A 'scheduler' feature által generált minta feladat manifest bejegyzése.
+ * A handler neve a server/jobs.ts exportjával egyezik.
+ */
+export const EXAMPLE_SCHEDULED_JOB: ManifestScheduledJob = {
+	id: 'daily-check',
+	handler: 'runDailyCheck',
+	schedule: '0 7 * * *',
+	timezone: 'Europe/Budapest',
+	description: {
+		hu: 'Napi ellenőrzés: feldolgozza az esedékes tételeket',
+		en: 'Daily check: processes the items that are due'
+	},
+	timeoutSeconds: 600,
+	catchUp: 'once'
+};
+
+/**
+ * A manifest.json scheduledJobs mezője a feature lista alapján (üres, ha nincs 'scheduler').
+ * Pure függvény — mellékhatás nélkül, property-based tesztelhető.
+ */
+export function computeScheduledJobs(features: PluginFeature[]): ManifestScheduledJob[] {
+	return features.includes('scheduler') ? [structuredClone(EXAMPLE_SCHEDULED_JOB)] : [];
 }
 
 // ---------------------------------------------------------------------------
@@ -163,6 +196,10 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 	if (hasFeature(config, 'remote_functions')) {
 		writeFileSync(join(targetDir, 'server', 'functions.ts'), generateServerFunctions());
 		writeFileSync(join(targetDir, 'dev-server.ts'), generateDevServerTs(config));
+	}
+
+	if (hasFeature(config, 'scheduler')) {
+		writeFileSync(join(targetDir, 'server', 'jobs.ts'), generateServerJobs(config));
 	}
 
 	if (hasFeature(config, 'i18n')) {
@@ -992,14 +1029,25 @@ export default App;
  * dev-server.ts tartalom generálása.
  * remote_functions only (no database) → statikus fájlszerver
  * database + remote_functions → DB-képes verzió
+ * scheduler → mindkettő kiegészül a POST /api/jobs/:jobId/run végponttal
  */
 function generateDevServerTs(config: PluginConfig): string {
 	const hasDb = hasFeature(config, 'database');
+	const hasJobs = hasFeature(config, 'scheduler');
+	const jobsSection = hasJobs ? generateDevServerJobsSection(config) : '';
+	const jobsLog = hasJobs
+		? `\nconsole.log(\`[DevServer] Job endpoint: POST http://localhost:\${PORT}/api/jobs/:jobId/run[?today=YYYY-MM-DD]\`);`
+		: '';
 
 	if (!hasDb) {
 		return `/**
  * Dev szerver a plugin fejlesztéshez.
- * Statikus fájlokat szolgál ki a projekt gyökeréből és a dist/ mappából.
+ * Statikus fájlokat szolgál ki a projekt gyökeréből és a dist/ mappából.${
+			hasJobs
+				? `
+ * POST /api/jobs/:jobId/run: a server/jobs.ts ütemezett feladatainak kézi futtatása.`
+				: ''
+		}
  *
  * Használat: bun dev-server.ts
  */
@@ -1009,7 +1057,7 @@ import { readFile } from 'fs/promises';
 import { join, extname, resolve, normalize } from 'path';
 
 const PORT = parseInt(process.env.PORT ?? '5175', 10);
-const ROOT = import.meta.dir;
+const ROOT = import.meta.dir;${hasJobs ? `\nconst PLUGIN_ID = '${config.pluginId}';` : ''}
 
 const MIME: Record<string, string> = {
 \t'.js': 'application/javascript',
@@ -1019,7 +1067,7 @@ const MIME: Record<string, string> = {
 \t'.css': 'text/css',
 \t'.html': 'text/html'
 };
-
+${jobsSection}
 serve({
 \tport: PORT,
 \tasync fetch(req) {
@@ -1028,14 +1076,23 @@ serve({
 
 \t\tconst corsHeaders = {
 \t\t\t'Access-Control-Allow-Origin': '*',
-\t\t\t'Access-Control-Allow-Methods': 'GET, OPTIONS',
+\t\t\t'Access-Control-Allow-Methods': '${hasJobs ? 'GET, POST, OPTIONS' : 'GET, OPTIONS'}',
 \t\t\t'Access-Control-Allow-Headers': '*'
 \t\t};
 
 \t\tif (req.method === 'OPTIONS') {
 \t\t\treturn new Response(null, { status: 204, headers: corsHeaders });
 \t\t}
-
+${
+	hasJobs
+		? `
+\t\tconst jobMatch = url.pathname.match(JOB_RUN_PATH);
+\t\tif (req.method === 'POST' && jobMatch) {
+\t\t\treturn handleJobRunRequest(url, decodeURIComponent(jobMatch[1]), buildContext());
+\t\t}
+`
+		: ''
+}
 \t\tconst safePath = normalize(pathname).replace(/^(\\.\\.(\\\/|\\\\|$))+/, '');
 \t\tconst searchPaths = [join(ROOT, 'dist', safePath), join(ROOT, safePath)];
 
@@ -1059,7 +1116,7 @@ serve({
 \t}
 });
 
-console.log(\`[DevServer] Plugin dev szerver fut: http://localhost:\${PORT}\`);
+console.log(\`[DevServer] Plugin dev szerver fut: http://localhost:\${PORT}\`);${jobsLog}
 console.log('[DevServer] Futtasd párhuzamosan: bun run build --watch');
 `;
 	}
@@ -1068,7 +1125,12 @@ console.log('[DevServer] Futtasd párhuzamosan: bun run build --watch');
 	return `/**
  * Dev szerver a plugin fejlesztéshez.
  * Statikus fájlokat szolgál ki és POST /api/remote/:functionName endpointot biztosít
- * a server/functions.ts függvényeinek lokális adatbázison való futtatásához.
+ * a server/functions.ts függvényeinek lokális adatbázison való futtatásához.${
+		hasJobs
+			? `
+ * POST /api/jobs/:jobId/run: a server/jobs.ts ütemezett feladatainak kézi futtatása.`
+			: ''
+	}
  *
  * Indítás előtt:
  *   1. cp .env.example .env
@@ -1183,6 +1245,7 @@ interface RemoteContext {
 \t};
 \tpermissions: string[];
 \temail: { send: (params: unknown) => Promise<{ success: boolean }> };
+\tnotifications: { send: (params: unknown) => Promise<{ success: boolean }> };
 }
 
 function buildContext(pool: Pool): RemoteContext {
@@ -1202,6 +1265,9 @@ function buildContext(pool: Pool): RemoteContext {
 \t\tpermissions: ['database', 'remote_functions', 'notifications'],
 \t\temail: {
 \t\t\tsend: async (params: unknown) => { console.log('[DevServer] [email.send stub]', params); return { success: true }; }
+\t\t},
+\t\tnotifications: {
+\t\t\tsend: async (params: unknown) => { console.log('[DevServer] [notifications.send stub]', params); return { success: true }; }
 \t\t}
 \t};
 }
@@ -1235,7 +1301,7 @@ async function handleRemoteRequest(req: Request, functionName: string, pool: Poo
 \t\treturn new Response(JSON.stringify({ success: false, error: message }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
 \t}
 }
-
+${jobsSection}
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
 \tconsole.error('[DevServer] HIBA: DATABASE_URL környezeti változó nincs beállítva. Állítsd be a .env fájlban.');
@@ -1265,7 +1331,15 @@ process.on('SIGTERM', async () => { console.log('[DevServer] Leállítás (SIGTE
 \t\t\t}
 \t\t\tif (req.method === 'POST' && pathname.startsWith('/api/remote/')) {
 \t\t\t\treturn handleRemoteRequest(req, pathname.slice('/api/remote/'.length), pool);
-\t\t\t}
+\t\t\t}${
+	hasJobs
+		? `
+\t\t\tconst jobMatch = pathname.match(JOB_RUN_PATH);
+\t\t\tif (req.method === 'POST' && jobMatch) {
+\t\t\t\treturn handleJobRunRequest(url, decodeURIComponent(jobMatch[1]), buildContext(pool));
+\t\t\t}`
+		: ''
+}
 \t\t\tif (req.method === 'OPTIONS') {
 \t\t\t\treturn new Response(null, { status: 204, headers: corsHeaders });
 \t\t\t}
@@ -1290,9 +1364,145 @@ process.on('SIGTERM', async () => { console.log('[DevServer] Leállítás (SIGTE
 \t});
 
 \tconsole.log(\`[DevServer] Plugin dev szerver fut: http://localhost:\${PORT}\`);
-\tconsole.log(\`[DevServer] Remote endpoint: POST http://localhost:\${PORT}/api/remote/:functionName\`);
+\tconsole.log(\`[DevServer] Remote endpoint: POST http://localhost:\${PORT}/api/remote/:functionName\`);${
+	hasJobs
+		? `
+\tconsole.log(\`[DevServer] Job endpoint: POST http://localhost:\${PORT}/api/jobs/:jobId/run[?today=YYYY-MM-DD]\`);`
+		: ''
+}
 \tconsole.log('[DevServer] Futtasd párhuzamosan: bun run dev');
 })();
+`;
+}
+
+/**
+ * A dev-server.ts ütemezett feladat része ('scheduler' feature):
+ * POST /api/jobs/:jobId/run kezelő. database nélkül a remote végpont
+ * szolgáltatásainak csonkjait (buildContext) is tartalmazza.
+ */
+function generateDevServerJobsSection(config: PluginConfig): string {
+	const stubContext = hasFeature(config, 'database')
+		? ''
+		: `
+/**
+ * A remote végpont szolgáltatásainak csonkjai. Ez a plugin nem használ
+ * adatbázist (database feature nélkül készült), ezért a db hívás hibát dob.
+ */
+function buildContext() {
+\tconst noDatabase = async (): Promise<never> => {
+\t\tthrow new Error('No database in this dev server: the plugin was generated without the database feature');
+\t};
+\treturn {
+\t\tpluginId: PLUGIN_ID,
+\t\tdb: { query: noDatabase, connect: noDatabase },
+\t\temail: {
+\t\t\tsend: async (params: unknown) => { console.log('[DevServer] [email.send stub]', params); return { success: true }; }
+\t\t},
+\t\tnotifications: {
+\t\t\tsend: async (params: unknown) => { console.log('[DevServer] [notifications.send stub]', params); return { success: true }; }
+\t\t}
+\t};
+}
+`;
+
+	return `${stubContext}
+// --- Ütemezett feladatok: POST /api/jobs/:jobId/run ---
+
+const JOB_RUN_PATH = /^\\/api\\/jobs\\/([^/]+)\\/run$/;
+const TODAY_PATTERN = /^\\d{4}-\\d{2}-\\d{2}$/;
+
+interface ManifestJob {
+\tid: string;
+\thandler: string;
+\ttimeoutSeconds?: number;
+}
+
+type JobLogLevel = 'info' | 'warn' | 'error';
+type JobHandler = (params: unknown, context: unknown) => Promise<unknown>;
+
+/**
+ * A manifest.json scheduledJobs bejegyzéséhez tartozó server/jobs.ts handler kézi
+ * futtatása. A kontextus a core rendszer-kontextusát követi: nincs hívó felhasználó
+ * (userId: null, permissions: []), a szolgáltatások a remote végpontéval azonosak.
+ * A ?today=YYYY-MM-DD paraméter params.today-ként jut el a handlerhez.
+ */
+async function handleJobRunRequest(url: URL, jobId: string, baseContext: object): Promise<Response> {
+\tconst headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' };
+\tconst reply = (status: number, body: Record<string, unknown>) => new Response(JSON.stringify(body), { status, headers });
+
+\tconst today = url.searchParams.get('today');
+\tif (today !== null && !TODAY_PATTERN.test(today)) {
+\t\treturn reply(400, { success: false, error: 'Invalid today parameter, expected YYYY-MM-DD' });
+\t}
+
+\tlet manifest: { permissions?: string[]; scheduledJobs?: ManifestJob[] };
+\ttry {
+\t\tmanifest = JSON.parse(await readFile(join(ROOT, 'manifest.json'), 'utf-8'));
+\t} catch (err) {
+\t\tconst message = err instanceof Error ? err.message : String(err);
+\t\treturn reply(500, { success: false, error: \`Failed to read manifest.json: \${message}\` });
+\t}
+\tconst job = manifest.scheduledJobs?.find((j) => j.id === jobId);
+\tif (!job) {
+\t\treturn reply(404, { success: false, error: \`Job '\${jobId}' not found in manifest.json scheduledJobs\` });
+\t}
+
+\tlet jobsModule: Record<string, unknown>;
+\ttry {
+\t\tjobsModule = (await import('./server/jobs.ts')) as Record<string, unknown>;
+\t} catch (err) {
+\t\tconst message = err instanceof Error ? err.message : String(err);
+\t\treturn reply(500, { success: false, error: \`Failed to load server/jobs.ts: \${message}\` });
+\t}
+\tconst handler = Object.prototype.hasOwnProperty.call(jobsModule, job.handler) ? jobsModule[job.handler] : undefined;
+\tif (typeof handler !== 'function') {
+\t\treturn reply(500, { success: false, error: \`Handler '\${job.handler}' not found in server/jobs.ts\` });
+\t}
+
+\tconst logs: Array<{ level: JobLogLevel; message: string }> = [];
+\tconst log = (level: JobLogLevel) => (message: string) => {
+\t\tlogs.push({ level, message });
+\t\tconsole[level](\`[DevServer] [job \${jobId}] \${message}\`);
+\t};
+
+\t// A core időtúllépéskor megszakítja a jelet; itt is, hogy a handler ezt az ágát is ki lehessen próbálni
+\tconst controller = new AbortController();
+\tconst timeoutSeconds = job.timeoutSeconds ?? 600;
+\tconst timer = setTimeout(() => {
+\t\tlog('warn')(\`Timeout (\${timeoutSeconds}s): signal aborted\`);
+\t\tcontroller.abort();
+\t}, timeoutSeconds * 1000);
+
+\tconst params = {
+\t\tjobId,
+\t\trunId: 0,
+\t\tscheduledFor: new Date().toISOString(),
+\t\ttrigger: 'manual',
+\t\t...(today ? { today } : {})
+\t};
+\tconst context = {
+\t\t...baseContext,
+\t\tuserId: null,
+\t\ttrigger: 'manual',
+\t\ttriggeredBy: null,
+\t\tpermissions: [],
+\t\tpluginPermissions: manifest.permissions ?? [],
+\t\tlogger: { info: log('info'), warn: log('warn'), error: log('error') },
+\t\tsignal: controller.signal
+\t};
+
+\tconst startedAt = Date.now();
+\ttry {
+\t\tconst result = await (handler as JobHandler)(params, context);
+\t\treturn reply(200, { success: true, result: result ?? null, logs, durationMs: Date.now() - startedAt });
+\t} catch (err) {
+\t\tconst message = err instanceof Error ? err.message : String(err);
+\t\tconsole.error(\`[DevServer] [job \${jobId}] failed:\`, err);
+\t\treturn reply(500, { success: false, error: message, logs, durationMs: Date.now() - startedAt });
+\t} finally {
+\t\tclearTimeout(timer);
+\t}
+}
 `;
 }
 
@@ -1336,6 +1546,9 @@ function generateBuildAllJs(config: PluginConfig): string {
  * Build All Script
  *
  * Builds the main plugin and all sidebar components.
+ *
+ * The server/ folder is not compiled: the package ships the TypeScript sources
+ * and Racona runs server/functions.ts and server/jobs.ts directly with Bun.
  */
 
 import { execSync } from 'child_process';
@@ -1346,23 +1559,7 @@ const __dirname = import.meta.dir;
 
 console.log('🔨 Building ${config.displayName} plugin...\\n');
 
-// 1. Build server functions (TypeScript → JavaScript)
-const serverDir = resolve(__dirname, 'server');
-if (existsSync(serverDir)) {
-	console.log('📦 Building server functions...');
-	try {
-		execSync('tsc server/functions.ts --outDir dist/server --module esnext --target es2020 --moduleResolution bundler --skipLibCheck', {
-			stdio: 'inherit',
-			cwd: __dirname
-		});
-		console.log('✅ Server functions built successfully\\n');
-	} catch (error) {
-		console.error('❌ Failed to build server functions');
-		process.exit(1);
-	}
-}
-
-// 2. Build main plugin
+// 1. Build main plugin
 console.log('📦 Building main plugin...');
 try {
 	execSync('cross-env BUILD_MODE=main vite build', { stdio: 'inherit', cwd: __dirname });
@@ -1372,7 +1569,7 @@ try {
 	process.exit(1);
 }
 
-// 3. Build components
+// 2. Build components
 const componentsDir = resolve(__dirname, 'src/components');
 if (existsSync(componentsDir)) {
 	const files = readdirSync(componentsDir);
@@ -2078,7 +2275,13 @@ CREATE TABLE IF NOT EXISTS items (
     name VARCHAR(255) NOT NULL,
     value JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()${
+		hasFeature(config, 'scheduler')
+			? `,
+    -- A napi ellenőrzés (server/jobs.ts) jelölője: NULL, amíg a tétel nincs feldolgozva
+    checked_at TIMESTAMP WITH TIME ZONE`
+			: ''
+	}
 );
 
 CREATE INDEX idx_items_created_at ON items (created_at);
@@ -2265,6 +2468,143 @@ export async function duplicateItem(
 }
 
 // ---------------------------------------------------------------------------
+// server/jobs.ts generálás
+// ---------------------------------------------------------------------------
+
+/**
+ * server/jobs.ts tartalom generálása a minta ütemezett feladattal (EXAMPLE_SCHEDULED_JOB).
+ * database esetén a minta az items tábla checked_at oszlopát használja,
+ * egyébként a lekérdezés helyén csonk áll.
+ */
+function generateServerJobs(config: PluginConfig): string {
+	const helpers = hasFeature(config, 'database')
+		? `
+/** A plugin sémája (mint a server/functions.ts-ben) */
+function schemaOf(ctx: ScheduledJobContext): string {
+\treturn \`app__\${ctx.pluginId.replace(/-/g, '_')}\`;
+}
+
+/**
+ * Az adott napig (bezárólag) létrehozott, még nem ellenőrzött tételek.
+ * A \`<=\` feltétel miatt egy kimaradt nap tételei is sorra kerülnek.
+ */
+async function findDueItems(today: string, ctx: ScheduledJobContext): Promise<DueItem[]> {
+\tconst { rows } = await ctx.db.query<DueItem>(
+\t\t\`SELECT id, name FROM \${schemaOf(ctx)}.items
+\t\t WHERE checked_at IS NULL AND (created_at AT TIME ZONE $2)::date <= $1::date
+\t\t ORDER BY id\`,
+\t\t[today, TIME_ZONE]
+\t);
+\treturn rows;
+}
+
+/**
+ * Egy tétel feldolgozása. A \`checked_at IS NULL\` feltétel miatt egy ismételt
+ * vagy párhuzamos futás ugyanazt a tételt nem dolgozza fel kétszer.
+ */
+async function processItem(item: DueItem, ctx: ScheduledJobContext): Promise<boolean> {
+\t// Ide jön a tényleges munka, pl. emlékeztető küldése: ctx.notifications?.send(...)
+\tconst { rowCount } = await ctx.db.query(
+\t\t\`UPDATE \${schemaOf(ctx)}.items SET checked_at = now() WHERE id = $1 AND checked_at IS NULL\`,
+\t\t[item.id]
+\t);
+\treturn rowCount === 1;
+}
+`
+		: `
+/**
+ * Az adott napig (bezárólag) esedékes, még fel nem dolgozott tételek.
+ * A plugin saját adataiból kérdezd le, pl. \`WHERE due_date <= $1 AND processed_at IS NULL\`:
+ * így egy kimaradt nap tételei is sorra kerülnek, a már kész tételek pedig nem.
+ */
+async function findDueItems(_today: string, _ctx: ScheduledJobContext): Promise<DueItem[]> {
+\treturn [];
+}
+
+/**
+ * Egy tétel feldolgozása. Jelöld késznek (pl. \`processed_at = now()\`), hogy egy
+ * ismételt futás ne dolgozza fel újra.
+ */
+async function processItem(item: DueItem, ctx: ScheduledJobContext): Promise<boolean> {
+\tctx.logger.info(\`Processing \${item.name}\`);
+\treturn true;
+}
+`;
+
+	return `/**
+ * Ütemezett feladatok
+ *
+ * Az itt exportált handlereket a Racona core ütemezője hívja a manifest.json
+ * \`scheduledJobs\` bejegyzései alapján (\`handler\` = az export neve). Rendszerjogon
+ * futnak: nincs hívó felhasználó (\`ctx.userId === null\`, \`ctx.permissions\` üres).
+ * A remote végpont ezt a modult nem tölti be, a felhasználók nem hívhatják.
+ *
+ * Egy esedékes időpontra legfeljebb egy futás jut, a kimaradt futás (pl. mert a
+ * szerver állt) pedig induláskor egyszer pótlódik (\`catchUp: 'once'\`). Ezért a
+ * handler ne számítson pontos időpontra: dolgozza fel mindazt, ami esedékes és még
+ * nincs kész, és egy ismételt futás ne végezzen el semmit kétszer.
+ *
+ * Helyi kipróbálás (fut a bun dev:server):
+ *   curl -X POST http://localhost:5175/api/jobs/daily-check/run
+ *   curl -X POST 'http://localhost:5175/api/jobs/daily-check/run?today=2026-01-31'
+ */
+
+import type {
+\tScheduledJobContext,
+\tScheduledJobHandler,
+\tScheduledJobParams
+} from '@racona/sdk/server';
+
+/** Ugyanaz az időzóna, mint a manifest.json \`timezone\` mezője */
+const TIME_ZONE = 'Europe/Budapest';
+
+/** A dev-server \`?today=YYYY-MM-DD\` paramétere — csak helyi teszteléshez, a core nem adja át */
+type DailyCheckParams = ScheduledJobParams & { today?: string };
+
+interface DueItem {
+\tid: number;
+\tname: string;
+}
+
+/**
+ * A feldolgozandó nap (YYYY-MM-DD) a feladat időzónájában.
+ * A futás esedékes időpontjából számol, nem a „most”-ból.
+ */
+function dueDate(params: DailyCheckParams): string {
+\tif (params.today) return params.today;
+\treturn new Intl.DateTimeFormat('en-CA', {
+\t\ttimeZone: TIME_ZONE,
+\t\tyear: 'numeric',
+\t\tmonth: '2-digit',
+\t\tday: '2-digit'
+\t}).format(new Date(params.scheduledFor));
+}
+
+/** manifest.json: scheduledJobs[].handler = "runDailyCheck" */
+export const runDailyCheck: ScheduledJobHandler = async (params, ctx) => {
+\tconst today = dueDate(params as DailyCheckParams);
+\tconst items = await findDueItems(today, ctx);
+\tctx.logger.info(\`\${items.length} item(s) due on or before \${today} (trigger: \${params.trigger})\`);
+
+\tlet processed = 0;
+\tfor (const item of items) {
+\t\t// Időtúllépéskor a core megszakítja a jelet: a maradék a következő futásra marad
+\t\tif (ctx.signal.aborted) {
+\t\t\tctx.logger.warn(\`Timeout: \${items.length - processed} item(s) left for the next run\`);
+\t\t\tbreak;
+\t\t}
+\t\tif (await processItem(item, ctx)) processed++;
+\t}
+
+\treturn {
+\t\tsummary: \`\${processed} item(s) processed\`,
+\t\tdata: { today, due: items.length, processed }
+\t};
+};
+${helpers}`;
+}
+
+// ---------------------------------------------------------------------------
 // manifest.json, package.json, README.md
 // ---------------------------------------------------------------------------
 
@@ -2280,6 +2620,9 @@ function writeManifest(dir: string, config: PluginConfig): void {
 		iconStyle: 'cover',
 		category: 'utilities',
 		permissions: computePermissions(config.features),
+		...(hasFeature(config, 'scheduler')
+			? { scheduledJobs: computeScheduledJobs(config.features) }
+			: {}),
 		multiInstance: false,
 		defaultSize: { width: 800, height: 600 },
 		minSize: { width: 400, height: 300 },
@@ -2345,6 +2688,7 @@ function writeReadme(dir: string, config: PluginConfig): void {
 	const hasDb = hasFeature(config, 'database');
 	const hasRemote = hasFeature(config, 'remote_functions');
 	const hasI18n = hasFeature(config, 'i18n');
+	const hasJobs = hasFeature(config, 'scheduler');
 
 	const devSection = hasDb
 		? `\`\`\`bash
@@ -2372,12 +2716,31 @@ bun dev:full
 bun dev
 \`\`\``;
 
+	const jobsSection = `
+## Scheduled jobs
+
+\`manifest.json\` declares the jobs (\`scheduledJobs\`, \`scheduler\` permission); their handlers live in
+\`server/jobs.ts\`, not in \`server/functions.ts\`, so users cannot call them through \`sdk.remote.call()\`.
+Racona runs them without a calling user: \`ctx.userId\` is \`null\` and \`ctx.permissions\` is empty.
+
+A due time gets at most one run, and a missed run is caught up once on start-up, so write handlers that
+process everything that is due and not done yet. Run a job locally while \`bun dev:server\` is running:
+
+\`\`\`bash
+curl -X POST http://localhost:5175/api/jobs/${EXAMPLE_SCHEDULED_JOB.id}/run
+curl -X POST 'http://localhost:5175/api/jobs/${EXAMPLE_SCHEDULED_JOB.id}/run?today=2026-01-31'
+\`\`\`
+
+The optional \`today\` parameter reaches the handler as \`params.today\` (dev server only).
+`;
+
 	const structureLines = [
 		'- `src/App.svelte` — main component',
 		'- `src/main.ts` — entry point',
 		'- `src/plugin.ts` — IIFE build entry',
 		isSidebar ? '- `src/components/` — sidebar components' : '',
-		hasRemote ? '- `server/functions.ts` — server-side functions' : '',
+		hasRemote ? '- `server/functions.ts` — server-side functions (`sdk.remote.call()`)' : '',
+		hasJobs ? '- `server/jobs.ts` — scheduled job handlers (`scheduledJobs` in `manifest.json`)' : '',
 		hasI18n ? '- `locales/` — translations (hu, en)' : '',
 		hasDb ? '- `migrations/` — SQL migrations' : '',
 		hasDb ? '- `docker-compose.dev.yml` — local dev database' : '',
@@ -2402,8 +2765,9 @@ ${devSection}
 
 \`\`\`bash
 bun run build
+bun run package   # ${config.pluginId}-<version>.raconapkg
 \`\`\`
-${isSidebar ? '\n> The `build` command runs `build-all.js`, which builds the main app and all sidebar components.\n' : ''}
+${isSidebar ? '\n> The `build` command runs `build-all.js`, which builds the main app and all sidebar components.\n' : ''}${hasRemote ? '\n> The `server/` folder is not compiled: the package ships the TypeScript sources, and Racona runs them with Bun.\n' : ''}${hasJobs ? jobsSection : ''}
 ## Structure
 
 ${structureLines}

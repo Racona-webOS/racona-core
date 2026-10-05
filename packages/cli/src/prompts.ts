@@ -102,6 +102,12 @@ export async function runInteractiveWizard(
 					description: 'System notification support'
 				},
 				{
+					title: 'Scheduled Jobs',
+					value: 'scheduler',
+					selected: false,
+					description: 'Server-side jobs on a cron schedule'
+				},
+				{
 					title: 'i18n',
 					value: 'i18n',
 					selected: true,

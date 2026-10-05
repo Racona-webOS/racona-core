@@ -8,6 +8,7 @@ export type PluginFeature =
 	| 'remote_functions'
 	| 'datatable'
 	| 'notifications'
+	| 'scheduler'
 	| 'i18n';
 
 export interface PluginConfig {
@@ -17,6 +18,17 @@ export interface PluginConfig {
 	author: string;
 	features: PluginFeature[];
 	install: boolean;
+}
+
+/** Ütemezett feladat a manifest.json-ban (lásd: ManifestScheduledJob, @racona/sdk/server) */
+export interface ManifestScheduledJob {
+	id: string;
+	handler: string;
+	schedule: string;
+	timezone?: string;
+	description?: { hu: string; en: string };
+	timeoutSeconds?: number;
+	catchUp?: 'once' | 'skip';
 }
 
 export interface PluginManifest {
@@ -30,6 +42,7 @@ export interface PluginManifest {
 	iconStyle: string;
 	category: string;
 	permissions: string[];
+	scheduledJobs?: ManifestScheduledJob[];
 	multiInstance: boolean;
 	defaultSize: { width: number; height: number };
 	minSize: { width: number; height: number };
