@@ -2567,8 +2567,9 @@ interface DueItem {
 }
 
 /**
- * A feldolgozandó nap (YYYY-MM-DD) a feladat időzónájában.
- * A futás esedékes időpontjából számol, nem a „most”-ból.
+ * A feldolgozandó nap (YYYY-MM-DD) a feladat időzónájában, a futás idejéből.
+ * Nem a params.scheduledFor-ból: egy pótló futásé az első kimaradt időpont,
+ * így a közben esedékessé vált tételek a következő futásig várnának.
  */
 function dueDate(params: DailyCheckParams): string {
 \tif (params.today) return params.today;
@@ -2577,7 +2578,7 @@ function dueDate(params: DailyCheckParams): string {
 \t\tyear: 'numeric',
 \t\tmonth: '2-digit',
 \t\tday: '2-digit'
-\t}).format(new Date(params.scheduledFor));
+\t}).format(new Date());
 }
 
 /** manifest.json: scheduledJobs[].handler = "runDailyCheck" */

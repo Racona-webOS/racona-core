@@ -182,14 +182,37 @@ describe('server/jobs.ts', () => {
 		}
 	});
 
-	it('database nélkül lefut, summary-t ad, és a feladat időzónája szerinti napot használja', async () => {
+	it('database nélkül lefut, summary-t ad, és a futás idejét a feladat időzónája szerint veszi', async () => {
 		const jobs = await loadJobs('jobs-only');
 		const { context, logs } = stubContext();
 		// 2026-03-14T23:30Z = 2026-03-15 00:30 Budapesten
-		const result = await jobs[EXAMPLE_SCHEDULED_JOB.handler](params(), context);
-		expect(result.summary).toBe('0 item(s) processed');
-		expect(result.data.today).toBe('2026-03-15');
-		expect(logs.some((l) => l.level === 'info')).toBe(true);
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-03-14T23:30:00.000Z'));
+		try {
+			const result = await jobs[EXAMPLE_SCHEDULED_JOB.handler](params(), context);
+			expect(result.summary).toBe('0 item(s) processed');
+			expect(result.data.today).toBe('2026-03-15');
+			expect(logs.some((l) => l.level === 'info')).toBe(true);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	// Egy pótló futás scheduledFor-ja az első kimaradt időpont; a feldolgozás a mai napig tart
+	it('pótló futásnál a mai napig dolgoz fel, nem a scheduledFor napjáig', async () => {
+		const jobs = await loadJobs('jobs-only');
+		const { context } = stubContext();
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-03-18T06:00:30.000Z'));
+		try {
+			const result = await jobs[EXAMPLE_SCHEDULED_JOB.handler](
+				params({ scheduledFor: '2026-03-15T06:00:00.000Z' }),
+				context
+			);
+			expect(result.data.today).toBe('2026-03-18');
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it('a params.today felülírja a feldolgozandó napot', async () => {
