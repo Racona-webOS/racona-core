@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-05
+
 ### Added
 
 - **`scheduler` feature**: generates `server/jobs.ts` with an example `runDailyCheck` handler (typed with `ScheduledJobHandler` from `@racona/sdk/server`, uses `ctx.logger`, returns `{ summary }`), and adds a `scheduledJobs` entry (`daily-check`, `0 7 * * *`, `Europe/Budapest`) and the `scheduler` permission to `manifest.json`
@@ -16,8 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dev server `POST /api/jobs/:jobId/run`**: runs the handler named in `manifest.json` `scheduledJobs` from `server/jobs.ts` with a stub system context (`userId: null`, `trigger: 'manual'`, `permissions: []`, console `logger`, abort signal honouring `timeoutSeconds`). Optional `?today=YYYY-MM-DD` is passed as `params.today`. The response includes the result and the logged lines
 - **Dev server remote context**: `notifications` stub next to `email`, like the core
 
+### Changed
+
+- **Generated `package.json`**: `@racona/sdk` dependency raised from `^0.3.2` to `^0.6.0`. On 0.x a caret range stays within the minor version, so new projects were still installing SDK 0.3.x; `^0.6.0` is also the first version with `@racona/sdk/server`, which the generated `server/jobs.ts` imports
+
 ### Fixed
 
+- **`--version`**: printed a hard-coded `1.0.0`; it now reads the version from the package's `package.json`
 - **`database` without `remote_functions`**: `normalizeFeatures()` silently dropped `database` (e.g. `--features database` generated a project without a database). It now adds `remote_functions`, as the README always said
 - **Server code packaging**: `build-package.js` now packages `server/` and `email-templates/`. The core loads `server/functions.{js,ts}` and `server/jobs.{js,ts}` from the plugin root, so the generated `build-all.js` no longer compiles `server/functions.ts` into `dist/server` (the core never loaded it); the TypeScript sources are shipped and run by Bun
 

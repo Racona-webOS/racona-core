@@ -166,7 +166,7 @@
     },
     "packages/cli": {
       "name": "@racona/cli",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "bin": {
         "create-racona-app": "./dist/cli.js",
       },

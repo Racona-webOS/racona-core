@@ -323,7 +323,7 @@ export async function generateProject(config: PluginConfig): Promise<void> {
 		} catch {
 			console.log(pc.yellow('  ⚠ bun install failed'));
 			console.log(pc.dim('    Set the correct path in package.json:'));
-			console.log(pc.dim('    "@racona/sdk": "^0.1.0"'));
+			console.log(pc.dim('    "@racona/sdk": "^0.6.0"'));
 			console.log(pc.dim('    Then run: bun install'));
 		}
 	}
@@ -2667,7 +2667,7 @@ function writePackageJson(dir: string, config: PluginConfig): void {
 				: {})
 		},
 		dependencies: {
-			'@racona/sdk': '^0.3.2',
+			'@racona/sdk': '^0.6.0',
 			svelte: '^5.0.0',
 			'@lucide/svelte': '^1.0.0'
 		},

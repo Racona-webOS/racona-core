@@ -11,6 +11,7 @@
  *   bunx @racona/create-app my-app --template basic --no-install
  */
 
+import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { runInteractiveWizard } from './prompts.js';
 import { generateProject, normalizeFeatures } from './generator.js';
@@ -63,12 +64,17 @@ export const TEMPLATE_PRESETS: Record<string, PluginFeature[]> = {
 	starter: ['i18n']
 };
 
+/** A csomag verziója (a dist/cli.js mellől a ../package.json) */
+const { version } = JSON.parse(
+	readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+) as { version: string };
+
 const program = new Command();
 
 program
 	.name('create-racona-app')
 	.description('Create a new Racona app project')
-	.version('1.0.0')
+	.version(version)
 	.argument('[app-name]', 'App name (kebab-case)')
 	.option(
 		'-t, --template <template>',

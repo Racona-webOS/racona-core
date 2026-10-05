@@ -185,12 +185,14 @@ MIT
 
 ## Changelog
 
-### [Unreleased]
+### [0.5.0] - 2026-10-05
 
+- **Changed**: generated `package.json` depends on `@racona/sdk` `^0.6.0` (was `^0.3.2`, which kept new projects on SDK 0.3.x); 0.6.0 is the first SDK with `@racona/sdk/server`
 - **Added**: `scheduler` feature — `server/jobs.ts` with an example `ScheduledJobHandler`, a `scheduledJobs` entry and the `scheduler` permission in `manifest.json`; implies `remote_functions`
 - **Added**: dev server `POST /api/jobs/:jobId/run` endpoint (optional `?today=YYYY-MM-DD` → `params.today`) with a stub system context
 - **Fixed**: `build-package.js` packages `server/` and `email-templates/`; the generated `build-all.js` no longer compiles `server/functions.ts` into `dist/server`, which Racona never loaded
 - **Added**: dev server remote context includes a `notifications` stub, like the core
+- **Fixed**: `--version` printed a hard-coded `1.0.0`; it now reports the package version
 - **Fixed**: selecting `database` without `remote_functions` silently dropped `database`; it now enables `remote_functions`, as documented
 
 ### [0.4.0] - 2026-04-28
