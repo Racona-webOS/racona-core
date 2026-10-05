@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`bin` path**: `./dist/cli.js` → `dist/cli.js`. npm 12 drops a `bin` entry written with a leading `./` when publishing, so the package would have shipped without the `create-racona-app` command
 - **`--version`**: printed a hard-coded `1.0.0`; it now reads the version from the package's `package.json`
 - **`database` without `remote_functions`**: `normalizeFeatures()` silently dropped `database` (e.g. `--features database` generated a project without a database). It now adds `remote_functions`, as the README always said
 - **Server code packaging**: `build-package.js` now packages `server/` and `email-templates/`. The core loads `server/functions.{js,ts}` and `server/jobs.{js,ts}` from the plugin root, so the generated `build-all.js` no longer compiles `server/functions.ts` into `dist/server` (the core never loaded it); the TypeScript sources are shipped and run by Bun

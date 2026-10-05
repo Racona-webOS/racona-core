@@ -4,7 +4,7 @@
 	"description": "CLI tool to scaffold Racona app projects",
 	"type": "module",
 	"bin": {
-		"create-racona-app": "./dist/cli.js"
+		"create-racona-app": "dist/cli.js"
 	},
 	"main": "./dist/cli.js",
 	"files": [
@@ -30,7 +30,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Racona-webOS/racona-core",
+		"url": "git+https://github.com/Racona-webOS/racona-core.git",
 		"directory": "packages/cli"
 	},
 	"homepage": "https://racona.hu",
