@@ -21,11 +21,12 @@ deno add jsr:@racona/sdk
 
 ## Package Exports
 
-| Export              | Description                                   |
-| ------------------- | --------------------------------------------- |
-| `@racona/sdk`       | Runtime SDK (injected by Racona at load time) |
-| `@racona/sdk/dev`   | Mock SDK for standalone development           |
-| `@racona/sdk/types` | TypeScript type definitions only              |
+| Export               | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| `@racona/sdk`        | Runtime SDK (injected by Racona at load time)                   |
+| `@racona/sdk/dev`    | Mock SDK for standalone development                             |
+| `@racona/sdk/types`  | TypeScript type definitions only                                |
+| `@racona/sdk/server` | Types for plugin server code (scheduled jobs, remote functions) |
 
 ## Quick Start
 
@@ -184,6 +185,22 @@ import type {
 } from '@racona/sdk/types';
 ```
 
+### Server code types
+
+Plugin server code (`server/functions.ts`, `server/jobs.ts`) runs in Racona, not in the browser. Its types come from `@racona/sdk/server` (types only, no runtime code):
+
+```ts
+// server/jobs.ts — referenced from manifest.json "scheduledJobs"
+import type { ScheduledJobHandler } from '@racona/sdk/server';
+
+export const runDailyCheck: ScheduledJobHandler = async (params, ctx) => {
+	ctx.logger.info(`trigger: ${ctx.trigger}`);
+	return { summary: 'nothing to do' };
+};
+```
+
+Scheduled jobs need the `scheduler` permission and a Racona version that includes the scheduler.
+
 ## Further Reading
 
 For documentation, visit [docs.racona.hu](https://docs.racona.hu).
@@ -195,6 +212,12 @@ MIT
 ---
 
 ## Changelog
+
+### [0.6.0] - 2026-10-05
+
+- **Added**: `@racona/sdk/server` — types for plugin server code: `ScheduledJobHandler`, `ScheduledJobContext`, `ScheduledJobParams`, `ScheduledJobResult`, `ManifestScheduledJob`, `RemoteFunctionContext`, `PluginDb`, `PluginEmailService`, `PluginNotificationService`. Types only; scheduled jobs need a Racona version that includes the scheduler
+- **Added**: `WebOSComponents.DataTableRowActions` — the primary button + ⋮ menu group rendered by `createActionsColumn`, for lists outside a table. Not available in standalone mode
+- **Docs**: client-side `sdk.notifications.send()` can always target the current user; another `userId` requires the core `notifications.send` permission. Use `context.notifications.send()` in a server function to notify other users
 
 ### [0.5.1] - 2026-09-09
 

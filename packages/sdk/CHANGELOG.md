@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-05
+
 ### Added
 
 - **`@racona/sdk/server`**: típusok a plugin szerver kódjához. Ütemezett feladatok: `ScheduledJobHandler`, `ScheduledJobContext`, `ScheduledJobParams`, `ScheduledJobResult`, `ManifestScheduledJob`. Remote függvények: `RemoteFunctionContext`. Szolgáltatások: `PluginDb`, `PluginEmailService`, `PluginNotificationService`. Csak típusok, futásidejű kód nincs benne. Az ütemezett feladatokhoz a core ütemezőt tartalmazó verziója kell.
+- **`WebOSComponents.DataTableRowActions`**: a `createActionsColumn` által renderelt elsődleges gomb + ⋮ menü csoport táblázaton kívüli listákhoz. Standalone módban nem érhető el.
+
+### Changed
+
+- Dokumentáció: a `NotificationOptions.userId` és a README leírja, hogy kliens oldalról a felhasználó mindig értesítheti saját magát, más felhasználót viszont csak a core `notifications.send` jogosultsággal (különben `PERMISSION_DENIED`). Más felhasználók értesítésére a szerver függvényekben a `context.notifications.send()` való.
 
 ## [0.5.1] - 2026-09-09
 
