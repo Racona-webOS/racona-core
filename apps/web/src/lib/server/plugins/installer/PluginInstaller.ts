@@ -8,6 +8,7 @@ import type { InstallResult, PluginManifest } from '@racona/database';
 import { PluginErrorCode } from '@racona/database';
 import { getPluginDir, ensureDir, removeDir, safeWriteFile, copyDir } from '../utils/filesystem';
 import { invalidateServerSnapshots } from '../utils/server-snapshot';
+import { syncPluginJobs } from '$lib/server/scheduler/registry';
 import { zipValidator } from '../validation/ZipValidator';
 import db, { client as pool } from '$lib/server/database';
 import { apps, pluginLogs } from '@racona/database';
@@ -54,6 +55,11 @@ export class PluginInstaller {
 			// 5. Email template-ek regisztrálása (csak ha a plugin igényli az értesítéseket)
 			if (manifest.permissions?.includes('notifications')) {
 				await this.importEmailTemplates(pluginId);
+			}
+
+			// 5b. Ütemezett feladatok regisztrálása (scheduler jog nélkül üres lista)
+			if (manifest.scheduledJobs?.length) {
+				await syncPluginJobs(pluginId, manifest);
 			}
 
 			// 6. Esemény naplózása

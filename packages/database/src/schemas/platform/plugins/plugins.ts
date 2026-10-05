@@ -11,7 +11,8 @@ export type PluginPermission =
 	| 'notifications'
 	| 'file_access'
 	| 'remote_functions'
-	| 'user_data';
+	| 'user_data'
+	| 'scheduler';
 
 export type PluginDependencies = Record<string, string>;
 

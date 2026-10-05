@@ -84,6 +84,21 @@ export class PluginValidator {
 			const manifest = manifestResult.manifest!;
 			report.manifest = manifest;
 
+			// 2b. Ütemezett feladatoknál a handlerek modulja kötelező (frissítéskor is fusson,
+			// ezért az ID-egyediség előtt)
+			if (
+				manifest.scheduledJobs?.length &&
+				!zipValidator.findFile(files, 'server/jobs.js') &&
+				!zipValidator.findFile(files, 'server/jobs.ts')
+			) {
+				report.errors.push({
+					code: PluginErrorCode.INVALID_MANIFEST,
+					message: 'scheduledJobs are declared but server/jobs.js (or server/jobs.ts) is missing',
+					field: 'scheduledJobs'
+				});
+				return report;
+			}
+
 			// 3. Plugin ID egyediség ellenőrzés (frissítéskor kihagyva)
 			if (!options.skipIdUniqueness) {
 				console.log('[PluginValidator] Checking plugin ID uniqueness...');

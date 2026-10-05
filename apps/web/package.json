@@ -102,6 +102,7 @@
 		"@varlock/infisical-plugin": "^0.0.6",
 		"@varlock/vite-integration": "^0.2.10",
 		"adm-zip": "^0.5.17",
+		"croner": "^10.0.1",
 		"embla-carousel": "^8.6.0",
 		"embla-carousel-svelte": "^8.6.0",
 		"express": "^5.2.1",

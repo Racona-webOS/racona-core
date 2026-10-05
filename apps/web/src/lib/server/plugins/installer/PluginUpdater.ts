@@ -16,6 +16,7 @@ import {
 	PLUGIN_DIRS
 } from '../utils/filesystem';
 import { invalidateServerSnapshots } from '../utils/server-snapshot';
+import { readInstalledManifest, syncPluginJobs } from '$lib/server/scheduler/registry';
 import db from '$lib/server/database';
 import { apps, pluginLogs } from '@racona/database';
 import { eq } from 'drizzle-orm';
@@ -324,6 +325,14 @@ export class PluginUpdater {
 			// A backupba került (és a frissítés közben készült) pillanatképek elavultak
 			await invalidateServerSnapshots(pluginDir);
 
+			// Az ütemezett feladatok a visszaállított manifest szerint
+			const restoredManifest = await readInstalledManifest(pluginId);
+			if (restoredManifest) {
+				await syncPluginJobs(pluginId, restoredManifest).catch((err) =>
+					console.error(`[PluginUpdater] Could not restore scheduled jobs of '${pluginId}':`, err)
+				);
+			}
+
 			// Req 7.3: Adatbázis mezők visszaállítása
 			await db
 				.update(apps)
@@ -522,6 +531,10 @@ export class PluginUpdater {
 				const schemaName = pluginInstaller.sanitizeSchemaName(pluginId);
 				await pluginInstaller.runMigrations(pluginId, schemaName);
 			}
+
+			// 3f. Ütemezett feladatok szinkronizálása (a migrációk után, hogy az új kód
+			// ne fusson a régi sémán); a manifestből eltűnt feladatok törlődnek
+			await syncPluginJobs(pluginId, manifest);
 
 			// 4. Sikeres frissítés naplózása
 			// Req 7.6, 10.1

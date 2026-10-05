@@ -105,7 +105,16 @@ export const EXPECTED_ENV_KEYS = [
 	'PLUGIN_PACKAGE_EXTENSION',
 	'PLUGIN_MAX_SIZE',
 	'PLUGIN_STORAGE_DIR',
-	'PLUGIN_TEMP_DIR'
+	'PLUGIN_TEMP_DIR',
+	// Ütemező
+	'SCHEDULER_ENABLED',
+	'SCHEDULER_TICK_SECONDS',
+	'SCHEDULER_START_DELAY_SECONDS',
+	'SCHEDULER_MAX_CONCURRENT',
+	'SCHEDULER_JOB_TIMEOUT_SECONDS',
+	'SCHEDULER_MISSED_GRACE_SECONDS',
+	'SCHEDULER_DEFAULT_TIMEZONE',
+	'SCHEDULER_RUN_RETENTION_DAYS'
 ] as const;
 
 export type RequiredKey = (typeof REQUIRED_KEYS)[number];
@@ -228,7 +237,8 @@ export function validateSchema(env: Record<string, unknown>): Record<string, unk
 		'DEV_MODE',
 		'DEMO_MODE',
 		'PUBLIC_SITE_ENABLED',
-		'EMAIL_USE_LOGO'
+		'EMAIL_USE_LOGO',
+		'SCHEDULER_ENABLED'
 	] as const;
 	for (const key of booleanFields) {
 		const value = env[key];
@@ -278,6 +288,12 @@ export function validateSchema(env: Record<string, unknown>): Record<string, unk
 		{ key: 'VERIFICATION_ROLLOUT_PERCENTAGE', min: 0, max: 100 },
 		{ key: 'PLUGIN_MAX_SIZE', min: 1, max: 104857600 },
 		{ key: 'DEMO_RESET_HOUR', min: 0, max: 23 },
+		{ key: 'SCHEDULER_TICK_SECONDS', min: 5, max: 3600 },
+		{ key: 'SCHEDULER_START_DELAY_SECONDS', min: 0, max: 3600 },
+		{ key: 'SCHEDULER_MAX_CONCURRENT', min: 1, max: 20 },
+		{ key: 'SCHEDULER_JOB_TIMEOUT_SECONDS', min: 10, max: 3600 },
+		{ key: 'SCHEDULER_MISSED_GRACE_SECONDS', min: 0, max: 86400 },
+		{ key: 'SCHEDULER_RUN_RETENTION_DAYS', min: 1, max: 3650 },
 		{ key: 'BODY_SIZE_LIMIT', min: 1 },
 		{ key: 'EMAIL_LOGO_MAX_WIDTH', min: 1, max: 1000 }
 	];

@@ -26,6 +26,7 @@
     "include": [
         "src/runtime/**/*.ts",
         "src/types/**/*.ts",
+        "src/server/**/*.ts",
         "src/index.ts"
     ],
     "exclude": [

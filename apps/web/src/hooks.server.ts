@@ -1,22 +1,20 @@
-import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
+import { redirect, type Handle, type HandleServerError, type ServerInit } from '@sveltejs/kit';
 import { auth } from '$lib/auth/index';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { building } from '$app/environment';
 import { userRepository } from '$lib/server/database/repositories';
-import { initializeEmailService } from '$lib/server/email';
 import {
 	resolveLocale,
 	parseAcceptLanguage,
 	LOCALE_COOKIE_NAME,
 	DEFAULT_FALLBACK_LOCALE
 } from '$lib/i18n/preference';
-import { getI18nService, setDatabaseLoader } from '$lib/i18n';
-import { translationRepository } from '$lib/server/database/repositories/translationRepository';
 import { env } from '$lib/env';
 import { logger } from '$lib/server/logging';
 import { ensureDatabaseHealth } from '$lib/server/database/health';
-import { initializeSocketIO } from '$lib/server/socket';
 import { initServerMonitoring, captureServerException } from '$lib/monitoring/server';
+import { ensureEmailService, ensureI18n, ensureSocketIO } from '$lib/server/startup';
+import { startScheduler } from '$lib/server/scheduler';
 
 // GlitchTip inicializálása szerver indításkor
 // Kikapcsolható: PUBLIC_MONITORING_ENABLED=false
@@ -25,10 +23,20 @@ if (monitoringEnabled && process.env.ERROR_TRACKING_DSN) {
 	initServerMonitoring(process.env.ERROR_TRACKING_DSN, true, process.env.npm_package_version);
 }
 
-// Initialize services on server startup
-let emailServiceInitialized = false;
-let i18nServiceInitialized = false;
-let socketIOInitialized = false;
+/**
+ * Szerver indításkor (prod: a handler betöltésekor, dev: az első kérésnél).
+ * Az email és i18n szolgáltatás itt indul el, nem az első kérésnél, mert az
+ * ütemezett feladatok kérés nélkül is küldhetnek emailt. Nem várjuk meg, hogy
+ * egy lassú SMTP ellenőrzés ne tartsa fel a szerver indulását; a kérések és az
+ * ütemező a futás előtt megvárják.
+ */
+export const init: ServerInit = () => {
+	if (building) return;
+	void ensureI18n();
+	void ensureEmailService();
+	ensureSocketIO();
+	startScheduler();
+};
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// CORS konfiguráció localhost origin-ekhez DEV_MODE esetén
@@ -76,76 +84,9 @@ async function handleRequest(
 	event: Parameters<Handle>[0]['event'],
 	resolve: Parameters<Handle>[0]['resolve']
 ): Promise<Response> {
-	// Socket.IO inicializálása production módban (global.io a server.js-ből)
-	if (!socketIOInitialized && !building) {
-		const globalIo = (global as any).io;
-		if (globalIo) {
-			initializeSocketIO(globalIo);
-		}
-		socketIOInitialized = true;
-	}
-
-	// Initialize i18n service on server startup
-	if (!i18nServiceInitialized && !building) {
-		try {
-			// Database loader beállítása
-			setDatabaseLoader(async (locale: string, namespace: string) => {
-				try {
-					const translations = await translationRepository.getAsRecord(locale, namespace);
-					return {
-						success: true,
-						translations,
-						error: null
-					};
-				} catch (error) {
-					console.error(`[I18n] Database loader error for ${locale}:${namespace}:`, error);
-					return {
-						success: false,
-						translations: {},
-						error: error instanceof Error ? error.message : 'Unknown error'
-					};
-				}
-			});
-
-			const i18nService = getI18nService();
-			const defaultLocale = env.DEFAULT_LOCALE || 'hu';
-			await i18nService.init({
-				defaultLocale,
-				fallbackLocale: defaultLocale
-			});
-		} catch (error) {
-			console.error('[Server] I18n service initialization error:', error);
-		}
-		i18nServiceInitialized = true;
-	}
-
-	if (!emailServiceInitialized && !building) {
-		try {
-			// Enhanced initialization with migration and cache warm-up
-			const emailState = await initializeEmailService({
-				skipCacheWarmUp: false, // Warm up cache on startup
-				validateConfiguration: true, // Validate configuration
-				retryAttempts: 3,
-				retryDelay: 1000
-			});
-
-			if (emailState.initialized) {
-				if (emailState.degraded) {
-					console.warn('[Server] Email service initialized in degraded mode');
-				} else {
-					//console.info('[Server] Email service initialized successfully');
-				}
-			} else {
-				console.error('[Server] Email service failed to initialize:', {
-					error: emailState.error,
-					healthStatus: emailState.healthStatus
-				});
-			}
-		} catch (error) {
-			console.error('[Server] Email service initialization error:', error);
-		}
-		emailServiceInitialized = true;
-	}
+	// Szolgáltatások inicializálása (az init hook már elindította őket; itt csak megvárjuk)
+	ensureSocketIO();
+	await Promise.all([ensureI18n(), ensureEmailService()]);
 
 	// Locale meghatározása a prioritás lánc alapján
 	const cookieLocale = event.cookies.get(LOCALE_COOKIE_NAME);

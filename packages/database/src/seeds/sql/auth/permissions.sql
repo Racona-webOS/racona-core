@@ -47,6 +47,7 @@ INSERT INTO auth.permissions (id, name, description, resource_id) VALUES
 
   -- Plugin management
   (28, 'plugin.manual.install', 'Plugin manuális telepítése', 9),
+  (32, 'plugin.scheduler.manage', 'Ütemezett feladatok kezelése', 9),
 
   -- Notifications
   (31, 'notifications.send', 'Értesítés küldése más felhasználóknak', 10)

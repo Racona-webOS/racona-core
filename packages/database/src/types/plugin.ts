@@ -59,6 +59,29 @@ export interface PluginManifest {
 	sortOrder?: number;
 	/** Sidebar komponens neve (opcionális) */
 	sidebarComponent?: string;
+	/** Ütemezett feladatok (a `scheduler` jogosultsággal együtt) */
+	scheduledJobs?: ManifestScheduledJob[];
+}
+
+/**
+ * Egy ütemezett feladat a manifestben.
+ * A handler a plugin `server/jobs.{js,ts}` moduljának exportja.
+ */
+export interface ManifestScheduledJob {
+	/** A feladat azonosítója a pluginon belül (kebab-case) */
+	id: string;
+	/** A `server/jobs` modul exportált függvényének neve */
+	handler: string;
+	/** 5 mezős cron kifejezés (pl. "0 6 * * *") */
+	schedule: string;
+	/** IANA időzóna (alapértelmezés: SCHEDULER_DEFAULT_TIMEZONE) */
+	timezone?: string;
+	/** Leírás az admin felülethez */
+	description?: LocalizedText | string;
+	/** Futási időkorlát másodpercben (10–3600) */
+	timeoutSeconds?: number;
+	/** Kimaradt futás: egyszer pótolja ('once', alapértelmezés) vagy kihagyja ('skip') */
+	catchUp?: 'once' | 'skip';
 }
 
 // ============================================================================
@@ -527,6 +550,11 @@ export enum PluginErrorCode {
 	// Remote hibák
 	REMOTE_CALL_TIMEOUT = 'REMOTE_CALL_TIMEOUT',
 	REMOTE_ERROR = 'REMOTE_ERROR',
+
+	// Ütemező hibák
+	JOB_NOT_FOUND = 'JOB_NOT_FOUND',
+	JOB_ALREADY_RUNNING = 'JOB_ALREADY_RUNNING',
+	JOB_TIMEOUT = 'JOB_TIMEOUT',
 
 	// Hálózati hibák
 	NETWORK_ERROR = 'NETWORK_ERROR',

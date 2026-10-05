@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Scheduler**: plugins can declare scheduled jobs in their manifest (`scheduledJobs` + `scheduler` permission, handlers in `server/jobs.ts`). The scheduler runs inside the app process, keeps its state in the database (`platform.scheduled_jobs`, `platform.scheduled_job_runs`) and locks jobs with `FOR UPDATE SKIP LOCKED`, so a job runs once even with several app instances. Missed runs are caught up after a restart (`catchUp: 'once'`).
+  - Plugin Manager: new "Scheduled Jobs" page and a section on the plugin detail page — next/last run, enable/disable, "Run now", run history with logs. New permission: `plugin.scheduler.manage`.
+  - Core maintenance jobs now run daily: old scheduler runs, email logs older than 90 days, abandoned plugin uploads and plugin update backups older than 7 days.
+  - Configuration: `SCHEDULER_*` environment variables (see docs/CONFIGURATION.md).
+
+### Changed
+
+- The email and i18n services start when the server starts (SvelteKit `init` hook), not on the first request, so scheduled jobs can send email without a prior request.
+
 ## [0.4.0] - 2026-04-27
 
 ### Added

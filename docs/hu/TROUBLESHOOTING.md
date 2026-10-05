@@ -35,6 +35,7 @@ Ez az útmutató az ElyOS telepítése és üzemeltetése során leggyakrabban e
   - [A plugin feltöltése méretkorlát-hibával meghiúsul](#a-plugin-feltöltése-méretkorlát-hibával-meghiúsul)
   - [A plugin tárolási könyvtár nem írható](#a-plugin-tárolási-könyvtár-nem-írható)
   - [A fejlesztői pluginok nem töltődnek be](#a-fejlesztői-pluginok-nem-töltődnek-be)
+  - [Az ütemezett feladat nem fut le](#az-ütemezett-feladat-nem-fut-le)
 - [Naplózás és diagnosztika](#naplózás-és-diagnosztika)
   - [Nem jelenik meg napló](#nem-jelenik-meg-napló)
   - [A naplófájlok nem íródnak](#a-naplófájlok-nem-íródnak)
@@ -468,6 +469,22 @@ DEV_MODE=true
 ```
 
 > Éles környezetben soha ne állítsd be a `DEV_MODE=true` értéket.
+
+---
+
+### Az ütemezett feladat nem fut le
+
+**Tünet:** Egy plugin ütemezett feladata nem fut le a várt időben, vagy a Plugin kezelő „Ütemezett feladatok” oldalán nincs friss futás.
+
+**Ellenőrzés:**
+
+1. Induláskor a naplóban szerepelnie kell a `[Scheduler] Started (...)` sornak. Ha `Disabled` áll ott, állítsd be: `SCHEDULER_ENABLED=true` (legalább egy példányon).
+2. Az „Ütemezett feladatok” oldalon a feladat legyen bekapcsolva, és legyen „Következő futás” ideje. Inaktív, vagy `scheduler` jogosultság nélküli plugin feladata nem fut.
+3. Az időpontok a feladat időzónájában értendők (alapból `SCHEDULER_DEFAULT_TIMEZONE`, `Europe/Budapest`).
+4. Időtúllépés után a feladat az időkorlátja + 60 másodpercig zárolva marad.
+5. Nézd meg a futásnaplót („Napló”): a sikertelen futásnál látszik a hiba és a feladat naplósorai. Három egymást követő hiba után a `plugin.scheduler.manage` jogosultsággal rendelkezők értesítést kapnak.
+
+Az ütemezett futásnak nincs kérése, ezért az emailek linkje az `APP_URL`-ből jön — élesben állítsd be.
 
 ---
 

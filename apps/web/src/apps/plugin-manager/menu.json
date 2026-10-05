@@ -12,6 +12,13 @@
 		"component": "PluginList"
 	},
 	{
+		"labelKey": "menu.scheduledJobs",
+		"href": "#scheduled-jobs",
+		"icon": "CalendarClock",
+		"component": "ScheduledJobs",
+		"requiredPermission": "plugin.scheduler.manage"
+	},
+	{
 		"labelKey": "menu.manualInstall",
 		"href": "#upload",
 		"icon": "Upload",

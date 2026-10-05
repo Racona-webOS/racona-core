@@ -6,6 +6,7 @@
 	import { IconButton } from '$lib/components/shared/buttons';
 	import { ArrowLeft, Package, Trash2, Shield, RefreshCw } from 'lucide-svelte/icons';
 	import PluginUpdate from './PluginUpdate.svelte';
+	import ScheduledJobsPanel from './ScheduledJobsPanel.svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { getAppShell } from '$lib/apps/appShell.svelte';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
@@ -41,6 +42,10 @@
 	const canUpdate = $derived(
 		hasPermission('plugin.manual.install') && plugin?.pluginStatus === 'active'
 	);
+
+	// Ütemezett feladatok: csak jogosultsággal, és csak ha a pluginnak van feladata
+	const canManageJobs = $derived(hasPermission('plugin.scheduler.manage'));
+	let scheduledJobCount = $state<number | null>(null);
 
 	// Frissítési UI állapot (Requirement: 9.1)
 	let showUpdateUI = $state(false);
@@ -281,6 +286,24 @@
 					{/each}
 				</div>
 			</ContentSection>
+		{/if}
+
+		<!-- Ütemezett feladatok -->
+		{#if canManageJobs}
+			<div class:hidden={scheduledJobCount === 0}>
+				<ContentSection
+					title={t('plugin-manager.scheduler.sectionTitle')}
+					description={t('plugin-manager.scheduler.sectionDescription')}
+					contentPosition="bottom"
+				>
+					<div class="w-full">
+						<ScheduledJobsPanel
+							pluginId={plugin.appId}
+							onLoaded={(count) => (scheduledJobCount = count)}
+						/>
+					</div>
+				</ContentSection>
+			</div>
 		{/if}
 
 		<!-- Rendszer információk -->

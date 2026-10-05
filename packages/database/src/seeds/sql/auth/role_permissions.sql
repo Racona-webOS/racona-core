@@ -37,6 +37,7 @@ INSERT INTO auth.role_permissions (role_id, permission_id) VALUES
   (2, 27), -- log.activity.view
   -- Plugin permissions
   (2, 28), -- plugin.manual.install
+  (2, 32), -- plugin.scheduler.manage
   -- Notification permissions
   (2, 31)  -- notifications.send
 ON CONFLICT DO NOTHING;

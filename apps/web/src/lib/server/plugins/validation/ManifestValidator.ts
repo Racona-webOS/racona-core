@@ -7,6 +7,8 @@
 import type { PluginManifest, ValidationError } from '@racona/database';
 import { PluginErrorCode } from '@racona/database';
 import * as v from 'valibot';
+import { getSchedulerConfig } from '$lib/server/scheduler/config';
+import { isValidTimezone, validateSchedule } from '$lib/server/scheduler/cron';
 
 /**
  * Manifest validálási eredmény
@@ -25,7 +27,8 @@ const pluginPermissionSchema = v.union([
 	v.literal('notifications'),
 	v.literal('file_access'),
 	v.literal('remote_functions'),
-	v.literal('user_data')
+	v.literal('user_data'),
+	v.literal('scheduler')
 ]);
 
 // Lokalizált szöveg séma - lehet string vagy objektum
@@ -33,6 +36,36 @@ const localizedTextSchema = v.union([
 	v.string(),
 	v.record(v.string(), v.string()) // { hu: "...", en: "...", ... }
 ]);
+
+/** Egy plugin legfeljebb ennyi ütemezett feladatot deklarálhat. */
+export const MAX_SCHEDULED_JOBS = 20;
+
+// Ütemezett feladat séma (a cron és az időzóna tartalmi ellenőrzése a validate()-ben)
+const scheduledJobSchema = v.object({
+	id: v.pipe(
+		v.string(),
+		v.minLength(3, 'Scheduled job ID must be at least 3 characters'),
+		v.maxLength(50, 'Scheduled job ID must be at most 50 characters'),
+		v.regex(/^[a-z0-9-]+$/, 'Scheduled job ID must be kebab-case')
+	),
+	handler: v.pipe(
+		v.string(),
+		v.regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, 'Scheduled job handler must be a valid identifier'),
+		v.maxLength(100, 'Scheduled job handler must be at most 100 characters')
+	),
+	schedule: v.pipe(v.string(), v.minLength(9, 'Schedule must be a 5-field cron expression')),
+	timezone: v.optional(v.pipe(v.string(), v.minLength(1))),
+	description: v.optional(localizedTextSchema),
+	timeoutSeconds: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(10, 'timeoutSeconds must be at least 10'),
+			v.maxValue(3600, 'timeoutSeconds must be at most 3600')
+		)
+	),
+	catchUp: v.optional(v.union([v.literal('once'), v.literal('skip')]))
+});
 
 const pluginManifestSchema = v.object({
 	id: v.pipe(
@@ -99,8 +132,65 @@ const pluginManifestSchema = v.object({
 	signature: v.optional(v.string()),
 	isPublic: v.optional(v.boolean()),
 	sortOrder: v.optional(v.number()),
-	sidebarComponent: v.optional(v.string())
+	sidebarComponent: v.optional(v.string()),
+	scheduledJobs: v.optional(
+		v.pipe(
+			v.array(scheduledJobSchema),
+			v.maxLength(MAX_SCHEDULED_JOBS, `At most ${MAX_SCHEDULED_JOBS} scheduled jobs are allowed`)
+		)
+	)
 });
+
+/**
+ * Az ütemezett feladatok tartalmi ellenőrzése: a `scheduler` jog megléte,
+ * egyedi azonosítók, érvényes időzóna és cron kifejezés (legalább 5 perc két futás között).
+ */
+function validateScheduledJobs(manifest: PluginManifest): ValidationError[] {
+	const errors: ValidationError[] = [];
+	const jobs = manifest.scheduledJobs ?? [];
+
+	if (!manifest.permissions.includes('scheduler')) {
+		errors.push({
+			code: PluginErrorCode.INVALID_MANIFEST,
+			message: "scheduledJobs requires the 'scheduler' permission",
+			field: 'permissions'
+		});
+	}
+
+	const seen = new Set<string>();
+	const defaultTimezone = getSchedulerConfig().defaultTimezone;
+	jobs.forEach((job, index) => {
+		const field = `scheduledJobs.${index}`;
+		if (seen.has(job.id)) {
+			errors.push({
+				code: PluginErrorCode.INVALID_MANIFEST,
+				message: `Duplicate scheduled job ID: ${job.id}`,
+				field: `${field}.id`
+			});
+		}
+		seen.add(job.id);
+
+		if (job.timezone !== undefined && !isValidTimezone(job.timezone)) {
+			errors.push({
+				code: PluginErrorCode.INVALID_MANIFEST,
+				message: `Invalid timezone: ${job.timezone}`,
+				field: `${field}.timezone`
+			});
+			return;
+		}
+
+		const problem = validateSchedule(job.schedule, job.timezone ?? defaultTimezone);
+		if (problem) {
+			errors.push({
+				code: PluginErrorCode.INVALID_MANIFEST,
+				message: `Invalid schedule for ${job.id}: ${problem}`,
+				field: `${field}.schedule`
+			});
+		}
+	});
+
+	return errors;
+}
 
 /**
  * Manifest Validator osztály
@@ -205,6 +295,11 @@ export class ManifestValidator {
 						});
 					}
 				}
+			}
+
+			// Ütemezett feladatok (ha vannak)
+			if (manifest.scheduledJobs?.length) {
+				errors.push(...validateScheduledJobs(manifest));
 			}
 
 			if (errors.length > 0) {

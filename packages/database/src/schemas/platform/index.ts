@@ -26,6 +26,9 @@ export { activityLogs } from './logging/activity_logs';
 // Notifications
 export * from './notifications/notifications';
 
+// Scheduler
+export * from './scheduler';
+
 // Chat
 export * from './chat';
 

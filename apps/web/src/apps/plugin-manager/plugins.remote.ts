@@ -6,6 +6,7 @@ import { eq, and, desc, asc, sql, like, or } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { activityLogService } from '$lib/server/activity-log/service';
+import { removePluginJobs } from '$lib/server/scheduler/registry';
 
 // Schemas
 const pluginIdSchema = v.object({
@@ -320,6 +321,13 @@ export const uninstallPlugin = command(pluginIdSchema, async ({ pluginId }) => {
 		} catch (fsError) {
 			console.error(`[PluginManager] Error removing plugin files:`, fsError);
 			// Continue with database deletion even if file deletion fails
+		}
+
+		// Delete scheduled jobs and their runs (the FK cascade would too; explicit here)
+		try {
+			await removePluginJobs(pluginId);
+		} catch (jobsError) {
+			console.error(`[PluginManager] Error removing scheduled jobs:`, jobsError);
 		}
 
 		// Delete the plugin from database

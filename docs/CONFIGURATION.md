@@ -20,6 +20,7 @@ This guide covers all environment variables and configuration options for self-h
   - [Demo Mode](#demo-mode)
   - [Public Site](#public-site)
   - [Plugin System](#plugin-system)
+  - [Scheduler](#scheduler)
 - [Self-Hosting Guide](#self-hosting-guide)
   - [Minimal Setup (Docker)](#minimal-setup-docker)
   - [Full Production Setup](#full-production-setup)
@@ -258,6 +259,21 @@ BETTER_AUTH_SECRET=your-local-secret
 | `PLUGIN_MAX_SIZE`          | No       | `10485760`           | Maximum plugin package size in bytes (max: 100 MB)    |
 | `PLUGIN_STORAGE_DIR`       | No       | `/var/webos/plugins` | Directory for installed plugin files                  |
 | `PLUGIN_TEMP_DIR`          | No       | `/tmp/webos-plugins` | Temporary directory for plugin uploads and extraction |
+
+### Scheduler
+
+Plugins can declare scheduled jobs in their manifest (`scheduledJobs`, `scheduler` permission); the core also runs its own maintenance jobs. The scheduler runs inside the app process and keeps its state in the database (`platform.scheduled_jobs`), so no system cron is needed. Jobs are locked in the database: with several app instances a job still runs only once. Scheduled emails link to `APP_URL`, so set it in production.
+
+| Variable                         | Required | Default           | Description                                                       |
+| -------------------------------- | -------- | ----------------- | ----------------------------------------------------------------- |
+| `SCHEDULER_ENABLED`              | No       | `true`            | Run scheduled jobs on this instance                               |
+| `SCHEDULER_TICK_SECONDS`         | No       | `30`              | How often due jobs are checked (5–3600 s)                         |
+| `SCHEDULER_START_DELAY_SECONDS`  | No       | `15`              | Delay of the first check after start-up (s)                       |
+| `SCHEDULER_MAX_CONCURRENT`       | No       | `2`               | Jobs running at the same time per instance (1–20)                 |
+| `SCHEDULER_JOB_TIMEOUT_SECONDS`  | No       | `600`             | Default job timeout when the job does not set its own (10–3600 s) |
+| `SCHEDULER_MISSED_GRACE_SECONDS` | No       | `300`             | Jobs with `catchUp: "skip"` are skipped when later than this (s)  |
+| `SCHEDULER_DEFAULT_TIMEZONE`     | No       | `Europe/Budapest` | Default IANA timezone of cron expressions                         |
+| `SCHEDULER_RUN_RETENTION_DAYS`   | No       | `30`              | Days to keep the run history                                      |
 
 ---
 

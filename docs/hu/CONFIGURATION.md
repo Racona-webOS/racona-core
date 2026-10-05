@@ -20,6 +20,7 @@ Ez az útmutató az ElyOS saját üzemeltetéséhez szükséges összes környez
   - [Demó Mód](#demó-mód)
   - [Publikus Oldal](#publikus-oldal)
   - [Bővítményrendszer](#bővítményrendszer)
+  - [Ütemező](#ütemező)
 - [Saját Üzemeltetési Útmutató](#saját-üzemeltetési-útmutató)
   - [Minimális Telepítés (Docker)](#minimális-telepítés-docker)
   - [Teljes Éles Telepítés](#teljes-éles-telepítés)
@@ -247,6 +248,21 @@ BETTER_AUTH_SECRET=lokalis-titok
 | `PLUGIN_MAX_SIZE`          | Nem      | `10485760`           | Maximális bővítménycsomag méret bájtban (max: 100 MB)           |
 | `PLUGIN_STORAGE_DIR`       | Nem      | `/var/webos/plugins` | Telepített bővítményfájlok könyvtára                            |
 | `PLUGIN_TEMP_DIR`          | Nem      | `/tmp/webos-plugins` | Ideiglenes könyvtár bővítmény feltöltésekhez és kicsomagoláshoz |
+
+### Ütemező
+
+A bővítmények a manifestjükben ütemezett feladatokat deklarálhatnak (`scheduledJobs`, `scheduler` jogosultság); a core a saját karbantartó feladatait is így futtatja. Az ütemező az alkalmazás folyamatán belül fut, az állapotát az adatbázisban tartja (`platform.scheduled_jobs`), így nem kell hozzá rendszer-cron. A feladatok az adatbázisban zárolódnak: több alkalmazáspéldánynál is csak egyszer futnak. Az ütemezett emailek linkje az `APP_URL`-re mutat, ezért élesben állítsd be.
+
+| Változó                          | Kötelező | Alapértelmezett   | Leírás                                                                  |
+| -------------------------------- | -------- | ----------------- | ----------------------------------------------------------------------- |
+| `SCHEDULER_ENABLED`              | Nem      | `true`            | Ütemezett feladatok futtatása ezen a példányon                          |
+| `SCHEDULER_TICK_SECONDS`         | Nem      | `30`              | Az esedékes feladatok ellenőrzésének gyakorisága (5–3600 mp)            |
+| `SCHEDULER_START_DELAY_SECONDS`  | Nem      | `15`              | Az első ellenőrzés késleltetése induláskor (mp)                         |
+| `SCHEDULER_MAX_CONCURRENT`       | Nem      | `2`               | Egyszerre futó feladatok példányonként (1–20)                           |
+| `SCHEDULER_JOB_TIMEOUT_SECONDS`  | Nem      | `600`             | Alapértelmezett időkorlát, ha a feladat nem ad meg sajátot (10–3600 mp) |
+| `SCHEDULER_MISSED_GRACE_SECONDS` | Nem      | `300`             | A `catchUp: "skip"` feladatok ennél későbbi futása kimarad (mp)         |
+| `SCHEDULER_DEFAULT_TIMEZONE`     | Nem      | `Europe/Budapest` | A cron kifejezések alapértelmezett IANA időzónája                       |
+| `SCHEDULER_RUN_RETENTION_DAYS`   | Nem      | `30`              | A futásnapló megőrzése (nap)                                            |
 
 ---
 

@@ -27,10 +27,19 @@ import path from 'path';
 import { getPluginDir } from '$lib/server/plugins/utils/filesystem';
 import { toClientError } from '$lib/server/plugins/utils/remote-error';
 import { resolveServerModuleUrl } from '$lib/server/plugins/utils/server-snapshot';
-import { getEmailManager } from '$lib/server/email/init';
-import type { EmailResult } from '$lib/server/email/types';
-import { sendNotification } from '$lib/server/socket';
-import type { I18nContent } from '$lib/server/socket';
+import {
+	createPluginDb,
+	createPluginEmailService,
+	createPluginNotificationService
+} from '$lib/server/plugins/runtime/services';
+import { isRegisteredJobHandler } from '$lib/server/scheduler/repository';
+
+// A meglévő tesztek innen importálják
+export { prefixTemplateName as _prefixTemplateName } from '$lib/server/plugins/runtime/services';
+export type {
+	PluginEmailService as _PluginEmailService,
+	PluginNotificationService as _PluginNotificationService
+} from '$lib/server/plugins/runtime/services';
 
 /**
  * A rendszergazda szerep azonosítója.
@@ -47,37 +56,6 @@ const REMOTE_FUNCTION_TIMEOUT_MS = 30_000;
 
 /** Érvényes JS azonosító — a modul exportjai közül csak ilyet hívunk */
 const FUNCTION_NAME_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-
-/**
- * Plugin email service interfész
- * Lehetővé teszi pluginok számára email küldést a core EmailManager rendszeren keresztül.
- * A template nevet automatikusan prefixeli az alkalmazás ID-val.
- */
-export interface _PluginEmailService {
-	send(params: {
-		to: string | string[];
-		template: string;
-		data: Record<string, unknown>;
-		locale?: string;
-	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
-}
-
-/**
- * Plugin notification service interfész
- * Rendszeren belüli értesítés küldése a megadott felhasználóknak a core
- * notification rendszerén keresztül (adatbázis + valós idejű Socket.IO push).
- * Az értesítés appName mezője mindig a plugin ID-ja.
- */
-export interface _PluginNotificationService {
-	send(params: {
-		userId?: number;
-		userIds?: number[];
-		title: string | I18nContent;
-		message: string | I18nContent;
-		type?: 'info' | 'success' | 'warning' | 'error' | 'critical';
-		data?: Record<string, unknown>;
-	}): Promise<{ success: boolean; error?: string }>;
-}
 
 /**
  * Remote függvény végrehajtása
@@ -134,6 +112,15 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			throw error(
 				403,
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have 'remote_functions' permission`
+			);
+		}
+
+		// 5b. Az ütemezett feladatok handlerei rendszerjogon futnak, felhasználó nem hívhatja
+		// (a `server/jobs` modulban vannak; ez arra az esetre véd, ha a functions is exportálja)
+		if (await isRegisteredJobHandler(pluginId, functionName)) {
+			throw error(
+				403,
+				`${PluginErrorCode.PERMISSION_DENIED}: Scheduled job handlers cannot be called remotely`
 			);
 		}
 
@@ -267,13 +254,7 @@ async function executeRemoteFunction(
 		const notificationService = createPluginNotificationService(pluginId, pluginPermissions);
 
 		// pg Pool-kompatibilis DB interfész a pluginok számára
-		// A Drizzle ORM mögötti pg Pool-t használjuk, így a pluginok
-		// natív .query(sql, params) hívásokat használhatnak
-		// A pool.connect() is elérhető tranzakciókhoz (BEGIN/COMMIT/ROLLBACK)
-		const pluginDb = {
-			query: pool.query.bind(pool),
-			connect: pool.connect.bind(pool)
-		};
+		const pluginDb = createPluginDb();
 
 		// Execution context létrehozása
 		const context = {
@@ -312,107 +293,4 @@ async function executeRemoteFunction(
 
 		throw err;
 	}
-}
-
-/**
- * Email template név prefixelése az alkalmazás ID-val.
- * Tiszta (pure) függvény, amely a template nevet `${pluginId}:${templateName}` formátumban adja vissza.
- *
- * @param pluginId - Az alkalmazás azonosítója
- * @param templateName - A template neve (prefix nélkül)
- * @returns A prefixelt template név
- */
-export function _prefixTemplateName(pluginId: string, templateName: string): string {
-	return `${pluginId}:${templateName}`;
-}
-
-/**
- * Plugin email service létrehozása
- * Csak notifications jogosultsággal rendelkező pluginok számára elérhető.
- * A template nevet automatikusan prefixeli: 'employee_welcome' → 'racona-work:employee_welcome'
- */
-function createPluginEmailService(
-	pluginId: string,
-	permissions: string[]
-): _PluginEmailService | undefined {
-	if (!permissions.includes('notifications')) {
-		return undefined;
-	}
-
-	return {
-		async send({ to, template, data, locale = 'hu' }): Promise<EmailResult> {
-			try {
-				const emailManager = getEmailManager();
-				if (!emailManager) {
-					return { success: false, error: 'Email service is not available' };
-				}
-
-				const prefixedTemplate = _prefixTemplateName(pluginId, template);
-
-				return await emailManager.sendTemplatedEmail({
-					to,
-					template: prefixedTemplate as any,
-					data,
-					locale
-				});
-			} catch (err) {
-				const errorMessage = err instanceof Error ? err.message : 'Unknown email error';
-				console.error(`[PluginEmailService] Email sending failed for ${pluginId}:`, errorMessage);
-				return { success: false, error: errorMessage };
-			}
-		}
-	};
-}
-
-/** Az értesítés típusok, amiket a notifications.type oszlop elfogad */
-const NOTIFICATION_TYPES = ['info', 'success', 'warning', 'error', 'critical'] as const;
-
-/**
- * Plugin notification service létrehozása
- * Csak notifications jogosultsággal rendelkező pluginok számára elérhető.
- * Csak megnevezett felhasználóknak küldhet — broadcast és csoport nem engedélyezett.
- */
-function createPluginNotificationService(
-	pluginId: string,
-	permissions: string[]
-): _PluginNotificationService | undefined {
-	if (!permissions.includes('notifications')) {
-		return undefined;
-	}
-
-	return {
-		async send({ userId, userIds, title, message, type = 'info', data }) {
-			try {
-				const targets = [...new Set([...(userIds ?? []), ...(userId !== undefined ? [userId] : [])])];
-
-				if (targets.length === 0) {
-					return { success: false, error: 'userId or userIds is required' };
-				}
-				if (!targets.every((id) => Number.isInteger(id) && id > 0)) {
-					return { success: false, error: 'User IDs must be positive integers' };
-				}
-				if (!NOTIFICATION_TYPES.includes(type)) {
-					return { success: false, error: `type must be one of: ${NOTIFICATION_TYPES.join(', ')}` };
-				}
-
-				await sendNotification({
-					userIds: targets,
-					appName: pluginId,
-					title,
-					message,
-					type,
-					data
-				});
-
-				return { success: true };
-			} catch (err) {
-				const errorMessage = err instanceof Error ? err.message : 'Unknown notification error';
-				console.error(
-					`[PluginNotificationService] Notification sending failed for ${pluginId}:`,
-					errorMessage
-				);
-				return { success: false, error: errorMessage };
-			}
-		}
-	};
 }

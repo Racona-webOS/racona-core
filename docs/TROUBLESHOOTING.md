@@ -35,6 +35,7 @@ This guide covers common issues encountered when setting up and running ElyOS.
   - [Plugin upload fails with size error](#plugin-upload-fails-with-size-error)
   - [Plugin storage directory not writable](#plugin-storage-directory-not-writable)
   - [Dev plugins not loading](#dev-plugins-not-loading)
+  - [Scheduled job does not run](#scheduled-job-does-not-run)
 - [Logging & Diagnostics](#logging--diagnostics)
   - [No logs appearing](#no-logs-appearing)
   - [Log files not being written](#log-files-not-being-written)
@@ -468,6 +469,22 @@ DEV_MODE=true
 ```
 
 > Never set `DEV_MODE=true` in production.
+
+---
+
+### Scheduled job does not run
+
+**Symptom:** A plugin's scheduled job does not run at the expected time, or the Plugin Manager's "Scheduled Jobs" page shows no recent run.
+
+**Checks:**
+
+1. The log should contain `[Scheduler] Started (...)` after start-up. If it says `Disabled`, set `SCHEDULER_ENABLED=true` (at least on one instance).
+2. On the "Scheduled Jobs" page the job must be enabled and have a "Next run". A job of an inactive plugin, or of a plugin without the `scheduler` permission, does not run.
+3. Times are interpreted in the job's timezone (default `SCHEDULER_DEFAULT_TIMEZONE`, `Europe/Budapest`).
+4. A run that timed out keeps the job locked until its timeout + 60 seconds have passed.
+5. Check the run history ("History"): failed runs show the error and the job's log lines. After 3 failures in a row the users with the `plugin.scheduler.manage` permission get a notification.
+
+Scheduled jobs have no request, so links in their emails come from `APP_URL` — set it in production.
 
 ---
 

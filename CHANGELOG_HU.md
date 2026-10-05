@@ -7,6 +7,19 @@ Az összes lényeges változás ebben a projektben dokumentálva van.
 A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján készült,
 és ez a projekt a [Semantic Versioning](https://semver.org/spec/v2.0.0.html) szabályait követi.
 
+## [Unreleased]
+
+### Hozzáadva
+
+- **Ütemező**: a pluginok ütemezett feladatokat deklarálhatnak a manifestben (`scheduledJobs` + `scheduler` jogosultság, a handlerek a `server/jobs.ts`-ben). Az ütemező az alkalmazás folyamatán belül fut, az állapotát az adatbázisban tartja (`platform.scheduled_jobs`, `platform.scheduled_job_runs`), és `FOR UPDATE SKIP LOCKED`-del zárolja a feladatokat, így több alkalmazáspéldánynál is egyszer fut egy feladat. A leállás alatt kimaradt futást újraindítás után pótolja (`catchUp: 'once'`).
+  - Plugin kezelő: új „Ütemezett feladatok” oldal és szakasz a plugin részletező oldalán — következő/utolsó futás, ki/bekapcsolás, „Futtatás most”, futásnapló a naplósorokkal. Új jogosultság: `plugin.scheduler.manage`.
+  - A core karbantartó feladatai naponta lefutnak: régi ütemezett futások, 90 napnál régebbi email naplók, 7 napnál régebbi félbehagyott plugin feltöltések és frissítési mentések törlése.
+  - Konfiguráció: `SCHEDULER_*` környezeti változók (lásd docs/hu/CONFIGURATION.md).
+
+### Változott
+
+- Az email és i18n szolgáltatás a szerver indulásakor indul (SvelteKit `init` hook), nem az első kérésnél, így az ütemezett feladatok kérés nélkül is küldhetnek emailt.
+
 ## [0.4.0] - 2026-04-27
 
 ### Hozzáadva

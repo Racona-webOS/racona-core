@@ -26,6 +26,7 @@
         "@varlock/infisical-plugin": "^0.0.6",
         "@varlock/vite-integration": "^0.2.10",
         "adm-zip": "^0.5.17",
+        "croner": "^10.0.1",
         "embla-carousel": "^8.6.0",
         "embla-carousel-svelte": "^8.6.0",
         "express": "^5.2.1",
@@ -203,7 +204,7 @@
     },
     "packages/sdk": {
       "name": "@racona/sdk",
-      "version": "0.4.0",
+      "version": "0.5.1",
       "devDependencies": {
         "typescript": "^5.7.0",
         "vitest": "^3.1.0",
@@ -1004,6 +1005,8 @@
     "croact-css-styled": ["croact-css-styled@1.1.9", "", { "dependencies": { "@daybrush/utils": "^1.13.0", "css-styled": "~1.0.8", "framework-utils": "^1.1.0" } }, "sha512-G7yvRiVJ3Eoj0ov2h2xR4312hpOzATay2dGS9clK8yJQothjH1sBXIyvOeRP5wBKD9mPcKcoUXPCPsl0tQog4w=="],
 
     "croact-moveable": ["croact-moveable@0.9.0", "", { "dependencies": { "@daybrush/utils": "^1.13.0", "@egjs/agent": "^2.2.1", "@egjs/children-differ": "^1.0.1", "@egjs/list-differ": "^1.0.0", "@scena/dragscroll": "^1.4.0", "@scena/event-emitter": "^1.0.5", "@scena/matrix": "^1.1.1", "croact-css-styled": "^1.1.9", "css-to-mat": "^1.1.1", "framework-utils": "^1.1.0", "gesto": "^1.19.3", "overlap-area": "^1.1.0", "react-css-styled": "^1.1.9", "react-moveable": "~0.56.0" }, "peerDependencies": { "croact": "^1.0.4" } }, "sha512-fc3bieV6CdqqZFtzsSLi9KmvUMFW3oakUfhPCls1BxKjOfUfn8rktteGED2341A/Qghy8tI3Hm6SdocIc68IKg=="],
+
+    "croner": ["croner@10.0.1", "", {}, "sha512-ixNtAJndqh173VQ4KodSdJEI6nuioBWI0V1ITNKhZZsO0pEMoDxz539T4FTTbSZ/xIOSuDnzxLVRqBVSvPNE2g=="],
 
     "cross-env": ["cross-env@10.1.0", "", { "dependencies": { "@epic-web/invariant": "^1.0.0", "cross-spawn": "^7.0.6" }, "bin": { "cross-env": "dist/bin/cross-env.js", "cross-env-shell": "dist/bin/cross-env-shell.js" } }, "sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw=="],
 

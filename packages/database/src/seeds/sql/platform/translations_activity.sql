@@ -34,7 +34,10 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 -- Plugin műveletek
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'activity', 'plugin.installed', 'Plugin telepítve'),
-('hu', 'activity', 'plugin.uninstalled', 'Plugin eltávolítva')
+('hu', 'activity', 'plugin.uninstalled', 'Plugin eltávolítva'),
+('hu', 'activity', 'scheduler.job.enabled', 'Ütemezett feladat bekapcsolva: {{job}}'),
+('hu', 'activity', 'scheduler.job.disabled', 'Ütemezett feladat kikapcsolva: {{job}}'),
+('hu', 'activity', 'scheduler.job.run', 'Ütemezett feladat kézi futtatása: {{job}}')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -65,5 +68,8 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 -- Plugin actions
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'activity', 'plugin.installed', 'Plugin installed'),
-('en', 'activity', 'plugin.uninstalled', 'Plugin uninstalled')
+('en', 'activity', 'plugin.uninstalled', 'Plugin uninstalled'),
+('en', 'activity', 'scheduler.job.enabled', 'Scheduled job enabled: {{job}}'),
+('en', 'activity', 'scheduler.job.disabled', 'Scheduled job disabled: {{job}}'),
+('en', 'activity', 'scheduler.job.run', 'Scheduled job run manually: {{job}}')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

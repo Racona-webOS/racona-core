@@ -30,6 +30,7 @@ import {
 import { PluginErrorCode } from '@racona/database';
 import { pluginUpdateValidator, pluginUpdater } from '$lib/server/plugins/installer/PluginUpdater';
 import { activityLogService } from '$lib/server/activity-log/service';
+import { removePluginJobs } from '$lib/server/scheduler/registry';
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	// 1. Autentikáció ellenőrzése
@@ -102,7 +103,14 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			console.error(`[PluginManager] Hiba a desktop parancsikonok törlésekor:`, shortcutError);
 		}
 
-		// 9. Plugin törlése az adatbázisból
+		// 9. Ütemezett feladatok és futásaik törlése (az FK cascade is törölné, itt explicit)
+		try {
+			await removePluginJobs(pluginId);
+		} catch (jobsError) {
+			console.error(`[PluginManager] Hiba az ütemezett feladatok törlésekor:`, jobsError);
+		}
+
+		// 10. Plugin törlése az adatbázisból
 		await db.delete(apps).where(eq(apps.appId, pluginId));
 
 		console.log(`[PluginManager] Plugin ${pluginId} sikeresen eltávolítva`);
