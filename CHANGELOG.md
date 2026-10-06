@@ -42,6 +42,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After uploading a background, the settings use the stored file name, not the original one (which broke for names with spaces or accents).
 - New core job `core.orphan-files-cleanup` (daily): deletes the personal files of deleted users. Deleting a user sets `platform.files.user_id` to null, and these files were left on disk without any way to reach them.
 
+## [0.4.1] - 2026-04-27
+
+### Fixed
+
+- **AI Assistant**: requests to the Anthropic API no longer send `temperature` and `top_p` together (the API rejects them together); only `temperature` is sent, both in chat and in the connection test.
+- **AI Assistant**: the "Clear conversation" button label is translated (it was hard-coded in Hungarian).
+- **Database**: removed the duplicate `aiAgentConfigs` export from the `ai-providers` schema, which broke the build (`aiAgentConfigs is not exported by @racona/database/schemas`).
+- **Docker**: the image builds again with Bun 1.3.13 (updated lockfile, `--frozen-lockfile` kept, no extra TypeScript install that modified the lockfile, only workspace plugin examples copied).
+
 ## [0.4.0] - 2026-04-27
 
 ### Added

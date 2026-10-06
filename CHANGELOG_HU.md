@@ -42,6 +42,15 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 - Háttérkép feltöltése után a beállítás a tárolt fájlnevet használja, nem az eredetit (ami szóközös vagy ékezetes névnél nem működött).
 - Új core feladat: `core.orphan-files-cleanup` (naponta) — törli a törölt felhasználók saját fájljait. Felhasználó törlésekor a `platform.files.user_id` null lesz, és ezek a fájlok elérhetetlenül a lemezen maradtak.
 
+## [0.4.1] - 2026-04-27
+
+### Javítva
+
+- **AI Asszisztens**: az Anthropic API hívásai nem küldik együtt a `temperature` és `top_p` paramétert (az API együtt nem fogadja el őket); csak a `temperature` megy, a chatben és a kapcsolattesztben is.
+- **AI Asszisztens**: a „Beszélgetés törlése” gomb felirata fordítható (eddig magyarul be volt égetve).
+- **Adatbázis**: kikerült az `ai-providers` séma duplikált `aiAgentConfigs` exportja, ami miatt elbukott a build (`aiAgentConfigs is not exported by @racona/database/schemas`).
+- **Docker**: az image újra elkészül Bun 1.3.13-mal (frissített lockfile, megmaradt a `--frozen-lockfile`, nincs külön TypeScript telepítés, ami módosította a lockfile-t, csak a workspace plugin példák kerülnek az image-be).
+
 ## [0.4.0] - 2026-04-27
 
 ### Hozzáadva
