@@ -2,8 +2,9 @@
 # Racona Core — Docker Image publikálás GitHub Container Registry-be
 # =============================================================================
 # Trigger:
-#   - Tag push (v*.*.*)
-#   - Manuális indítás (workflow_dispatch)
+#   - Csak manuális indítás (workflow_dispatch). A tag push nem indítja: a két
+#     platform egy runneren építve kifut a memóriából, a kiadási image helyben
+#     készül (docker:build:amd64 + docker:save:zstd:amd64).
 #
 # Output:
 #   - ghcr.io/[owner]/racona-core:latest (mindig az utolsó release)
@@ -17,9 +18,6 @@
 name: Docker Image Publish
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
 
 env:
