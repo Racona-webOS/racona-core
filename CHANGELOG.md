@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - In development, signing in from a phone on the local network (`vite dev --host`, port 3000) no longer fails with "Invalid origin".
+- Plugin translations are loaded before the plugin is shown (waiting at most 3 seconds). Previously anything rendered before they arrived stayed as a raw key (e.g. `loading`).
 
 ## [0.5.0] - 2026-10-06
 

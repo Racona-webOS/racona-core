@@ -44,6 +44,22 @@ export type WindowState = {
 	screenshot?: string; // Screenshot data URL (base64)
 };
 
+/** Ennyi ideig várunk legfeljebb a plugin fordításaira megjelenítés előtt */
+const TRANSLATIONS_TIMEOUT_MS = 3000;
+
+/**
+ * Megvárja, hogy az SDK betöltse a plugin fordításait (legfeljebb
+ * TRANSLATIONS_TIMEOUT_MS-ig, hogy egy lassú kérés ne akassza meg az ablakot).
+ */
+async function waitForTranslations(sdk: { i18n?: { ready?: () => Promise<void> } }): Promise<void> {
+	const ready = sdk.i18n?.ready?.();
+	if (!ready) return;
+	await Promise.race([
+		ready.catch(() => undefined),
+		new Promise<void>((resolve) => setTimeout(resolve, TRANSLATIONS_TIMEOUT_MS))
+	]);
+}
+
 export class WindowManager {
 	windows = $state<WindowState[]>([]);
 	private nextId = 1;
@@ -373,6 +389,10 @@ export class WindowManager {
 				}
 			);
 
+			// A plugin fordításai aszinkron töltődnek, a t() nem reaktív: a megjelenítés előtt
+			// megvárjuk, különben a korán kirajzolt szövegek kulcsként maradnak (pl. mobil bejegyzés)
+			await waitForTranslations(sdk);
+
 			// Toast handler regisztrálása az SDK UIService-hez
 			const { toast: showToast } = await import('svelte-sonner');
 			sdk.ui._setToastHandler((message, type, duration) => {
@@ -480,6 +500,10 @@ export class WindowManager {
 				},
 				true // devMode — ne indítson API hívást a fordításokhoz
 			);
+
+			// A plugin fordításai aszinkron töltődnek, a t() nem reaktív: a megjelenítés előtt
+			// megvárjuk, különben a korán kirajzolt szövegek kulcsként maradnak (pl. mobil bejegyzés)
+			await waitForTranslations(sdk);
 
 			// Dev módban a DataService localStorage-t használ (nincs DB bejegyzés)
 			const devDataPrefix = `devplugin:${pluginId}:`;
@@ -841,6 +865,10 @@ export class WindowManager {
 					ContentSection: ContentSection.default
 				}
 			);
+
+			// A plugin fordításai aszinkron töltődnek, a t() nem reaktív: a megjelenítés előtt
+			// megvárjuk, különben a korán kirajzolt szövegek kulcsként maradnak (pl. mobil bejegyzés)
+			await waitForTranslations(sdk);
 
 			// Toast handler regisztrálása az SDK UIService-hez
 			const { toast: showToast } = await import('svelte-sonner');

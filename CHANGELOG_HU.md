@@ -30,6 +30,7 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 ### Javítva
 
 - Fejlesztői módban a telefonos belépés a helyi hálózatról (`vite dev --host`, 3000-es port) nem akadt el „Invalid origin” hibával.
+- A plugin fordításai a megjelenítés előtt betöltődnek (legfeljebb 3 másodperc várakozással). Korábban, ami a betöltés előtt kirajzolódott, kulcsként maradt (pl. `loading`).
 
 ## [0.5.0] - 2026-10-06
 

@@ -10,6 +10,7 @@
 <script lang="ts">
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import { page } from '$app/state';
+	import { browser } from '$app/environment';
 	import { afterNavigate, pushState, replaceState } from '$app/navigation';
 	import { House, Bell, Layers, CircleUser, ChevronLeft, X } from 'lucide-svelte';
 	import { getWindowManager } from '$lib/stores';
@@ -26,7 +27,9 @@
 
 	let { appName, children }: { appName: string; children?: Snippet } = $props();
 
-	const { t } = useI18n();
+	const { t: translate } = useI18n();
+	// A fordítások csak a böngészőben töltődnek be: szerveroldalon nem írunk ki nyers kulcsot
+	const t = (key: string) => (browser ? translate(key) : '');
 	const windowManager = getWindowManager();
 	const notificationStore = getNotificationStore();
 
