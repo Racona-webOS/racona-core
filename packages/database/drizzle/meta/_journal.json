@@ -64,6 +64,20 @@
       "when": 1791196429900,
       "tag": "0008_scheduler",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791270951325,
+      "tag": "0009_plugin_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791274842390,
+      "tag": "0010_files_shared_manage",
+      "breakpoints": true
     }
   ]
 }

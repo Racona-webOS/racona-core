@@ -5,14 +5,20 @@
  * Route: /api/files/[...path]
  * - Session ellenőrzés
  * - Jogosultság ellenőrzés (shared vs user scope)
- * - Fájl kiszolgálás megfelelő Content-Type header-rel
- * - Cache-Control header beállítás
+ * - Fájl kiszolgálás a tárolt MIME típussal (aktív tartalom soha nem a saját típusával)
+ * - Cache-Control: private (minden fájl bejelentkezéshez kötött)
  */
 
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth/index';
 import { readFromFileSystem, validatePath } from '$lib/server/storage/filesystem';
 import { StorageError, STORAGE_CONFIG, getHttpStatusForError } from '$lib/server/storage/types';
+import { fileRepository } from '$lib/server/storage/file-repository';
+import {
+	resolveFileResponseType,
+	buildContentDisposition
+} from '$lib/server/storage/content-type';
+import { PLUGIN_FILES_DIR_NAME } from '$lib/server/plugins/files/config';
 
 /**
  * Parse the path to extract category, scope, and filename
@@ -97,6 +103,12 @@ export const GET: RequestHandler = async ({ params, request }) => {
 			return errorResponse('Invalid path', 400);
 		}
 
+		// A plugin fájlokat csak a plugin által kiadott, aláírt link szolgálja ki
+		// (/api/plugins/:pluginId/files/download/:token)
+		if (pathSegments[0] === PLUGIN_FILES_DIR_NAME) {
+			return errorResponse('File not found', 404);
+		}
+
 		const parsedPath = parsePath(pathSegments);
 
 		if (!parsedPath) {
@@ -132,20 +144,17 @@ export const GET: RequestHandler = async ({ params, request }) => {
 			throw error;
 		}
 
-		// 6. MIME típus meghatározása
-		// Próbáljuk az adatbázisból lekérni a pontos MIME típust
-		let mimeType = 'application/octet-stream';
-
-		// Keresés az adatbázisban a fájl metaadatai alapján
-		// A storagePath alapján keresünk
+		// 6. MIME típus: a feltöltéskor detektált, tárolt típus (platform.files);
+		// rekord nélküli fájlnál (pl. bemásolt közös hátterek) a kiterjesztés alapján
+		let storedMimeType: string | null = null;
 		try {
-			// A fájl metaadatait a storagePath alapján keressük
-			// Mivel nincs közvetlen keresés storagePath alapján, a MIME típust
-			// a fájl kiterjesztéséből határozzuk meg
-			mimeType = getMimeTypeFromExtension(storagePath);
-		} catch {
-			// Ha nem sikerül, marad az alapértelmezett
+			const record = await fileRepository.findRawByPath(storagePath);
+			storedMimeType = record?.mimeType ?? null;
+		} catch (error) {
+			console.warn('[Files API] MIME lookup failed, falling back to extension:', error);
 		}
+
+		const { contentType, disposition } = resolveFileResponseType(storedMimeType, storagePath);
 
 		// 7. Response összeállítása (Requirements: 6.6, 6.7)
 		// Convert Buffer to Uint8Array for Response compatibility
@@ -154,9 +163,15 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		return new Response(responseBody, {
 			status: 200,
 			headers: {
-				'Content-Type': mimeType,
+				'Content-Type': contentType,
 				'Content-Length': fileBuffer.length.toString(),
-				'Cache-Control': `public, max-age=${STORAGE_CONFIG.cacheMaxAge}`,
+				'Content-Disposition': buildContentDisposition(
+					disposition,
+					pathSegments[pathSegments.length - 1]
+				),
+				// Bejelentkezéshez kötött tartalom: megosztott (proxy/CDN) cache nem tárolhatja
+				'Cache-Control': `private, max-age=${STORAGE_CONFIG.cacheMaxAge}`,
+				Vary: 'Cookie',
 				'X-Content-Type-Options': 'nosniff'
 			}
 		});
@@ -170,63 +185,3 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		return errorResponse('Internal server error', 500);
 	}
 };
-
-/**
- * Get MIME type from file extension
- */
-function getMimeTypeFromExtension(filePath: string): string {
-	const ext = filePath.split('.').pop()?.toLowerCase() ?? '';
-
-	const mimeTypes: Record<string, string> = {
-		// Images
-		jpg: 'image/jpeg',
-		jpeg: 'image/jpeg',
-		png: 'image/png',
-		gif: 'image/gif',
-		webp: 'image/webp',
-		svg: 'image/svg+xml',
-		ico: 'image/x-icon',
-		bmp: 'image/bmp',
-
-		// Documents
-		pdf: 'application/pdf',
-		doc: 'application/msword',
-		docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-		xls: 'application/vnd.ms-excel',
-		xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-		ppt: 'application/vnd.ms-powerpoint',
-		pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-		txt: 'text/plain',
-		csv: 'text/csv',
-		rtf: 'application/rtf',
-
-		// Archives
-		zip: 'application/zip',
-		rar: 'application/vnd.rar',
-		'7z': 'application/x-7z-compressed',
-		tar: 'application/x-tar',
-		gz: 'application/gzip',
-
-		// Audio
-		mp3: 'audio/mpeg',
-		wav: 'audio/wav',
-		ogg: 'audio/ogg',
-		m4a: 'audio/mp4',
-
-		// Video
-		mp4: 'video/mp4',
-		webm: 'video/webm',
-		avi: 'video/x-msvideo',
-		mov: 'video/quicktime',
-		mkv: 'video/x-matroska',
-
-		// Other
-		json: 'application/json',
-		xml: 'application/xml',
-		html: 'text/html',
-		css: 'text/css',
-		js: 'application/javascript'
-	};
-
-	return Object.hasOwn(mimeTypes, ext) ? mimeTypes[ext] : 'application/octet-stream';
-}

@@ -358,7 +358,6 @@
 						scope={selectedScope}
 						fileType="document"
 						maxFiles={1}
-						maxFileSize={10 * 1024 * 1024}
 						onUploadStart={handleInstantUploadStart}
 						onUploadComplete={handleInstantUploadComplete}
 						onError={handleInstantUploadError}
@@ -374,7 +373,6 @@
 						scope={selectedScope}
 						fileType="mixed"
 						maxFiles={1}
-						maxFileSize={20 * 1024 * 1024}
 						onUploadStart={handleInstantUploadStart}
 						onUploadComplete={handleInstantUploadComplete}
 						onError={handleInstantUploadError}
@@ -416,7 +414,6 @@
 						scope={selectedScope}
 						fileType="document"
 						maxFiles={3}
-						maxFileSize={10 * 1024 * 1024}
 						onUploadComplete={handleUploadComplete}
 						onError={handleError}
 					/>

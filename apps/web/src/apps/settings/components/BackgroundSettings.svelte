@@ -173,11 +173,14 @@
 	// Feltöltés befejezése
 	async function handleUploadComplete(result: UploadResult) {
 		if (result.success && result.file) {
+			// A tárolt fájlnév (szanálva, egyedivé téve) eltérhet az eredetitől
+			const storedName = result.file.filename ?? result.file.originalName;
+
 			// Frissítjük a felhasználói képek listáját
-			userImages = [...userImages, result.file.originalName];
+			userImages = [...userImages, storedName];
 
 			// Beállítjuk az új képet háttérnek
-			await handleImageSelect(result.file.originalName, 'user');
+			await handleImageSelect(storedName, 'user');
 			toast.success(t('settings.background.upload.success'));
 		}
 	}
@@ -428,7 +431,6 @@
 			mode="instant"
 			fileType="image"
 			allowedExtensions={['jpg', 'jpeg', 'png', 'webp']}
-			maxFileSize={10 * 1024 * 1024}
 			onUploadComplete={handleUploadComplete}
 			onError={handleUploadError}
 			generateThumbnail={true}

@@ -248,6 +248,9 @@ BETTER_AUTH_SECRET=lokalis-titok
 | `PLUGIN_MAX_SIZE`          | Nem      | `10485760`           | Maximális bővítménycsomag méret bájtban (max: 100 MB)           |
 | `PLUGIN_STORAGE_DIR`       | Nem      | `/var/webos/plugins` | Telepített bővítményfájlok könyvtára                            |
 | `PLUGIN_TEMP_DIR`          | Nem      | `/tmp/webos-plugins` | Ideiglenes könyvtár bővítmény feltöltésekhez és kicsomagoláshoz |
+| `PLUGIN_FILE_MAX_BYTES`    | Nem      | `10485760`           | A bővítmények által tárolt fájlok (`file_access`) mérethatára bájtban. Nem lehet nagyobb a `BODY_SIZE_LIMIT`-nél |
+
+A `file_access` jogú bővítmények fájljai az `uploads/plugin-files/` mappába kerülnek. A mentésbe a teljes `uploads` mappát vedd fel: ebben vannak ezek a fájlok, a hátterek, az avatarok és a telepített bővítmények is.
 
 ### Ütemező
 

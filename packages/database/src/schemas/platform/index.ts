@@ -19,6 +19,9 @@ export * from './plugins';
 // Files
 export * from './files/schema';
 
+// Plugin files
+export * from './plugin-files';
+
 // Logging
 export { errorLogs } from './logging/error_logs';
 export { activityLogs } from './logging/activity_logs';

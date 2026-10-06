@@ -68,21 +68,30 @@ Kompakt, azonnali feltöltő mód, ahol:
 
 ## Props
 
-| Prop                | Típus                              | Alapértelmezett   | Leírás                                      |
-| ------------------- | ---------------------------------- | ----------------- | ------------------------------------------- |
-| `mode`              | `'standard' \| 'instant'`          | `'standard'`      | Feltöltő mód                                |
-| `category`          | `string`                           | **kötelező**      | Fájl kategória (pl. "avatars", "documents") |
-| `scope`             | `'user' \| 'shared'`               | **kötelező**      | Hozzáférési kör                             |
-| `maxFileSize`       | `number`                           | `10485760` (10MB) | Maximum fájlméret bájtban                   |
-| `maxFiles`          | `number`                           | `1`               | Maximum feltölthető fájlok száma            |
-| `fileType`          | `'image' \| 'document' \| 'mixed'` | `'mixed'`         | Fájl típus kategória                        |
-| `allowedExtensions` | `string[]`                         | `[]`              | Engedélyezett kiterjesztések                |
-| `generateThumbnail` | `boolean`                          | `false`           | Bélyegkép generálás képekhez                |
-| `maxImageWidth`     | `number`                           | `undefined`       | Maximum képszélesség                        |
-| `maxImageHeight`    | `number`                           | `undefined`       | Maximum képmagasság                         |
-| `onUploadComplete`  | `(result: UploadResult) => void`   | `undefined`       | Feltöltés befejezésekor                     |
-| `onError`           | `(error: UploadError) => void`     | `undefined`       | Hiba esetén                                 |
-| `onUploadStart`     | `() => void`                       | `undefined`       | Feltöltés kezdetekor (csak instant módban)  |
+| Prop                | Típus                              | Alapértelmezett | Leírás                                          |
+| ------------------- | ---------------------------------- | --------------- | ----------------------------------------------- |
+| `mode`              | `'standard' \| 'instant'`          | `'standard'`    | Feltöltő mód                                    |
+| `category`          | `string`                           | **kötelező**    | Fájl kategória (pl. "avatars", "documents")     |
+| `scope`             | `'user' \| 'shared'`               | **kötelező**    | Hozzáférési kör (shared: `files.shared.manage`) |
+| `maxFileSize`       | `number`                           | `7340032` (7MB) | Maximum fájlméret bájtban (lásd lent)           |
+| `maxFiles`          | `number`                           | `1`             | Maximum feltölthető fájlok száma                |
+| `fileType`          | `'image' \| 'document' \| 'mixed'` | `'mixed'`       | Fájl típus kategória                            |
+| `allowedExtensions` | `string[]`                         | `[]`            | Engedélyezett kiterjesztések                    |
+| `generateThumbnail` | `boolean`                          | `false`         | Bélyegkép generálás képekhez                    |
+| `maxImageWidth`     | `number`                           | `undefined`     | Maximum képszélesség                            |
+| `maxImageHeight`    | `number`                           | `undefined`     | Maximum képmagasság                             |
+| `onUploadComplete`  | `(result: UploadResult) => void`   | `undefined`     | Feltöltés befejezésekor                         |
+| `onError`           | `(error: UploadError) => void`     | `undefined`     | Hiba esetén                                     |
+| `onUploadStart`     | `() => void`                       | `undefined`     | Feltöltés kezdetekor (csak instant módban)      |
+
+## Korlátok
+
+- **Méret**: a fájl base64-ként, egy kérésben megy fel, ezért a szerver a `BODY_SIZE_LIMIT`
+  kb. háromnegyedénél nagyobb fájlt nem fogad (az alapértelmezett 10 MB-os limitnél 7 MB).
+  Nagyobb `maxFileSize` csak akkor működik, ha a `BODY_SIZE_LIMIT` is nagyobb.
+- **Képformátumok**: JPEG, PNG, GIF, WebP. SVG és BMP nem tölthető fel.
+- **Shared scope**: feltölteni és törölni csak `files.shared.manage` jogosultsággal lehet;
+  user scope fájlt csak a tulajdonosa törölhet.
 
 ## Példák
 
@@ -120,7 +129,6 @@ Kompakt, azonnali feltöltő mód, ahol:
 	scope="shared"
 	maxFiles={10}
 	fileType="document"
-	maxFileSize={20 * 1024 * 1024}
 	onUploadComplete={(result) => {
 		if (result.success) {
 			documents = [...documents, result.file];
@@ -165,6 +173,7 @@ interface ProcessedFile {
 	mimeType: string;
 	size: number;
 	url: string;
+	filename?: string; // tárolt fájlnév (eltérhet az eredetitől)
 	thumbnailUrl?: string;
 }
 

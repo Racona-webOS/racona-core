@@ -3,13 +3,17 @@
  * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5
  *
  * Fájl törlése a fájlrendszerből és metaadat törlése az adatbázisból.
+ * - user scope: csak a tulajdonos törölheti.
+ * - shared scope: a `files.shared.manage` jogosultsággal rendelkező felhasználó törölheti.
  */
 
 import { command, getRequestEvent } from '$app/server';
 import { deleteFileInputSchema } from './schemas.js';
 import { fileRepository } from '$lib/server/storage/file-repository.js';
-import { deleteFromFileSystem } from '$lib/server/storage/filesystem.js';
+import { removeStoredFile } from '$lib/server/storage/file-service.js';
+import { canDeleteFile } from '$lib/server/storage/policy.js';
 import { StorageError } from '$lib/server/storage/types.js';
+import { permissionRepository } from '$lib/server/database/repositories';
 import type { DeleteFileResult } from './types.js';
 
 // ============================================================================
@@ -39,7 +43,7 @@ export const deleteFile = command(
 		const userId = parseInt(locals.user.id);
 
 		try {
-			const file = await fileRepository.findByPublicId(fileId);
+			const file = await fileRepository.findRawByPublicId(fileId);
 
 			if (!file) {
 				return {
@@ -48,44 +52,18 @@ export const deleteFile = command(
 				};
 			}
 
-			if (file.userId !== null && file.userId !== userId) {
+			const permissions =
+				file.scope === 'shared' ? await permissionRepository.findPermissionsForUser(userId) : [];
+			const access = canDeleteFile(file, userId, permissions);
+
+			if (!access.allowed) {
 				return {
 					success: false,
-					error: 'Permission denied: You can only delete your own files'
+					error: access.error
 				};
 			}
 
-			if (file.scope === 'shared' && file.userId !== userId) {
-				return {
-					success: false,
-					error: 'Permission denied: You can only delete files you uploaded'
-				};
-			}
-
-			try {
-				await deleteFromFileSystem(file.storagePath);
-			} catch (error) {
-				if (error instanceof StorageError && error.code === 'FILE_NOT_FOUND') {
-					console.warn(
-						`[FileStorage] File not found in filesystem, continuing with metadata deletion: ${file.storagePath}`
-					);
-				} else {
-					throw error;
-				}
-			}
-
-			if (file.thumbnailUrl) {
-				const rawFile = await fileRepository.findRawByPublicId(fileId);
-				if (rawFile?.thumbnailPath) {
-					try {
-						await deleteFromFileSystem(rawFile.thumbnailPath);
-					} catch (error) {
-						console.warn(`[FileStorage] Failed to delete thumbnail: ${rawFile.thumbnailPath}`);
-					}
-				}
-			}
-
-			const deleted = await fileRepository.delete(fileId);
+			const deleted = await removeStoredFile(file);
 
 			if (!deleted) {
 				return {

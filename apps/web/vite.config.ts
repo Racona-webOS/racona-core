@@ -43,7 +43,7 @@ export default defineConfig({
 	server: {
 		port: 3000,
 		watch: {
-			ignored: ['**/uploads/plugins/**', '**/uploads/plugins-temp/**']
+			ignored: ['**/uploads/plugins/**', '**/uploads/plugins-temp/**', '**/uploads/plugin-files/**']
 		}
 	},
 	// A SvelteKit csak a routes fájlokból indítja a függőség-szkennelést, a hooks.client.ts-ből

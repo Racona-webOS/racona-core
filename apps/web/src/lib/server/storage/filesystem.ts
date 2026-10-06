@@ -181,7 +181,8 @@ export function generateStoragePath(
 	userId?: number | null
 ): string {
 	const scopeDir = scope === 'shared' ? 'shared' : `user-${userId}`;
-	return path.join(category, scopeDir);
+	// Mindig `/` elválasztó: az útvonal adatbázisba és URL-be is kerül
+	return path.posix.join(category, scopeDir);
 }
 
 // ============================================================================
@@ -231,9 +232,9 @@ export async function saveToFileSystem(
 		);
 	}
 
-	// Relatív útvonal visszaadása (az uploads mappához képest)
+	// Relatív útvonal visszaadása (az uploads mappához képest, `/` elválasztóval)
 	return {
-		path: path.join(relativePath, uniqueFilename),
+		path: path.posix.join(relativePath, uniqueFilename),
 		filename: uniqueFilename
 	};
 }

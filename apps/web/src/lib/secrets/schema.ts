@@ -106,6 +106,7 @@ export const EXPECTED_ENV_KEYS = [
 	'PLUGIN_MAX_SIZE',
 	'PLUGIN_STORAGE_DIR',
 	'PLUGIN_TEMP_DIR',
+	'PLUGIN_FILE_MAX_BYTES',
 	// Ütemező
 	'SCHEDULER_ENABLED',
 	'SCHEDULER_TICK_SECONDS',
@@ -287,6 +288,7 @@ export function validateSchema(env: Record<string, unknown>): Record<string, unk
 		{ key: 'EMAIL_VERIFICATION_EXPIRES_IN', min: 1, max: 604800 },
 		{ key: 'VERIFICATION_ROLLOUT_PERCENTAGE', min: 0, max: 100 },
 		{ key: 'PLUGIN_MAX_SIZE', min: 1, max: 104857600 },
+		{ key: 'PLUGIN_FILE_MAX_BYTES', min: 1, max: 1073741824 },
 		{ key: 'DEMO_RESET_HOUR', min: 0, max: 23 },
 		{ key: 'SCHEDULER_TICK_SECONDS', min: 5, max: 3600 },
 		{ key: 'SCHEDULER_START_DELAY_SECONDS', min: 0, max: 3600 },
@@ -457,7 +459,10 @@ export function validEnvArbitrary(): fc.Arbitrary<Record<string, unknown>> {
 			PLUGIN_STORAGE_DIR: fc.option(fc.string({ minLength: 1, maxLength: 128 }), {
 				nil: undefined
 			}),
-			PLUGIN_TEMP_DIR: fc.option(fc.string({ minLength: 1, maxLength: 128 }), { nil: undefined })
+			PLUGIN_TEMP_DIR: fc.option(fc.string({ minLength: 1, maxLength: 128 }), { nil: undefined }),
+			PLUGIN_FILE_MAX_BYTES: fc.option(fc.integer({ min: 1, max: 1073741824 }).map(String), {
+				nil: undefined
+			})
 		})
 		.map((record) => {
 			// Távolítsuk el az undefined értékeket, hogy tiszta objektumot kapjunk

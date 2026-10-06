@@ -259,6 +259,9 @@ BETTER_AUTH_SECRET=your-local-secret
 | `PLUGIN_MAX_SIZE`          | No       | `10485760`           | Maximum plugin package size in bytes (max: 100 MB)    |
 | `PLUGIN_STORAGE_DIR`       | No       | `/var/webos/plugins` | Directory for installed plugin files                  |
 | `PLUGIN_TEMP_DIR`          | No       | `/tmp/webos-plugins` | Temporary directory for plugin uploads and extraction |
+| `PLUGIN_FILE_MAX_BYTES`    | No       | `10485760`           | Maximum size of a file stored by a plugin (`file_access`), in bytes. Must not exceed `BODY_SIZE_LIMIT` |
+
+Plugins with the `file_access` permission store files under `uploads/plugin-files/`. Include the whole `uploads` folder in your backups: it holds these files as well as backgrounds, avatars and the installed plugins.
 
 ### Scheduler
 

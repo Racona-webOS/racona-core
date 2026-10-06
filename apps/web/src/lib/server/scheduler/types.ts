@@ -9,6 +9,7 @@ import type {
 	PluginEmailService,
 	PluginNotificationService
 } from '$lib/server/plugins/runtime/services';
+import type { PluginFileService } from '$lib/server/plugins/files';
 
 export interface JobParams {
 	jobId: string;
@@ -37,6 +38,8 @@ export interface JobContext {
 	pluginPermissions: string[];
 	email?: PluginEmailService;
 	notifications?: PluginNotificationService;
+	/** Csak `file_access` joggal; fel- és letöltési link itt nem kérhető */
+	files?: PluginFileService;
 	logger: JobLogger;
 	/** Időtúllépéskor abortál */
 	signal: AbortSignal;

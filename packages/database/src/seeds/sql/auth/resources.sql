@@ -9,7 +9,8 @@ INSERT INTO auth.resources (id, name, description) VALUES
   (7, 'settings', 'Rendszerbeállítások kezelése'),
   (8, 'log', 'Naplózás kezelése'),
   (9, 'plugin', 'Plugin kezelése'),
-  (10, 'notifications', 'Értesítések kezelése')
+  (10, 'notifications', 'Értesítések kezelése'),
+  (11, 'files', 'Fájlok kezelése')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description;

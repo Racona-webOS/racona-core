@@ -39,7 +39,9 @@ INSERT INTO auth.role_permissions (role_id, permission_id) VALUES
   (2, 28), -- plugin.manual.install
   (2, 32), -- plugin.scheduler.manage
   -- Notification permissions
-  (2, 31)  -- notifications.send
+  (2, 31), -- notifications.send
+  -- File permissions
+  (2, 33)  -- files.shared.manage
 ON CONFLICT DO NOTHING;
 
 -- Editor role permissions

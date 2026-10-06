@@ -8,10 +8,15 @@
 import { command, getRequestEvent } from '$app/server';
 import { randomUUID } from 'crypto';
 import { saveFileInputSchema } from './schemas.js';
-import { saveToFileSystem } from '$lib/server/storage/filesystem.js';
+import { saveToFileSystem, deleteFromFileSystem } from '$lib/server/storage/filesystem.js';
 import { fileRepository } from '$lib/server/storage/file-repository.js';
 import { StorageError } from '$lib/server/storage/types.js';
+import { canWriteScope } from '$lib/server/storage/policy.js';
+import { getMaxUploadBytes, estimateDecodedSize } from '$lib/server/storage/limits.js';
+import { THUMBNAIL_PREFIX, stripThumbnailPrefix } from '$lib/server/storage/stored-file.js';
+import { permissionRepository } from '$lib/server/database/repositories';
 import type { SaveFileResult } from './types.js';
+import { formatBytes } from './limits.js';
 import { validateMimeType, isImageMimeType } from '$lib/components/file-uploader/mime-validator.js';
 import { processImage } from '$lib/components/file-uploader/image-processor.js';
 
@@ -27,6 +32,25 @@ import { processImage } from '$lib/components/file-uploader/image-processor.js';
 function decodeBase64(base64: string): Buffer {
 	const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
 	return Buffer.from(base64Data, 'base64');
+}
+
+/** Hibaüzenet a mérethatárt meghaladó fájlhoz. */
+function fileTooLargeError(maxBytes: number): SaveFileResult {
+	return {
+		success: false,
+		error: `File is too large (max ${formatBytes(maxBytes)})`
+	};
+}
+
+/** Már kiírt fájlok eltávolítása sikertelen mentés után (a hiba nem fontos). */
+async function removeWrittenFiles(paths: string[]): Promise<void> {
+	for (const storagePath of paths) {
+		try {
+			await deleteFromFileSystem(storagePath);
+		} catch {
+			// A fájl már nem létezik, nem hiba
+		}
+	}
 }
 
 // ============================================================================
@@ -53,8 +77,27 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 	const { fileData, fileName, mimeType, category, scope, options } = input;
 	const userId = parseInt(locals.user.id);
 
+	// Shared fájlt mindenki lát, ezért külön jogosultság kell hozzá
+	if (scope !== 'user') {
+		const permissions = await permissionRepository.findPermissionsForUser(userId);
+		const access = canWriteScope(scope, permissions);
+		if (!access.allowed) {
+			return { success: false, error: access.error };
+		}
+	}
+
+	const maxBytes = getMaxUploadBytes();
+	if (estimateDecodedSize(fileData) > maxBytes) {
+		return fileTooLargeError(maxBytes);
+	}
+
+	const writtenPaths: string[] = [];
+
 	try {
 		const buffer = decodeBase64(fileData);
+		if (buffer.length > maxBytes) {
+			return fileTooLargeError(maxBytes);
+		}
 
 		const mimeValidation = await validateMimeType(buffer, 'mixed', mimeType);
 		if (!mimeValidation.valid) {
@@ -65,10 +108,12 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 		}
 
 		const detectedMimeType = mimeValidation.detectedMimeType || mimeType;
+		const ownerId = scope === 'user' ? userId : null;
+		const storedName = stripThumbnailPrefix(fileName);
 
 		let processedBuffer = buffer;
 		let processedMimeType = detectedMimeType;
-		let thumbnailPath: string | undefined;
+		let thumbnailBuffer: Buffer | undefined;
 
 		if (isImageMimeType(detectedMimeType)) {
 			const processedResult = await processImage(buffer, {
@@ -81,15 +126,7 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 			processedMimeType = processedResult.processed.mimeType;
 
 			if (processedResult.thumbnail && options.generateThumbnail) {
-				const thumbFilename = `thumb-${fileName}`;
-				const thumbResult = await saveToFileSystem(
-					processedResult.thumbnail.buffer,
-					category,
-					scope,
-					thumbFilename,
-					scope === 'user' ? userId : null
-				);
-				thumbnailPath = thumbResult.path;
+				thumbnailBuffer = processedResult.thumbnail.buffer;
 			}
 		}
 
@@ -97,9 +134,24 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 			processedBuffer,
 			category,
 			scope,
-			fileName,
-			scope === 'user' ? userId : null
+			storedName,
+			ownerId
 		);
+		writtenPaths.push(fileResult.path);
+
+		// A bélyegkép neve a tárolt (egyedivé tett) fájlnévből jön: thumb-{filename}
+		let thumbnailPath: string | null = null;
+		if (thumbnailBuffer) {
+			const thumbResult = await saveToFileSystem(
+				thumbnailBuffer,
+				category,
+				scope,
+				`${THUMBNAIL_PREFIX}${fileResult.filename}`,
+				ownerId
+			);
+			writtenPaths.push(thumbResult.path);
+			thumbnailPath = thumbResult.path;
+		}
 
 		const publicId = randomUUID();
 
@@ -109,11 +161,11 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 			originalName: fileName,
 			category,
 			scope,
-			userId: scope === 'user' ? userId : null,
+			userId: ownerId,
 			mimeType: processedMimeType,
 			size: processedBuffer.length,
 			storagePath: fileResult.path,
-			thumbnailPath: thumbnailPath || null
+			thumbnailPath
 		});
 
 		return {
@@ -122,6 +174,7 @@ export const saveFile = command(saveFileInputSchema, async (input): Promise<Save
 		};
 	} catch (error) {
 		console.error('[FileStorage] Save file error:', error);
+		await removeWrittenFiles(writtenPaths);
 
 		if (error instanceof StorageError) {
 			return {

@@ -22,6 +22,7 @@ import * as fc from 'fast-check';
 import { mkdir, writeFile, rm, access, constants } from 'fs/promises';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
+import { canDeleteFile, SHARED_FILES_PERMISSION } from '../policy';
 
 // Minimum 100 iteráció property tesztenként
 const testConfig = { numRuns: 100 };
@@ -120,17 +121,19 @@ interface DeleteOperationResult {
 
 /**
  * Simulates the delete operation with authorization check.
- * This mirrors the logic in delete-file.remote.ts.
+ * The authorization is the real canDeleteFile policy used by delete-file.remote.ts.
  *
  * @param db - The mock database.
  * @param publicId - The public ID of the file to delete.
  * @param requestingUserId - The ID of the user requesting the deletion.
+ * @param permissions - The permissions of the requesting user.
  * @returns The result of the delete operation.
  */
 function simulateDeleteWithAuth(
 	db: MockFileDatabase,
 	publicId: string,
-	requestingUserId: number
+	requestingUserId: number,
+	permissions: string[] = []
 ): DeleteOperationResult {
 	// Find the file record
 	const record = db.findByPublicId(publicId);
@@ -139,15 +142,9 @@ function simulateDeleteWithAuth(
 		return { success: false, error: 'File not found' };
 	}
 
-	// Authorization check: user can only delete their own files
-	// For user-scoped files, userId must match
-	if (record.userId !== null && record.userId !== requestingUserId) {
-		return { success: false, error: 'Permission denied: You can only delete your own files' };
-	}
-
-	// For shared files, also check ownership (shared files have userId of uploader)
-	if (record.scope === 'shared' && record.userId !== requestingUserId) {
-		return { success: false, error: 'Permission denied: You can only delete files you uploaded' };
+	const access = canDeleteFile(record, requestingUserId, permissions);
+	if (!access.allowed) {
+		return { success: false, error: access.error };
 	}
 
 	// Delete from database (simulating successful filesystem deletion)
@@ -607,28 +604,30 @@ describe('DeleteFile Authorization - Property 7: Törlési jogosultság', () => 
 	});
 
 	/**
-	 * Property 7b: Owner can delete their own shared files.
+	 * Property 7b: Users with the shared files permission can delete shared files.
 	 *
-	 * For ANY shared file where the requesting user is the uploader (userId matches),
-	 * the deletion should ALWAYS succeed.
+	 * For ANY shared file (saveFile stores them with userId null), a user with the
+	 * shared files permission can ALWAYS delete it.
 	 *
 	 * **Validates: Requirements 4.3**
 	 */
-	it('should allow owner to delete their own shared files', async () => {
+	it('should allow users with the permission to delete shared files', async () => {
 		await fc.assert(
-			fc.asyncProperty(mockFileRecordArb, userIdArb, async (baseRecord, ownerId) => {
-				// Create a shared file uploaded by ownerId
+			fc.asyncProperty(mockFileRecordArb, userIdArb, async (baseRecord, requesterId) => {
+				// Create a shared file (no owner)
 				const record: MockFileRecord = {
 					...baseRecord,
 					scope: 'shared',
-					userId: ownerId
+					userId: null
 				};
 
 				// Insert the record
 				mockDb.insert(record);
 
-				// Owner attempts to delete their own shared file
-				const result = simulateDeleteWithAuth(mockDb, record.publicId, ownerId);
+				// A user with the permission deletes the shared file
+				const result = simulateDeleteWithAuth(mockDb, record.publicId, requesterId, [
+					SHARED_FILES_PERMISSION
+				]);
 
 				// Deletion should succeed
 				expect(result.success).toBe(true);
@@ -691,14 +690,14 @@ describe('DeleteFile Authorization - Property 7: Törlési jogosultság', () => 
 	});
 
 	/**
-	 * Property 7d: Non-owner cannot delete shared files.
+	 * Property 7d: Shared files cannot be deleted without the permission.
 	 *
-	 * For ANY shared file where the requesting user is NOT the uploader,
-	 * the deletion should ALWAYS fail with a permission error.
+	 * For ANY shared file and ANY user without the shared files permission
+	 * (even its uploader), the deletion should ALWAYS fail with a permission error.
 	 *
 	 * **Validates: Requirements 4.4**
 	 */
-	it('should deny non-owner from deleting shared files', async () => {
+	it('should deny deleting shared files without the permission', async () => {
 		await fc.assert(
 			fc.asyncProperty(
 				mockFileRecordArb,
@@ -755,6 +754,7 @@ describe('DeleteFile Authorization - Property 7: Törlési jogosultság', () => 
 					// Create a file owned by ownerId
 					const record: MockFileRecord = {
 						...baseRecord,
+						scope: 'user',
 						userId: ownerId
 					};
 

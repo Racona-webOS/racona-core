@@ -50,7 +50,10 @@ INSERT INTO auth.permissions (id, name, description, resource_id) VALUES
   (32, 'plugin.scheduler.manage', 'Ütemezett feladatok kezelése', 9),
 
   -- Notifications
-  (31, 'notifications.send', 'Értesítés küldése más felhasználóknak', 10)
+  (31, 'notifications.send', 'Értesítés küldése más felhasználóknak', 10),
+
+  -- Files
+  (33, 'files.shared.manage', 'Közös fájlok kezelése', 11)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,

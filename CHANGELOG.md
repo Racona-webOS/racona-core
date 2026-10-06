@@ -15,10 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Plugin Manager: new "Scheduled Jobs" page and a section on the plugin detail page — next/last run, enable/disable, "Run now", run history with logs. New permission: `plugin.scheduler.manage`.
   - Core maintenance jobs now run daily: old scheduler runs, email logs older than 90 days, abandoned plugin uploads and plugin update backups older than 7 days.
   - Configuration: `SCHEDULER_*` environment variables (see docs/CONFIGURATION.md).
+- **Plugin file storage**: plugins with the `file_access` permission get `context.files` in remote functions and scheduled jobs (`save`, `get`, `read`, `delete`, `claim`, `createUploadUrl`, `createDownloadUrl`). Files are stored on disk under `uploads/plugin-files/{pluginId}/`, metadata in `platform.plugin_files` (migration `0009_plugin_files`). The plugin decides who may upload or download; the browser uses short-lived signed links bound to the user (`POST /api/plugins/:pluginId/files/upload/:token`, `GET /api/plugins/:pluginId/files/download/:token`), the file type is detected from the content. Files are kept when the plugin is uninstalled.
+  - New core job `core.plugin-files-cleanup`: deletes uploads that were never attached (after 24 hours) and partial uploads.
+  - Configuration: `PLUGIN_FILE_MAX_BYTES` (default 10 MiB). Back up the whole `uploads` folder.
+  - Dev server: Vite no longer watches `uploads/plugin-files/`, so an upload does not reload the page.
 
 ### Changed
 
+- `/api/files/list` only lists the core categories (`backgrounds`, `documents`, `avatars`, `images`) and rejects path characters in `type`; before, `../` in the parameters could list any folder under `uploads`. `/api/files/...` never serves `plugin-files/`, and the core `saveFile` rejects the reserved categories `plugins` and `plugin-files`.
 - The email and i18n services start when the server starts (SvelteKit `init` hook), not on the first request, so scheduled jobs can send email without a prior request.
+- **Core file storage** (`saveFile`, `deleteFile`, `/api/files/...`):
+  - Uploading to and deleting from the `shared` scope needs the new `files.shared.manage` permission (new `files` resource; Sysadmin and Admin by default). Before, any logged-in user could upload shared files, and nobody could delete them. Migration `0010_files_shared_manage` adds the permission to existing databases and grants it to every role and group that has `settings.update`.
+  - `/api/files/...` sends `Cache-Control: private` (was `public`), so proxies and CDNs do not keep files that need a login.
+  - The `Content-Type` comes from the MIME type stored in `platform.files` (detected from the content at upload); the file extension only counts for files without a row. HTML, JavaScript, SVG and XML are always served as `application/octet-stream` with `Content-Disposition: attachment`; only images, audio, video, PDF and plain text are shown inline.
+  - The upload size limit follows `BODY_SIZE_LIMIT`: the file travels base64-encoded, so about three quarters of the body limit is usable. The `FileUploader` default is 7 MB (was 10 MB, which failed between 7.5 and 10 MB), `saveFile` checks the size, and the uploader shows a clear message when the server rejects the request size.
+  - SVG and BMP were removed from the allowed image types: SVG is not detected from the content and could run scripts, BMP cannot be read by `sharp`; both uploads always failed.
+  - The `src/lib/server/storage/*.remote.ts` duplicates were removed; the remote functions live in `src/lib/storage/` (`getFileMetadata` moved there).
+
+### Fixed
+
+- **DatePicker**: a value set from outside (e.g. prefilled from another field) was immediately overwritten by the calendar's previous value, and could end in an endless update loop (`effect_update_depth_exceeded`). Both directions now react only to their own side's change.
+- Deleting an own background (`deleteBackground`) also deletes its `platform.files` row; before, only the files on disk were removed.
+- Thumbnails are named after the stored file (`thumb-{filename}`), so they match when the uploaded name had to be made unique; `/api/files/list` does not list `thumb-` files; storage paths and `thumbnailUrl` always use `/` (they had `\` on Windows). An uploaded file can no longer start with `thumb-`.
+- After uploading a background, the settings use the stored file name, not the original one (which broke for names with spaces or accents).
+- New core job `core.orphan-files-cleanup` (daily): deletes the personal files of deleted users. Deleting a user sets `platform.files.user_id` to null, and these files were left on disk without any way to reach them.
 
 ## [0.4.0] - 2026-04-27
 

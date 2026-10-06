@@ -15,8 +15,14 @@
 		type ProcessedFile,
 		DEFAULT_CONFIG
 	} from './types.js';
-	import { validateFiles, getAllowedExtensions, ERROR_MESSAGES } from './validation.js';
+	import {
+		validateFiles,
+		getAllowedExtensions,
+		describeUploadError,
+		ERROR_MESSAGES
+	} from './validation.js';
 	import { saveFile } from '$lib/storage/save-file.remote.js';
+	import { formatBytes } from '$lib/storage/limits.js';
 
 	// ============================================================================
 	// Props
@@ -93,13 +99,7 @@
 	/**
 	 * Fájlméret formázása olvasható formátumba
 	 */
-	function formatFileSize(bytes: number): string {
-		if (bytes === 0) return '0 B';
-		const k = 1024;
-		const sizes = ['B', 'KB', 'MB', 'GB'];
-		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-	}
+	const formatFileSize = formatBytes;
 
 	// ============================================================================
 	// File Handling
@@ -224,6 +224,7 @@
 					mimeType: result.file.mimeType,
 					size: result.file.size,
 					url: result.file.url,
+					filename: result.file.filename,
 					thumbnailUrl: result.file.thumbnailUrl
 				};
 
@@ -239,7 +240,7 @@
 				return { success: false, error: result.error };
 			}
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : 'Upload failed';
+			const errorMsg = describeUploadError(error, fileItem.file.size, 'Upload failed');
 			files = files.map((f) =>
 				f.id === fileItem.id ? { ...f, status: 'error' as const, error: errorMsg } : f
 			);
@@ -283,6 +284,7 @@
 					mimeType: result.file.mimeType,
 					size: result.file.size,
 					url: result.file.url,
+					filename: result.file.filename,
 					thumbnailUrl: result.file.thumbnailUrl
 				};
 
@@ -295,7 +297,7 @@
 				});
 			}
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : 'Feltöltés sikertelen';
+			const errorMsg = describeUploadError(error, file.size);
 			errorMessage = errorMsg;
 			onError?.({
 				code: 'UPLOAD_ERROR',

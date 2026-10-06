@@ -11,6 +11,7 @@ import {
 	FILE_TYPE_EXTENSIONS,
 	DEFAULT_CONFIG
 } from './types';
+import { formatBytes } from '$lib/storage/limits.js';
 
 // ============================================================================
 // Hibakódok és üzenetek
@@ -29,6 +30,55 @@ export const ERROR_MESSAGES: Record<string, string> = {
 	[VALIDATION_ERROR_CODES.FILE_TOO_LARGE]: 'A fájl mérete meghaladja a megengedett limitet',
 	[VALIDATION_ERROR_CODES.TOO_MANY_FILES]: 'Túl sok fájl lett kiválasztva'
 };
+
+/** Hibaüzenet, ha a szerver a kérést a mérete miatt elutasította (HTTP 413). */
+export const REQUEST_TOO_LARGE_MESSAGE =
+	'A fájl túl nagy: a feltöltési kérés meghaladja a szerver mérethatárát (BODY_SIZE_LIMIT)';
+
+/**
+ * Mérethiba üzenete a korláttal együtt.
+ * @param maxFileSize - A megengedett legnagyobb méret bájtban.
+ */
+export function fileTooLargeMessage(maxFileSize: number): string {
+	return `${ERROR_MESSAGES[VALIDATION_ERROR_CODES.FILE_TOO_LARGE]} (max. ${formatBytes(maxFileSize)})`;
+}
+
+/**
+ * Feltöltési hiba olvasható üzenete. Ha a kérés túllépi a BODY_SIZE_LIMIT-et, a remote
+ * function hívás 413-as HTTP hibát vagy általános „Failed to execute remote function”
+ * hibát dob; az utóbbinál a fájlméretből következtetünk a méretkorlátra.
+ *
+ * @param error - A feltöltéskor elkapott hiba.
+ * @param fileSize - A feltöltött fájl mérete bájtban (ha ismert).
+ * @param fallback - Üzenet, ha a hibából nem nyerhető ki semmi.
+ */
+export function describeUploadError(
+	error: unknown,
+	fileSize?: number,
+	fallback = 'Feltöltés sikertelen'
+): string {
+	const likelyTooLarge = fileSize !== undefined && fileSize > DEFAULT_CONFIG.maxFileSize;
+
+	if (error && typeof error === 'object') {
+		const status = (error as { status?: unknown }).status;
+		if (status === 413) return REQUEST_TOO_LARGE_MESSAGE;
+
+		const body = (error as { body?: { message?: unknown } }).body;
+		if (body && typeof body.message === 'string' && body.message) return body.message;
+	}
+
+	if (error instanceof Error && error.message) {
+		if (/\b413\b|exceeds limit|payload too large/i.test(error.message)) {
+			return REQUEST_TOO_LARGE_MESSAGE;
+		}
+		if (likelyTooLarge && error.message === 'Failed to execute remote function') {
+			return REQUEST_TOO_LARGE_MESSAGE;
+		}
+		return error.message;
+	}
+
+	return likelyTooLarge ? REQUEST_TOO_LARGE_MESSAGE : fallback;
+}
 
 // ============================================================================
 // Segédfüggvények
@@ -145,7 +195,7 @@ export function validateSingleFile(file: File, config: ClientValidationConfig): 
 	if (!validateFileSize(file.size, config.maxFileSize)) {
 		errors.push({
 			code: VALIDATION_ERROR_CODES.FILE_TOO_LARGE,
-			message: ERROR_MESSAGES[VALIDATION_ERROR_CODES.FILE_TOO_LARGE],
+			message: fileTooLargeMessage(config.maxFileSize),
 			field: file.name
 		});
 	}

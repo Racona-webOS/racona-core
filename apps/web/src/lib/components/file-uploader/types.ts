@@ -3,20 +3,26 @@
  * Requirements: 1.1-1.7
  */
 
+import { DEFAULT_MAX_UPLOAD_BYTES } from '$lib/storage/limits.js';
+
 // ============================================================================
 // Fájl típus konstansok
 // ============================================================================
 
-/** Fájl típus kategóriák és engedélyezett kiterjesztéseik */
+/**
+ * Fájl típus kategóriák és engedélyezett kiterjesztéseik.
+ * SVG és BMP nincs köztük: az SVG-t a tartalom alapú típusfelismerés nem ismeri fel
+ * (és a böngészőben szkriptet futtathatna), a BMP-t a sharp nem tudja beolvasni.
+ */
 export const FILE_TYPE_EXTENSIONS: Record<string, string[]> = {
-	image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'],
+	image: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
 	document: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv', 'odt'],
 	mixed: [] // Minden típus engedélyezett
 };
 
 /** MIME típusok kategóriánként */
 export const MIME_TYPE_MAP: Record<string, string[]> = {
-	image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'],
+	image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
 	document: [
 		'application/pdf',
 		'application/msword',
@@ -35,7 +41,8 @@ export const MIME_TYPE_MAP: Record<string, string[]> = {
 
 /** Alapértelmezett komponens konfiguráció. */
 export const DEFAULT_CONFIG = {
-	maxFileSize: 10 * 1024 * 1024, // 10MB
+	// 7 MB: a base64 kódolt kérés így még belefér az alapértelmezett 10 MB-os BODY_SIZE_LIMIT-be
+	maxFileSize: DEFAULT_MAX_UPLOAD_BYTES,
 	maxFiles: 1,
 	fileType: 'mixed' as const,
 	allowedExtensions: [] as string[],
@@ -74,6 +81,8 @@ export interface ProcessedFile {
 	size: number;
 	/** Fájl URL */
 	url: string;
+	/** Tárolt fájlnév (a szanálás és az egyedivé tétel után; eltérhet az eredetitől) */
+	filename?: string;
 	/** Bélyegkép URL (opcionális) */
 	thumbnailUrl?: string;
 	/** Kép dimenziók (opcionális) */
@@ -143,7 +152,10 @@ export interface FileUploaderProps {
 	scope: FileScope;
 	/** Feltöltő mód (alapértelmezett: 'standard') */
 	mode?: UploaderMode;
-	/** Maximum fájlméret bájtban (alapértelmezett: 10MB) */
+	/**
+	 * Maximum fájlméret bájtban (alapértelmezett: 7 MB). A szerver a BODY_SIZE_LIMIT
+	 * kb. háromnegyedénél nagyobb fájlt nem fogad (base64 kódolás).
+	 */
 	maxFileSize?: number;
 	/** Maximum feltölthető fájlok száma (alapértelmezett: 1) */
 	maxFiles?: number;

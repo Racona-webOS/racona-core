@@ -1,5 +1,5 @@
 /**
- * GetFileMetadata Remote Function
+ * GetFileMetadata Remote Function (kliens-elérhető)
  * Requirements: 5.1, 5.2, 5.3, 5.4
  *
  * Fájl metaadatainak lekérdezése jogosultság ellenőrzéssel.
@@ -7,8 +7,9 @@
 
 import { command, getRequestEvent } from '$app/server';
 import { getFileMetadataInputSchema } from './schemas.js';
-import { fileRepository } from './file-repository.js';
-import { StorageError } from './types.js';
+import { fileRepository } from '$lib/server/storage/file-repository.js';
+import { canReadFileMetadata } from '$lib/server/storage/policy.js';
+import { StorageError } from '$lib/server/storage/types.js';
 import type { GetFileMetadataResult } from './types.js';
 
 // ============================================================================
@@ -17,12 +18,7 @@ import type { GetFileMetadataResult } from './types.js';
 
 /**
  * Fájl metaadatainak lekérdezése jogosultság ellenőrzéssel.
- *
- * Requirements:
- * - 5.1: Metaadat visszaadása a fájlról
- * - 5.2: Visszaadott mezők: id, filename, originalName, category, scope, userId, mimeType, size, createdAt
- * - 5.3: Más felhasználó user scope fájljának metaadatai nem elérhetők
- * - 5.4: Nem létező fájl esetén megfelelő hiba visszaadása
+ * Shared fájlok minden bejelentkezett felhasználónak, user scope fájlok csak a tulajdonosnak.
  *
  * @param input - A lekérdezés paraméterei
  * @returns A lekérdezés eredménye
@@ -33,7 +29,6 @@ export const getFileMetadata = command(
 		const event = getRequestEvent();
 		const { locals } = event;
 
-		// Ellenőrizzük, hogy be van-e jelentkezve a felhasználó
 		if (!locals.user?.id) {
 			return {
 				success: false,
@@ -45,10 +40,8 @@ export const getFileMetadata = command(
 		const userId = parseInt(locals.user.id);
 
 		try {
-			// Fájl metaadat lekérdezése
 			const file = await fileRepository.findByPublicId(fileId);
 
-			// Requirement 5.4: Nem létező fájl esetén hiba
 			if (!file) {
 				return {
 					success: false,
@@ -56,17 +49,13 @@ export const getFileMetadata = command(
 				};
 			}
 
-			// Requirement 5.3: Jogosultság ellenőrzés
-			// Shared fájlok bárki számára elérhetők
-			// User scope fájlok csak a tulajdonos számára elérhetők
-			if (file.scope === 'user' && file.userId !== userId) {
+			if (!canReadFileMetadata(file, userId)) {
 				return {
 					success: false,
 					error: 'Permission denied: You can only access your own files'
 				};
 			}
 
-			// Requirement 5.1, 5.2: Metaadat visszaadása
 			return {
 				success: true,
 				file

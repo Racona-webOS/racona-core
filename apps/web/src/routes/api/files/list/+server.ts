@@ -8,7 +8,11 @@ import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth/index';
 import { readdir } from 'fs/promises';
 import path from 'path';
-import { getUploadsPath } from '$lib/server/storage/types';
+import { getUploadsPath, STORAGE_CONFIG } from '$lib/server/storage/types';
+import { THUMBNAIL_PREFIX } from '$lib/server/storage/stored-file';
+
+/** A `type` almappa neve (pl. image, video); útvonal-elem nem lehet. */
+const TYPE_PATTERN = /^[a-z0-9-]+$/;
 
 function errorResponse(message: string, status: number): Response {
 	return new Response(JSON.stringify({ error: message }), {
@@ -37,6 +41,15 @@ export const GET: RequestHandler = async ({ url, request }) => {
 			return errorResponse('Category is required', 400);
 		}
 
+		// Csak a core kategóriái listázhatók (pl. a plugin fájlok és a plugin kód nem)
+		if (!(STORAGE_CONFIG.allowedCategories as readonly string[]).includes(category)) {
+			return errorResponse('Invalid category', 400);
+		}
+
+		if (type !== null && !TYPE_PATTERN.test(type)) {
+			return errorResponse('Invalid type', 400);
+		}
+
 		if (!scope || (scope !== 'shared' && scope !== 'user')) {
 			return errorResponse('Invalid scope', 400);
 		}
@@ -57,8 +70,9 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
 		try {
 			const entries = await readdir(dirPath, { withFileTypes: true });
+			// A bélyegképek (thumb-*) a fő fájlhoz tartoznak, nem önálló fájlok
 			const files = entries
-				.filter((entry) => entry.isFile())
+				.filter((entry) => entry.isFile() && !entry.name.startsWith(THUMBNAIL_PREFIX))
 				.map((entry) => ({
 					filename: entry.name
 				}));

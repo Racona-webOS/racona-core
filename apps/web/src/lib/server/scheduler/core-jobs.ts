@@ -5,6 +5,8 @@
 
 import { EmailLogger } from '$lib/server/email/logger';
 import { cleanupOldBackups, cleanupTempFiles } from '$lib/server/plugins/utils/filesystem';
+import { cleanupPluginFiles } from '$lib/server/plugins/files/cleanup';
+import { cleanupOrphanedUserFiles } from '$lib/server/storage/file-service';
 import { getSchedulerConfig } from './config';
 import { deleteOldRuns, markInterruptedRuns } from './repository';
 import type { JobDefinition } from './registry';
@@ -77,6 +79,41 @@ export const CORE_JOBS: CoreJob[] = [
 		run: async () => {
 			await cleanupOldBackups(7 * DAY_MS);
 			return { summary: 'Plugin backups older than 7 days removed' };
+		}
+	},
+	{
+		jobId: 'core.plugin-files-cleanup',
+		schedule: '15 4 * * *',
+		catchUp: 'once',
+		timeoutSeconds: 600,
+		description: {
+			hu: 'Pluginokhoz feltöltött, de be nem kötött fájlok törlése (24 óra után)',
+			en: 'Delete files uploaded to plugins but never attached (after 24 hours)'
+		},
+		run: async (_params, ctx) => {
+			const { unclaimed, partFiles } = await cleanupPluginFiles(ctx.signal);
+			return {
+				summary: `${unclaimed} unattached plugin files and ${partFiles} partial uploads removed`,
+				data: { unclaimed, partFiles }
+			};
+		}
+	},
+	{
+		jobId: 'core.orphan-files-cleanup',
+		schedule: '30 4 * * *',
+		catchUp: 'once',
+		timeoutSeconds: 600,
+		description: {
+			hu: 'Törölt felhasználók saját fájljainak törlése',
+			en: 'Delete personal files of deleted users'
+		},
+		run: async (_params, ctx) => {
+			const { deleted, failed } = await cleanupOrphanedUserFiles(ctx.signal);
+			if (failed > 0) ctx.logger.warn(`${failed} orphaned files could not be deleted`);
+			return {
+				summary: `${deleted} files of deleted users removed`,
+				data: { deleted, failed }
+			};
 		}
 	}
 ];

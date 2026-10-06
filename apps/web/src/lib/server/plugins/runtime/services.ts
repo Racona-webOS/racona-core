@@ -10,6 +10,8 @@ import type { EmailResult, EmailTemplateType } from '$lib/server/email/types';
 import { sendNotification } from '$lib/server/socket';
 import type { I18nContent } from '$lib/server/socket';
 
+export type { PluginFileService, PluginFileInfo } from '$lib/server/plugins/files';
+
 /**
  * Plugin email service interfész
  * Lehetővé teszi pluginok számára email küldést a core EmailManager rendszeren keresztül.

@@ -14,6 +14,7 @@
  *   - pluginPermissions: a plugin manifest jogosultságai
  *   - email: csak 'notifications' joggal rendelkező pluginnak
  *   - notifications: csak 'notifications' joggal rendelkező pluginnak
+ *   - files: csak 'file_access' joggal rendelkező pluginnak
  */
 
 import { json, error } from '@sveltejs/kit';
@@ -32,6 +33,7 @@ import {
 	createPluginEmailService,
 	createPluginNotificationService
 } from '$lib/server/plugins/runtime/services';
+import { createPluginFileService } from '$lib/server/plugins/files';
 import { isRegisteredJobHandler } from '$lib/server/scheduler/repository';
 
 // A meglévő tesztek innen importálják
@@ -252,6 +254,11 @@ async function executeRemoteFunction(
 		// Email service létrehozása (csak notifications jogosultsággal rendelkező pluginok számára)
 		const emailService = createPluginEmailService(pluginId, pluginPermissions);
 		const notificationService = createPluginNotificationService(pluginId, pluginPermissions);
+		const fileService = createPluginFileService(
+			pluginId,
+			pluginPermissions,
+			Number.parseInt(userId, 10)
+		);
 
 		// pg Pool-kompatibilis DB interfész a pluginok számára
 		const pluginDb = createPluginDb();
@@ -264,7 +271,8 @@ async function executeRemoteFunction(
 			permissions: userPermissions,
 			pluginPermissions,
 			...(emailService ? { email: emailService } : {}),
-			...(notificationService ? { notifications: notificationService } : {})
+			...(notificationService ? { notifications: notificationService } : {}),
+			...(fileService ? { files: fileService } : {})
 		};
 
 		// Függvény végrehajtása időkorláttal. Az időtúllépés a választ utasítja el,

@@ -8,6 +8,7 @@ import {
 	createPluginEmailService,
 	createPluginNotificationService
 } from '$lib/server/plugins/runtime/services';
+import { createPluginFileService } from '$lib/server/plugins/files';
 import type { JobContext, JobLogger } from './types';
 
 /** Egy futás legfeljebb ennyi naplósort tárol. */
@@ -95,6 +96,7 @@ export function createSystemContext(params: {
 	const notifications = pluginId
 		? createPluginNotificationService(pluginId, pluginPermissions)
 		: undefined;
+	const files = pluginId ? createPluginFileService(pluginId, pluginPermissions, null) : undefined;
 	return {
 		pluginId,
 		userId: null,
@@ -105,6 +107,7 @@ export function createSystemContext(params: {
 		pluginPermissions,
 		...(email ? { email } : {}),
 		...(notifications ? { notifications } : {}),
+		...(files ? { files } : {}),
 		logger: params.logger,
 		signal: params.signal
 	};

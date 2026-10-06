@@ -15,10 +15,30 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
   - Plugin kezelő: új „Ütemezett feladatok” oldal és szakasz a plugin részletező oldalán — következő/utolsó futás, ki/bekapcsolás, „Futtatás most”, futásnapló a naplósorokkal. Új jogosultság: `plugin.scheduler.manage`.
   - A core karbantartó feladatai naponta lefutnak: régi ütemezett futások, 90 napnál régebbi email naplók, 7 napnál régebbi félbehagyott plugin feltöltések és frissítési mentések törlése.
   - Konfiguráció: `SCHEDULER_*` környezeti változók (lásd docs/hu/CONFIGURATION.md).
+- **Plugin fájltárolás**: a `file_access` jogú pluginok `context.files` szolgáltatást kapnak a remote függvényekben és az ütemezett feladatokban (`save`, `get`, `read`, `delete`, `claim`, `createUploadUrl`, `createDownloadUrl`). A fájlok a lemezre kerülnek (`uploads/plugin-files/{pluginId}/`), a metaadat a `platform.plugin_files` táblába (`0009_plugin_files` migráció). Hogy ki tölthet fel és le, azt a plugin dönti el; a böngésző rövid életű, a felhasználóhoz kötött, aláírt linkeket használ (`POST /api/plugins/:pluginId/files/upload/:token`, `GET /api/plugins/:pluginId/files/download/:token`), a fájltípust a tartalomból ismeri fel a core. A plugin eltávolításakor a fájlok megmaradnak.
+  - Új core feladat: `core.plugin-files-cleanup` — törli a 24 óra alatt be nem kötött feltöltéseket és a félbemaradt feltöltéseket.
+  - Konfiguráció: `PLUGIN_FILE_MAX_BYTES` (alapérték 10 MiB). A mentésbe a teljes `uploads` mappát vedd fel.
+  - Dev szerver: a Vite nem figyeli az `uploads/plugin-files/` mappát, így egy feltöltés nem tölti újra a lapot.
 
 ### Változott
 
+- A `/api/files/list` csak a core kategóriáit listázza (`backgrounds`, `documents`, `avatars`, `images`), és a `type` paraméterben nem fogad el útvonal-karaktert; korábban `../`-vel az `uploads` bármelyik mappája kilistázható volt. A `/api/files/...` a `plugin-files/` mappát soha nem szolgálja ki, a core `saveFile` pedig elutasítja a fenntartott `plugins` és `plugin-files` kategóriát.
 - Az email és i18n szolgáltatás a szerver indulásakor indul (SvelteKit `init` hook), nem az első kérésnél, így az ütemezett feladatok kérés nélkül is küldhetnek emailt.
+- **Core fájltárolás** (`saveFile`, `deleteFile`, `/api/files/...`):
+  - A `shared` scope-ba feltölteni és onnan törölni az új `files.shared.manage` jogosultsággal lehet (új `files` erőforrás; alapból Sysadmin és Admin). Korábban bármely bejelentkezett felhasználó feltölthetett közös fájlt, törölni viszont senki sem tudta. A `0010_files_shared_manage` migráció a meglévő adatbázisokhoz is hozzáadja a jogosultságot, és megkapja minden szerepkör és csoport, amelynek van `settings.update` jogosultsága.
+  - A `/api/files/...` `Cache-Control: private` fejlécet küld (`public` helyett), így proxy és CDN nem tárolja a bejelentkezéshez kötött fájlokat.
+  - A `Content-Type` a `platform.files` táblában tárolt (feltöltéskor a tartalomból felismert) MIME típus; a kiterjesztés csak a rekord nélküli fájloknál számít. HTML, JavaScript, SVG és XML mindig `application/octet-stream`-ként, `Content-Disposition: attachment` fejléccel megy ki; inline csak kép, hang, videó, PDF és sima szöveg jelenik meg.
+  - A feltöltési mérethatár a `BODY_SIZE_LIMIT`-hez igazodik: a fájl base64-ként utazik, így a kéréskorlát kb. háromnegyede használható. A `FileUploader` alapértéke 7 MB (10 MB helyett, ami 7,5 és 10 MB között hibára futott), a `saveFile` ellenőrzi a méretet, és a feltöltő érthető üzenetet ad, ha a szerver a kérés mérete miatt utasítja el.
+  - Az SVG és a BMP kikerült az engedélyezett képtípusok közül: az SVG-t a tartalom alapján nem ismeri fel a rendszer (és szkriptet futtathatna), a BMP-t a `sharp` nem tudja beolvasni; a feltöltésük eddig is mindig hibára futott.
+  - Megszűntek a `src/lib/server/storage/*.remote.ts` másolatok; a remote függvények a `src/lib/storage/` mappában vannak (a `getFileMetadata` is ide került).
+
+### Javítva
+
+- **DatePicker**: a kívülről beállított értéket (pl. egy másik mezőből előtöltve) a naptár korábbi értéke azonnal felülírta, és végtelen frissítési ciklus is lehetett belőle (`effect_update_depth_exceeded`). Most mindkét irány csak a saját oldalának változására reagál.
+- A saját háttérkép törlése (`deleteBackground`) a `platform.files` rekordot is törli; korábban csak a lemezről törölte a fájlokat.
+- A bélyegkép a tárolt fájl nevét kapja (`thumb-{fájlnév}`), így akkor is egyezik, ha a feltöltött nevet egyedivé kellett tenni; a `/api/files/list` nem listázza a `thumb-` fájlokat; a tárolási útvonal és a `thumbnailUrl` mindig `/` elválasztót használ (Windows alatt `\` került bele). Feltöltött fájl neve nem kezdődhet `thumb-`-bel.
+- Háttérkép feltöltése után a beállítás a tárolt fájlnevet használja, nem az eredetit (ami szóközös vagy ékezetes névnél nem működött).
+- Új core feladat: `core.orphan-files-cleanup` (naponta) — törli a törölt felhasználók saját fájljait. Felhasználó törlésekor a `platform.files.user_id` null lesz, és ezek a fájlok elérhetetlenül a lemezen maradtak.
 
 ## [0.4.0] - 2026-04-27
 

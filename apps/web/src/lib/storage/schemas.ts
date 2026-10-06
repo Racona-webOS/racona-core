@@ -11,12 +11,19 @@ import * as v from 'valibot';
 /** Scope validáció */
 export const scopeSchema = v.picklist(['shared', 'user']);
 
+/**
+ * Az uploads mappa rendszer-almappái: a telepített pluginok és a plugin fájlok.
+ * Kategóriaként nem használhatók, különben a core fájlkezelése beléjük írhatna.
+ */
+export const RESERVED_CATEGORIES: readonly string[] = ['plugins', 'plugin-files'];
+
 /** Kategória validáció */
 export const categorySchema = v.pipe(
 	v.string(),
 	v.minLength(1, 'Category is required'),
 	v.maxLength(100, 'Category too long'),
-	v.regex(/^[a-z0-9-]+$/, 'Category must be lowercase alphanumeric with hyphens')
+	v.regex(/^[a-z0-9-]+$/, 'Category must be lowercase alphanumeric with hyphens'),
+	v.check((value) => !RESERVED_CATEGORIES.includes(value), 'Reserved category')
 );
 
 /** Fájl azonosító validáció */

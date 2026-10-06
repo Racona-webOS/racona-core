@@ -1,18 +1,11 @@
 /**
- * FileStorage modul index
+ * FileStorage modul index (szerver oldal)
  * Requirements: 9.2
  *
- * Exportálja a remote function-öket és típusokat a storage modulból.
+ * A remote function-ök a kliens-elérhető $lib/storage mappában vannak
+ * (saveFile, listFiles, deleteFile, getFileMetadata, deleteBackground);
+ * ez a modul a szerver oldali szolgáltatásokat, típusokat és sémákat exportálja.
  */
-
-// ============================================================================
-// Remote Functions
-// ============================================================================
-
-export { saveFile } from './save-file.remote.js';
-export { listFiles } from './list-files.remote.js';
-export { deleteFile } from './delete-file.remote.js';
-export { getFileMetadata } from './get-file-metadata.remote.js';
 
 // ============================================================================
 // Types
@@ -42,6 +35,22 @@ export {
 } from './types.js';
 
 // ============================================================================
+// Services
+// ============================================================================
+
+export { fileRepository } from './file-repository.js';
+export { removeStoredFile, cleanupOrphanedUserFiles } from './file-service.js';
+export { getMaxUploadBytes } from './limits.js';
+export {
+	SHARED_FILES_PERMISSION,
+	canWriteScope,
+	canDeleteFile,
+	canReadFileMetadata
+} from './policy.js';
+export { resolveFileResponseType, getMimeTypeFromExtension } from './content-type.js';
+export { THUMBNAIL_PREFIX, mapToStoredFile } from './stored-file.js';
+
+// ============================================================================
 // Schemas
 // ============================================================================
 
@@ -54,11 +63,11 @@ export {
 	listFilesInputSchema,
 	deleteFileInputSchema,
 	getFileMetadataInputSchema
-} from './schemas.js';
+} from '$lib/storage/schemas.js';
 
 export type {
 	SaveFileInputSchema,
 	ListFilesInputSchema,
 	DeleteFileInputSchema,
 	GetFileMetadataInputSchema
-} from './schemas.js';
+} from '$lib/storage/schemas.js';

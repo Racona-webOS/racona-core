@@ -3,32 +3,19 @@
  * Requirements: 7.3, 7.4, 7.5
  */
 import db from '$lib/server/database';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or, inArray, isNull } from 'drizzle-orm';
 import { files, type FileInsertModel, type FileSelectModel } from '@racona/database/schemas';
 import type { StoredFile, FileScope } from './types';
+import { mapToStoredFile, toUrlPath } from './stored-file';
 
 /**
- * Adatbázis rekord konvertálása StoredFile interfészre
+ * Egy tárolási útvonal lehetséges alakjai az adatbázisban
+ * (`/` elválasztóval, illetve a régi, Windows alatt mentett `\` változat).
  */
-function mapToStoredFile(record: FileSelectModel): StoredFile {
-	const scopePath = record.scope === 'user' ? `user-${record.userId}` : 'shared';
-	const url = `/api/files/${record.category}/${scopePath}/${record.filename}`;
-	const thumbnailUrl = record.thumbnailPath ? `/api/files/${record.thumbnailPath}` : undefined;
-
-	return {
-		id: record.publicId,
-		filename: record.filename,
-		originalName: record.originalName,
-		category: record.category,
-		scope: record.scope as FileScope,
-		userId: record.userId,
-		mimeType: record.mimeType,
-		size: record.size,
-		storagePath: record.storagePath,
-		url,
-		thumbnailUrl,
-		createdAt: record.createdAt
-	};
+function storagePathVariants(storagePath: string): string[] {
+	const posix = toUrlPath(storagePath);
+	const windows = posix.replace(/\//g, '\\');
+	return posix === windows ? [posix] : [posix, windows];
 }
 
 export class FileRepository {
@@ -113,6 +100,30 @@ export class FileRepository {
 	async findRawByPublicId(publicId: string): Promise<FileSelectModel | undefined> {
 		return db.query.files.findFirst({
 			where: eq(files.publicId, publicId)
+		});
+	}
+
+	/**
+	 * Rekord keresése a fájl vagy a bélyegképe tárolási útvonala alapján
+	 * @param storagePath - Relatív útvonal az uploads mappához képest
+	 * @returns A fájl adatbázis rekordja vagy undefined
+	 */
+	async findRawByPath(storagePath: string): Promise<FileSelectModel | undefined> {
+		const variants = storagePathVariants(storagePath);
+		return db.query.files.findFirst({
+			where: or(inArray(files.storagePath, variants), inArray(files.thumbnailPath, variants))
+		});
+	}
+
+	/**
+	 * Törölt felhasználóhoz tartozó user scope fájlok (az FK `set null` miatt userId = null)
+	 * @param limit - Legfeljebb ennyi rekord
+	 * @returns A rekordok listája
+	 */
+	async findOrphanedUserFiles(limit: number): Promise<FileSelectModel[]> {
+		return db.query.files.findMany({
+			where: and(eq(files.scope, 'user'), isNull(files.userId)),
+			limit
 		});
 	}
 }

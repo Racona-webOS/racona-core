@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import {
 		type DateValue,
@@ -46,19 +47,24 @@
 		}
 	}
 
+	// Az utoljára szinkronizált érték (nem reaktív): így mindkét irány csak a saját
+	// oldalának változására reagál. Enélkül a kívülről beállított value-t (pl. egy
+	// másik mezőből előtöltve) a naptár régi értéke azonnal visszaírná.
+	let lastSynced = untrack(() => value);
+
 	$effect(() => {
 		const next = calendarValue ? calendarValue.toString() : '';
-		if (next !== value) {
+		if (next !== lastSynced) {
+			lastSynced = next;
 			value = next;
 			if (next) open = false;
 		}
 	});
 
 	$effect(() => {
-		const parsed = value ? tryParseDate(value) : undefined;
-		const current = calendarValue ? calendarValue.toString() : '';
-		if ((parsed?.toString() ?? '') !== current) {
-			calendarValue = parsed;
+		if (value !== lastSynced) {
+			lastSynced = value;
+			calendarValue = value ? tryParseDate(value) : undefined;
 		}
 	});
 
