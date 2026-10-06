@@ -36,6 +36,10 @@ RUN bun install
 # ---------------------------------------------------------------------------
 FROM oven/bun:1.3.13 AS builder
 
+# Valódi Node a Vite buildhez: a bun image `node` parancsa a bunra mutat, ami
+# nem veszi figyelembe a NODE_OPTIONS heap-korlátját, és kifut a memóriából.
+COPY --from=node:24-trixie-slim /usr/local/bin/node /usr/local/bin/node
+
 WORKDIR /app
 
 # Függőségek másolása a deps fázisból
