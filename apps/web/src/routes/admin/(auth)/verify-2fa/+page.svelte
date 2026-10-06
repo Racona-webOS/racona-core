@@ -5,8 +5,13 @@
 	import { Label } from '$lib/components/ui/label';
 	import { getContext } from 'svelte';
 	import { useI18n } from '$lib/i18n/hooks';
+	import { page } from '$app/state';
+	import { REDIRECT_PARAM, safeRedirectTarget, withRedirectTarget } from '$lib/auth/redirect';
 
 	const { t, store } = useI18n();
+
+	// A belépőoldaltól kapott visszatérési cím, alapból az asztal
+	const redirectTarget = $derived(safeRedirectTarget(page.url.searchParams.get(REDIRECT_PARAM)));
 
 	const authDecor = getContext<{
 		setDecorText: (title: string, description: string) => void;
@@ -54,7 +59,7 @@
 			// Sikeres verifikáció
 			authDecor.setAnimating(true);
 			setTimeout(() => {
-				window.location.href = '/admin';
+				window.location.href = redirectTarget;
 			}, 600);
 		} catch (error: any) {
 			console.error('verifyOtp error:', error);
@@ -92,7 +97,7 @@
 			// Sikeres verifikáció - ha van session vagy user a válaszban
 			authDecor.setAnimating(true);
 			setTimeout(() => {
-				window.location.href = '/admin';
+				window.location.href = redirectTarget;
 			}, 600);
 		} catch (error: any) {
 			console.error('verifyTotp error:', error);
@@ -115,7 +120,7 @@
 				onSuccess() {
 					authDecor.setAnimating(true);
 					setTimeout(() => {
-						window.location.href = '/admin';
+						window.location.href = redirectTarget;
 					}, 600);
 				},
 				onError(context) {
@@ -257,6 +262,6 @@
 	</div>
 
 	<div class="mt-4 text-center text-sm">
-		<a href="/admin/sign-in" class="underline">{t('auth.verify2fa.backToSignIn')}</a>
+		<a href={withRedirectTarget('/admin/sign-in', redirectTarget)} class="underline">{t('auth.verify2fa.backToSignIn')}</a>
 	</div>
 </div>

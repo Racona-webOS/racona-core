@@ -62,20 +62,22 @@
 	{#if store.loadedNamespaces.has('auth') && store.loadedNamespaces.has('common')}
 		<div class="auth auth-fade-in">
 			{#if data.demoMode}
-				<div class="demo-banner flex w-[70%] max-w-[1000px] rounded-2xl shadow-2xl">
-					<TriangleAlert class="w-24" />
+				<div class="demo-banner flex w-full max-w-[1000px] rounded-2xl shadow-2xl sm:w-[70%]">
+					<TriangleAlert class="w-8 shrink-0 sm:w-24" />
 					{data.demoNotice}
-					<TriangleAlert class="w-24" />
+					<TriangleAlert class="w-8 shrink-0 sm:w-24" />
 				</div>
 			{/if}
 			<div
-				class="auth-container flex w-[70%] max-w-[1000px] overflow-hidden rounded-2xl shadow-2xl"
+				class="auth-container flex w-full max-w-[1000px] overflow-hidden rounded-2xl shadow-2xl sm:w-[70%]"
 				class:animating={isAnimating}
 			>
 				<!-- Bal oldal - Form -->
-				<div class="left-side flex w-full flex-col justify-between bg-white p-8 lg:w-2/5 lg:p-10">
+				<div
+					class="left-side flex w-full flex-col justify-between bg-white p-6 sm:p-8 lg:w-2/5 lg:p-10"
+				>
 					<AuthLocaleSwitcher />
-					<div class="mt-8 grid gap-6">
+					<div class="mt-6 grid gap-6 sm:mt-8">
 						<LogoVideo width={240} loop={true} />
 						{@render children()}
 					</div>
@@ -107,7 +109,12 @@
 		justify-content: center;
 		align-items: center;
 		gap: 1rem;
-		height: 100vh;
+		/* A dvh a mobil címsor megjelenésekor és eltűnésekor sem ugrik; a régi böngészőknek a vh marad */
+		min-height: 100vh;
+		min-height: 100dvh;
+		/* Telefonon keskeny margó, a kivágás (notch) és a kezdőképernyő-sáv kikerülésével */
+		padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+			max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 	}
 
 	.demo-banner {

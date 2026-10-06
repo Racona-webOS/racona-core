@@ -1,5 +1,6 @@
 import { redirect, type Handle, type HandleServerError, type ServerInit } from '@sveltejs/kit';
 import { auth } from '$lib/auth/index';
+import { safeRedirectTarget, withRedirectTarget } from '$lib/auth/redirect';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { building } from '$app/environment';
 import { userRepository } from '$lib/server/database/repositories';
@@ -128,7 +129,9 @@ async function handleRequest(
 	if (event.route.id?.startsWith('/admin/(protected)')) {
 		// Protected admin routes - require authentication
 		if (!session) {
-			return redirect(307, '/admin/sign-in');
+			// A kért címet továbbadjuk, hogy belépés után oda vigyen vissza (pl. e-mailes közvetlen link)
+			const target = safeRedirectTarget(`${event.url.pathname}${event.url.search}`);
+			return redirect(307, withRedirectTarget('/admin/sign-in', target));
 		}
 
 		// Check database health before proceeding

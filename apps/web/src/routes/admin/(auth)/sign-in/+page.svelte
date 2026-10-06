@@ -7,10 +7,15 @@
 	import type { PageData } from './$types';
 	import { getContext } from 'svelte';
 	import { useI18n } from '$lib/i18n/hooks';
+	import { page } from '$app/state';
+	import { REDIRECT_PARAM, safeRedirectTarget, withRedirectTarget } from '$lib/auth/redirect';
 
 	let { data }: { data: PageData } = $props();
 
 	const { t, store } = useI18n();
+
+	// Belépés után ide visz vissza (pl. e-mailes közvetlen link), alapból az asztalra
+	const redirectTarget = $derived(safeRedirectTarget(page.url.searchParams.get(REDIRECT_PARAM)));
 
 	const authDecor = getContext<{
 		setDecorText: (title: string, description: string) => void;
@@ -84,14 +89,14 @@
 
 			// 2FA redirect kezelése - animáció nélkül, simán átnavigálunk
 			if ((result.data as any)?.twoFactorRedirect) {
-				window.location.href = '/admin/verify-2fa';
+				window.location.href = withRedirectTarget('/admin/verify-2fa', redirectTarget);
 				return;
 			}
 
 			// Sikeres bejelentkezés
 			authDecor.setAnimating(true);
 			setTimeout(() => {
-				window.location.href = '/admin';
+				window.location.href = redirectTarget;
 			}, 600);
 		} catch (error: any) {
 			console.error('signIn error:', error);
@@ -149,7 +154,7 @@
 
 			authDecor.setAnimating(true);
 			setTimeout(() => {
-				window.location.href = '/admin';
+				window.location.href = redirectTarget;
 			}, 600);
 		} catch (error: any) {
 			errorMessage = error.message || t('auth.signIn.emailOtp.errors.invalidCode');
@@ -370,7 +375,7 @@
 		onclick={async () => {
 			await authClient.signIn.social({
 				provider: 'google',
-				callbackURL: '/admin'
+				callbackURL: redirectTarget
 			});
 		}}>{t('auth.signIn.googleSignIn')}</Button
 	>
