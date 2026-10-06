@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-06
+
+### Changed
+
+- Generated projects depend on `@racona/sdk` `^0.7.0` (plugin file storage: `sdk.files`, `context.files`)
+
 ## [0.5.0] - 2026-10-05
 
 ### Added
