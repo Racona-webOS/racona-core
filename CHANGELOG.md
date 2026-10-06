@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Plugin email reply-to**: `context.email.send()` accepts an optional `replyTo` parameter, so a plugin can set the Reply-To address per email. When omitted, the system-wide `SMTP_REPLY_TO` applies as before.
+- **Mobile shell**: on phones a simple mobile interface replaces the desktop (windows, taskbar). One app is shown at a time, full screen; the bottom bar has home, notifications, open apps and profile (dark mode, sign out). The view lives in the browser history, so the phone's back gesture returns to the previous view.
+  - The server picks the shell from the user agent: phone → mobile, everything else (tablets included) → desktop. Narrowing a desktop browser does not switch to mobile. It can be switched by hand (Profile → "Desktop view", and back from the start menu on a phone); the choice is kept in the `racona_shell` cookie.
+  - On mobile only what was built for mobile is shown; the window manager does not save window sizes there, so phone use does not overwrite the desktop ones.
+- **Mobile entries in the plugin manifest** (`mobile.entries`: `id`, `label`, `icon`, `component`): plugin screens that open on their own as quick actions on mobile. The core validates them (kebab-case, unique IDs, at most 12) and stores them in `platform.apps.mobile` (migration `0012_app_mobile`). A notification opens the app on mobile when its data has a `mobileEntry` pointing to an entry.
+- **Direct link to an app**: `/admin?app=<app>&entry=<mobile entry>` or `&section=<menu item>` (e.g. from emails). Only apps the user can access are opened; on desktop the entry's screen opens in the app window. When signed out, the sign-in page keeps the requested address (`?redirectTo=`) and returns there after signing in; only addresses under `/admin` are accepted.
+- **SDK**: `sdk.context.shell` (`'desktop' | 'mobile'`) tells a plugin which interface it runs in (`@racona/sdk` 0.8.0).
+
+### Changed
+
+- **One session per device type**: a user can have one desktop and one mobile session at the same time; signing in on a phone no longer signs out the desktop. A new sign-in only removes the session of the same type; old sessions without a type count as desktop (migration `0011_session_device_type`: `auth.sessions.device_type`, an index on `user_id`, `user_agent` is now `text`).
+- The sign-in page is full width on phones, its height no longer jumps with the mobile address bar, and it avoids the notch (`viewport-fit=cover`).
+- The start menu no longer overflows the screen.
+- For developers: the shared startup (`ShellRuntime`) and the window content (`WindowContent`) are separate components, used by both the desktop and the mobile shell.
+- When upgrading: `db:migrate` (or the Docker `db:init`) runs the new migrations; the mobile interface texts are the `mobile.*` keys of the `desktop` namespace (`translations_desktop` seed).
+
+### Fixed
+
+- In development, signing in from a phone on the local network (`vite dev --host`, port 3000) no longer fails with "Invalid origin".
 
 ## [0.5.0] - 2026-10-06
 

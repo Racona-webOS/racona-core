@@ -12,6 +12,24 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 ### Hozzáadva
 
 - **Plugin email válaszcím**: a `context.email.send()` opcionális `replyTo` paramétert fogad, így a plugin levelenként megadhatja a Reply-To címet. Ha nincs megadva, a rendszerszintű `SMTP_REPLY_TO` érvényes, mint eddig.
+- **Mobil keret**: telefonon az asztali felület (ablakok, tálca) helyett egyszerű mobil felület jelenik meg. Egyszerre egy app látszik teljes képernyőn; alul kezdőlap, értesítések, megnyitott appok és profil (sötét mód, kijelentkezés). A nézet a böngészőelőzményben él, így a telefon vissza gesztusa az előző nézetre lép.
+  - A keretet a szerver választja a böngészőazonosító alapján: telefon → mobil, minden más (táblagép is) → asztali. Egy asztali böngésző összeszűkítése nem vált mobilra. Kézzel is váltható (Profil → „Asztali nézet”, telefonon a start menüből vissza), a választást a `racona_shell` süti őrzi.
+  - Mobilon csak az jelenik meg, ami mobilra készült; az ablakkezelő nem menti az ablakméreteket, így a telefonos használat nem írja felül az asztaliakat.
+- **Mobil bejegyzések a plugin manifestben** (`mobile.entries`: `id`, `label`, `icon`, `component`): a plugin képernyői, amelyek mobilon gyors műveletként, önállóan nyílnak meg. A core ellenőrzi (kebab-case, egyedi azonosító, legfeljebb 12) és a `platform.apps.mobile` oszlopba menti (`0012_app_mobile` migráció). Az értesítésből akkor nyílik meg az app mobilon, ha az adataiban a `mobileEntry` egy bejegyzésre mutat.
+- **Közvetlen link egy apphoz**: `/admin?app=<app>&entry=<mobil bejegyzés>` vagy `&section=<menüpont>` (pl. e-mailekből). Csak a felhasználó számára elérhető app nyílik meg; asztalon a bejegyzés képernyője az app ablakában. Kijelentkezve a belépőoldal megőrzi a kért címet (`?redirectTo=`), és belépés után oda visz vissza; csak `/admin` alatti cím fogadható el.
+- **SDK**: `sdk.context.shell` (`'desktop' | 'mobile'`), hogy a plugin tudja, melyik felületen fut (`@racona/sdk` 0.8.0).
+
+### Változott
+
+- **Munkamenet eszköztípusonként**: egy felhasználónak egyszerre egy asztali és egy mobil munkamenete lehet; a telefonos belépés már nem lépteti ki az asztali gépet. Új belépéskor csak az azonos típusú munkamenet törlődik; a típus nélküli régi munkamenetek asztalinak számítanak (`0011_session_device_type` migráció: `auth.sessions.device_type`, index a `user_id`-ra, a `user_agent` `text` típusú).
+- A belépőoldal telefonon teljes szélességű, a magassága nem ugrál a mobil címsorral, és kikerüli a kivágást (`viewport-fit=cover`).
+- A start menü nem lóghat ki a képernyőből.
+- Fejlesztőknek: a felület közös indítása (`ShellRuntime`) és az ablak tartalma (`WindowContent`) külön komponensbe került, így az asztali és a mobil keret ugyanazt használja.
+- Frissítéskor: a `db:migrate` (vagy a Docker `db:init`) futtatja az új migrációkat; a mobil felület feliratai a `desktop` névtér `mobile.*` kulcsai (`translations_desktop` seed).
+
+### Javítva
+
+- Fejlesztői módban a telefonos belépés a helyi hálózatról (`vite dev --host`, 3000-es port) nem akadt el „Invalid origin” hibával.
 
 ## [0.5.0] - 2026-10-06
 
