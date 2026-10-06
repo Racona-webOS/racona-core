@@ -3,10 +3,11 @@ import db from '$lib/server/database';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@racona/database/schemas';
 import { config } from '$lib/config';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import { customSession } from 'better-auth/plugins';
 import { EmailManager } from '$lib/server/email/manager';
 import { EmailTemplateType } from '$lib/server/email/types';
+import { classifyDevice } from '$lib/server/utils/device';
 
 /**
  * Közös Better Auth konfiguráció, amely minden környezetben használható.
@@ -21,6 +22,12 @@ export const baseAuthConfig: Omit<BetterAuthOptions, 'plugins'> = {
 		debugLogs: false,
 		usePlural: true
 	}),
+	session: {
+		additionalFields: {
+			// A session.create.before hook tolti ki (classifyDevice)
+			deviceType: { type: 'string', required: false, input: false }
+		}
+	},
 	account: {
 		modelName: 'account',
 		fields: {
@@ -130,12 +137,24 @@ export const baseAuthConfig: Omit<BetterAuthOptions, 'plugins'> = {
 		session: {
 			create: {
 				before: async (session) => {
-					/** Mielott letrejon az uj session, toroljuk a felhasznalo meglevo sessionjeit.
-					 * Ez megakadalyozza, hogy parhuzamosan be legyen jelentkezve.
+					/** Felhasznalonkent eszkoztipusonkent (asztali, mobil) egy session el: mielott
+					 * letrejon az uj, toroljuk a felhasznalo azonos tipusu sessionjeit. A tipus nelkuli
+					 * (regi) sessionok asztalinak szamitanak.
 					 */
+					const deviceType = classifyDevice(session.userAgent);
+					const sameDeviceType =
+						deviceType === 'desktop'
+							? or(
+									eq(schema.sessions.deviceType, 'desktop'),
+									isNull(schema.sessions.deviceType)
+								)
+							: eq(schema.sessions.deviceType, 'mobile');
+
 					await db
 						.delete(schema.sessions)
-						.where(eq(schema.sessions.userId, parseInt(session.userId)));
+						.where(and(eq(schema.sessions.userId, parseInt(session.userId)), sameDeviceType));
+
+					return { data: { deviceType } };
 				}
 			}
 		},

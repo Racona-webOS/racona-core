@@ -78,6 +78,13 @@
       "when": 1791274842390,
       "tag": "0010_files_shared_manage",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791304183341,
+      "tag": "0011_session_device_type",
+      "breakpoints": true
     }
   ]
 }
