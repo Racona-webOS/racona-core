@@ -12,7 +12,13 @@ declare global {
 			locale: string;
 		}
 		// interface PageData {}
-		// interface PageState {}
+		/** Mobil keret navigációja a böngészőelőzményben (a vissza gesztus ezen lép vissza) */
+		interface PageState {
+			/** A teljes képernyőn mutatott app ablakának azonosítója */
+			mobileWindowId?: string;
+			/** Megnyitott mobil panel (értesítések, megnyitott appok, profil) */
+			mobilePanel?: 'notifications' | 'apps' | 'profile';
+		}
 		// interface Platform {}
 	}
 

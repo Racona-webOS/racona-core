@@ -9,9 +9,14 @@
 	import type { ProfileData } from '$lib/server/database/repositories';
 	import { getAppByName } from '$lib/services/client/appRegistry';
 	import type { WindowManager } from '$lib/stores';
+	import { getShellInfo, switchShell } from '$lib/stores/shellMode';
 
 	let { windowManager, onClose }: { windowManager: WindowManager; onClose?: () => void } = $props();
 	const { t } = useI18n();
+
+	// Telefonon, kézzel választott asztali nézetből vissza lehet váltani a mobilra
+	const shell = getShellInfo();
+	const canSwitchToMobile = shell.deviceType === 'mobile' && shell.mode === 'desktop';
 
 	// Konvertáljuk a session user-t ProfileData formátumra
 	const profileData = $derived.by((): ProfileData | null => {
@@ -69,6 +74,17 @@
 		{/if}
 	</div>
 	<div class="footer-right">
+		{#if canSwitchToMobile}
+			<Button
+				variant="outline"
+				size="icon"
+				title={t('desktop.mobile.mobileView')}
+				aria-label={t('desktop.mobile.mobileView')}
+				onclick={() => switchShell('mobile')}
+			>
+				<UniversalIcon icon="Smartphone" size={16} />
+			</Button>
+		{/if}
 		<Button
 			variant="destructive"
 			class="btn-click-effect mx-2 flex items-center gap-2"

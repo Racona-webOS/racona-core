@@ -33,6 +33,29 @@ export interface AppMetadata {
 	/** Help ID for the application. */
 	helpId?: number;
 	parameters?: AppParameters;
+	/** Mobil támogatás. Ha nincs megadva, az app mobilon nem jelenik meg. */
+	mobile?: AppMobileSupport;
+}
+
+/** Az app mobil támogatása */
+export interface AppMobileSupport {
+	/**
+	 * Mobil bejegyzések (gyors műveletek a kezdőképernyőn), mindegyik egy önálló
+	 * képernyő. Ha üres, a teljes app nyílik meg mobilon.
+	 */
+	entries: AppMobileEntry[];
+}
+
+/** Egy mobil bejegyzés: az app egy komponense, amely önállóan, teljes képernyőn nyílik meg */
+export interface AppMobileEntry {
+	/** Azonosító az appon belül (közvetlen linkben is ez szerepel) */
+	id: string;
+	/** Felirat (már a felhasználó nyelvén) */
+	label: string;
+	/** Ikon (lucide név, mint az app ikonjánál) */
+	icon?: string;
+	/** A megnyitandó komponens neve */
+	component: string;
 }
 
 /** Parameters that can be passed to an app when opening. */

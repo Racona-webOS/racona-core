@@ -1,17 +1,6 @@
 <script lang="ts">
-	import { getContext, onMount, untrack } from 'svelte';
-	import {
-		createWindowManager,
-		setWindowManager,
-		getThemeManager,
-		createDesktopStore,
-		setDesktopStore,
-		getConnectionStore
-	} from '$lib/stores';
-	import {
-		createAiAssistantStore,
-		setAiAssistantStore
-	} from '$apps/ai-assistant/stores/aiAssistantStore.svelte';
+	import { getContext } from 'svelte';
+	import { getWindowManager, getThemeManager, getDesktopStore } from '$lib/stores';
 	import { getAppByName, getApps } from '$lib/services/client/appRegistry';
 	import * as ContextMenu from '$lib/components/ui/context-menu';
 	import Window from '$lib/components/core/window/Window.svelte';
@@ -21,7 +10,6 @@
 	import type { BackgroundType } from '$lib/types/desktopEnviroment.ts';
 	import { browser } from '$app/environment';
 	import { useI18n } from '$lib/i18n/hooks';
-	import { initializeSharedLibraries } from '$lib/sdk/shared-libraries';
 
 	const { t } = useI18n();
 
@@ -42,20 +30,9 @@
 		userId?: string;
 	}>('settings');
 
-	const windowManager = createWindowManager();
-	setWindowManager(windowManager);
-
-	const desktopStore = createDesktopStore();
-	setDesktopStore(desktopStore);
-
-	// AI Assistant store inicializálása a Svelte context-ben
-	const aiAssistantStore = createAiAssistantStore();
-	setAiAssistantStore(aiAssistantStore);
-
-	// User ID beállítása a store-ban (multi-user support)
-	if (settings.userId) {
-		aiAssistantStore.setUserId(settings.userId);
-	}
+	// Az ablakkezelőt és az asztal tárolóját a ShellRuntime hozza létre
+	const windowManager = getWindowManager();
+	const desktopStore = getDesktopStore();
 
 	// ThemeManager csak kliens oldalon
 	let themeManager = $state<ReturnType<typeof getThemeManager> | null>(null);
@@ -67,12 +44,6 @@
 		if (browser && !isInitialized) {
 			isInitialized = true;
 
-			// Initialize shared libraries for plugins (async — Svelte runtime
-			// modulokat dinamikusan tölti, hogy az SSR ne értelmezze)
-			initializeSharedLibraries().catch((err) => {
-				console.error('[Desktop] Shared libraries init failed:', err);
-			});
-
 			themeManager = getThemeManager();
 			desktopStore.loadShortcuts();
 			getApps()
@@ -82,52 +53,8 @@
 				.catch((err) => {
 					console.error('[Desktop] Failed to load apps:', err);
 				});
-
-			// Szerver kapcsolat figyelő indítása
-			const connectionStore = getConnectionStore();
-			connectionStore.start();
-
-			// Hallgatjuk a TTS Provider konfiguráció változásait
-			window.addEventListener('tts-provider-config-changed', handleTTSConfigChange);
 		}
 	});
-
-	onMount(() => {
-		// TTS Provider globális státusz ellenőrzése
-		untrack(() => checkTTSProviderStatus());
-	});
-
-	async function checkTTSProviderStatus() {
-		try {
-			const { isTTSProviderEnabled, getAIAssistantConfig } =
-				await import('$apps/settings/admin-config.remote');
-			const status = await isTTSProviderEnabled({});
-			aiAssistantStore.tts.setGloballyEnabled(status.enabled);
-
-			// Admin TTS config betöltése
-			if (status.enabled && status.configured) {
-				const configResult = await getAIAssistantConfig({});
-				if (configResult.success && configResult.config) {
-					aiAssistantStore.tts.loadAdminConfig(configResult.config.ttsProvider);
-				}
-			}
-
-			// User TTS settings betöltése
-			const { getTTSSettings } = await import('$apps/ai-assistant/tts-settings.remote');
-			const userSettingsResult = await getTTSSettings({});
-			if (userSettingsResult.success && userSettingsResult.settings) {
-				aiAssistantStore.tts.loadUserSettings(userSettingsResult.settings);
-			}
-		} catch (error) {
-			console.error('[Desktop] Error checking TTS Provider status:', error);
-		}
-	}
-
-	function handleTTSConfigChange() {
-		setTimeout(() => {
-			checkTTSProviderStatus();
-		}, 100);
-	}
 
 	// Handle window resize - reflow icons if needed
 	$effect(() => {
@@ -232,20 +159,6 @@
 	function handleToggleIcons() {
 		desktopStore.toggleIconsVisibility();
 	}
-
-	// CSS változók és osztályok alkalmazása a document root-ra (html elem)
-	$effect(() => {
-		if (themeManager) {
-			// CSS változók beállítása
-			const vars = themeManager.cssVariables;
-			Object.entries(vars).forEach(([key, value]) => {
-				document.documentElement.style.setProperty(key, value);
-			});
-
-			// CSS osztályok szinkronizálása (dark/light mód, stb.)
-			document.documentElement.className = themeManager.cssClasses;
-		}
-	});
 
 	// SSR-hez: effektív téma mód kiszámítása settings-ből
 	function getEffectiveMode() {

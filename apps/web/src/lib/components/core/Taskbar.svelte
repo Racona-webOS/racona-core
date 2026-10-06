@@ -281,7 +281,7 @@
 							</ContextMenu.Root>
 						</Popover.Trigger>
 						<Popover.Content
-							class="z-1000 mx-2 my-2 flex w-(--startmenu-width) items-stretch"
+							class="z-1000 mx-2 my-2 flex w-(--startmenu-width) max-w-[calc(100vw-1rem)] items-stretch"
 							onInteractOutside={(e) => e.preventDefault()}
 							data-startmenu-content><StartMenu bind:open={startMenuOpen} /></Popover.Content
 						>

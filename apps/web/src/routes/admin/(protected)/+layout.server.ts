@@ -1,7 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 import { env } from '$lib/env';
+import { resolveShellInfo } from '$lib/server/utils/shell';
 
-export const load: LayoutServerLoad = async ({ locals, depends }) => {
+export const load: LayoutServerLoad = async ({ locals, depends, cookies, request }) => {
 	depends('app:settings');
 
 	// Támogatott nyelvek kódjai az ENV-ből (string lehet vesszővel elválasztva)
@@ -20,6 +21,7 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 		supportedLocales: supportedLocaleCodes,
 		user: locals.user,
 		appName: env.APP_NAME ?? 'Racona',
-		devMode: env.DEV_MODE === true
+		devMode: env.DEV_MODE === true,
+		shell: resolveShellInfo(cookies, request.headers.get('user-agent'))
 	};
 };

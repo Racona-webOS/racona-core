@@ -20,6 +20,7 @@
 	import AppSideBar from './AppSideBar.svelte';
 	import AppSideBarMenu from './AppSideBarMenu.svelte';
 	import AppContentArea from './AppContentArea.svelte';
+	import { isMobileShell } from '$lib/stores/shellMode';
 
 	interface Props {
 		/** A createAppShell által visszaadott reaktív objektum. */
@@ -54,6 +55,10 @@
 	// Shell context beállítása, hogy a dinamikusan betöltött komponensek is elérhessék
 	setContext(APP_SHELL_CONTEXT_KEY, shell);
 
+	// Mobil keretben nincs oldalsáv és menü: az app egy képernyőjét mutatjuk teljes
+	// szélességben, a plugin oldalsáv-eleme (pl. szervezetváltó) a tartalom fölé kerül
+	const mobile = isMobileShell();
+
 	// Action bar context létrehozása
 	const actionBar = createActionBar();
 
@@ -81,16 +86,24 @@
 </script>
 
 <I18nProvider namespaces={allNamespaces}>
-	<div class="app-layout">
-		<AppSideBar appName={shell.appName} width={sidebarWidth} {customFooter}>
-			<AppSideBarMenu
-				items={shell.menuItems}
-				activeHref={shell.activeMenuItem ?? undefined}
-				onItemClick={shell.handleMenuItemClick}
-				initialExpandedParents={shell.expandedParents}
-				{searchable}
-			/>
-		</AppSideBar>
+	<div class="app-layout" class:mobile>
+		{#if mobile}
+			{#if customFooter}
+				<div class="app-layout-mobile-context">
+					{@render customFooter()}
+				</div>
+			{/if}
+		{:else}
+			<AppSideBar appName={shell.appName} width={sidebarWidth} {customFooter}>
+				<AppSideBarMenu
+					items={shell.menuItems}
+					activeHref={shell.activeMenuItem ?? undefined}
+					onItemClick={shell.handleMenuItemClick}
+					initialExpandedParents={shell.expandedParents}
+					{searchable}
+				/>
+			</AppSideBar>
+		{/if}
 		<div class="app-layout-right">
 			<div class="app-layout-content-wrapper custom-scrollbar">
 				<div class="app-layout-content {maxWidthClass}">
@@ -136,6 +149,25 @@
 		flex: 1;
 		padding: 0 1.5rem 1rem 0.5rem;
 		overflow-y: auto;
+	}
+
+	.app-layout.mobile {
+		flex-direction: column;
+
+		.app-layout-content-wrapper {
+			padding: 0 0 1rem;
+		}
+	}
+
+	.app-layout-mobile-context {
+		flex-shrink: 0;
+		margin-bottom: 0.75rem;
+		border-bottom: 1px solid var(--color-neutral-200);
+		padding-bottom: 0.75rem;
+	}
+
+	:global(.dark) .app-layout-mobile-context {
+		border-bottom-color: var(--color-neutral-800);
 	}
 
 	.app-layout-content :global {

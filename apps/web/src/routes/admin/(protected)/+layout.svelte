@@ -3,6 +3,9 @@
 	import '../appAdmin.css';
 	import './protected.css';
 	import Desktop from '$lib/components/core/Desktop.svelte';
+	import MobileShell from '$lib/components/core/mobile/MobileShell.svelte';
+	import ShellRuntime from '$lib/components/core/ShellRuntime.svelte';
+	import { setShellInfo } from '$lib/stores/shellMode';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { browser } from '$app/environment';
 	import { setContext, onMount, onDestroy, untrack } from 'svelte';
@@ -67,6 +70,12 @@
 		}
 	};
 	setContext('settings', settingsContext);
+
+	// Asztali vagy mobil keret: a szerver dönti el oldalbetöltéskor (süti vagy eszköztípus),
+	// váltás csak újratöltéssel, ezért elég egyszer beállítani
+	// svelte-ignore state_referenced_locally
+	const shell = data.shell;
+	setShellInfo(shell);
 
 	let themeManager: ReturnType<typeof createThemeManager> | undefined;
 
@@ -164,13 +173,26 @@
 </script>
 
 {#if browser}
-	<Toaster richColors position="top-right" expand={true} closeButton />
+	<Toaster
+		richColors
+		position={shell.mode === 'mobile' ? 'top-center' : 'top-right'}
+		expand={true}
+		closeButton
+	/>
 	<PluginDialog bind:this={pluginDialog} />
 {/if}
 <I18nProvider namespaces={['desktop', 'notifications']}>
-	<Desktop>
-		{@render children()}
-	</Desktop>
+	<ShellRuntime>
+		{#if shell.mode === 'mobile'}
+			<MobileShell appName={data.appName}>
+				{@render children()}
+			</MobileShell>
+		{:else}
+			<Desktop>
+				{@render children()}
+			</Desktop>
+		{/if}
+	</ShellRuntime>
 </I18nProvider>
 
 <style>

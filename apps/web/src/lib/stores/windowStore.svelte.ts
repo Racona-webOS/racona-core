@@ -49,6 +49,16 @@ export class WindowManager {
 	private nextId = 1;
 	private baseZIndex = 100;
 
+	/**
+	 * Mentse-e az ablakok méretét és pozícióját a localStorage-be. Mobil keretben
+	 * kikapcsolt: a kulcs appnként közös, a telefon elrontaná az asztali méreteket.
+	 */
+	private persistState = true;
+
+	setPersistence(enabled: boolean) {
+		this.persistState = enabled;
+	}
+
 	openWindow(
 		appName: string,
 		title: string,
@@ -1149,6 +1159,7 @@ export class WindowManager {
 	 * @param window Window state to save
 	 */
 	private saveWindowStateToStorage(window: WindowState): void {
+		if (!this.persistState) return;
 		const state: StoredWindowState = {
 			size: window.size,
 			position: window.position,

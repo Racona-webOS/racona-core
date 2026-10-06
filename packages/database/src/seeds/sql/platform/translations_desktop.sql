@@ -172,3 +172,55 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'desktop', 'contentArea.loading', 'Loading...'),
 ('en', 'desktop', 'contentArea.selectMenuItem', 'Select a menu item on the left')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Mobil keret (MobileShell) - HU
+-- -----------------------------------------------------------------------------
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('hu', 'desktop', 'mobile.back', 'Vissza'),
+('hu', 'desktop', 'mobile.close', 'Bezárás'),
+('hu', 'desktop', 'mobile.mobileView', 'Mobil nézet'),
+('hu', 'desktop', 'mobile.nav.home', 'Kezdőlap'),
+('hu', 'desktop', 'mobile.nav.notifications', 'Értesítések'),
+('hu', 'desktop', 'mobile.nav.openApps', 'Megnyitott'),
+('hu', 'desktop', 'mobile.nav.profile', 'Profil'),
+('hu', 'desktop', 'mobile.home.quickActions', 'Gyors műveletek'),
+('hu', 'desktop', 'mobile.home.apps', 'Alkalmazások'),
+('hu', 'desktop', 'mobile.home.empty', 'Mobilon még nincs elérhető alkalmazás. A többi funkciót asztali gépen éred el.'),
+('hu', 'desktop', 'mobile.notifications.title', 'Értesítések'),
+('hu', 'desktop', 'mobile.notifications.empty', 'Nincs értesítésed'),
+('hu', 'desktop', 'mobile.notifications.markAllRead', 'Mind olvasott'),
+('hu', 'desktop', 'mobile.notifications.desktopOnly', 'Asztali gépen nyitható meg'),
+('hu', 'desktop', 'mobile.openApps.title', 'Megnyitott alkalmazások'),
+('hu', 'desktop', 'mobile.openApps.empty', 'Nincs megnyitott alkalmazás'),
+('hu', 'desktop', 'mobile.profile.title', 'Profil'),
+('hu', 'desktop', 'mobile.profile.darkMode', 'Sötét mód'),
+('hu', 'desktop', 'mobile.profile.desktopView', 'Asztali nézet'),
+('hu', 'desktop', 'mobile.profile.desktopViewHint', 'Ablakos felület, mint számítógépen. Telefonon nehezen kezelhető.')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- -----------------------------------------------------------------------------
+-- Mobil keret (MobileShell) - EN
+-- -----------------------------------------------------------------------------
+INSERT INTO platform.translations (locale, namespace, key, value) VALUES
+('en', 'desktop', 'mobile.back', 'Back'),
+('en', 'desktop', 'mobile.close', 'Close'),
+('en', 'desktop', 'mobile.mobileView', 'Mobile view'),
+('en', 'desktop', 'mobile.nav.home', 'Home'),
+('en', 'desktop', 'mobile.nav.notifications', 'Notifications'),
+('en', 'desktop', 'mobile.nav.openApps', 'Open'),
+('en', 'desktop', 'mobile.nav.profile', 'Profile'),
+('en', 'desktop', 'mobile.home.quickActions', 'Quick actions'),
+('en', 'desktop', 'mobile.home.apps', 'Apps'),
+('en', 'desktop', 'mobile.home.empty', 'No apps are available on mobile yet. Use a computer for other features.'),
+('en', 'desktop', 'mobile.notifications.title', 'Notifications'),
+('en', 'desktop', 'mobile.notifications.empty', 'You have no notifications'),
+('en', 'desktop', 'mobile.notifications.markAllRead', 'Mark all as read'),
+('en', 'desktop', 'mobile.notifications.desktopOnly', 'Opens on a computer'),
+('en', 'desktop', 'mobile.openApps.title', 'Open apps'),
+('en', 'desktop', 'mobile.openApps.empty', 'No open apps'),
+('en', 'desktop', 'mobile.profile.title', 'Profile'),
+('en', 'desktop', 'mobile.profile.darkMode', 'Dark mode'),
+('en', 'desktop', 'mobile.profile.desktopView', 'Desktop view'),
+('en', 'desktop', 'mobile.profile.desktopViewHint', 'The windowed interface, as on a computer. Hard to use on a phone.')
+ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
