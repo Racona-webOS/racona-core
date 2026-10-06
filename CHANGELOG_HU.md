@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-06
+
 ### Hozzáadva
 
 - **Ütemező**: a pluginok ütemezett feladatokat deklarálhatnak a manifestben (`scheduledJobs` + `scheduler` jogosultság, a handlerek a `server/jobs.ts`-ben). Az ütemező az alkalmazás folyamatán belül fut, az állapotát az adatbázisban tartja (`platform.scheduled_jobs`, `platform.scheduled_job_runs`), és `FOR UPDATE SKIP LOCKED`-del zárolja a feladatokat, így több alkalmazáspéldánynál is egyszer fut egy feladat. A leállás alatt kimaradt futást újraindítás után pótolja (`catchUp: 'once'`).

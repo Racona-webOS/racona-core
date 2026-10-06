@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-06
+
 ### Added
 
 - **Scheduler**: plugins can declare scheduled jobs in their manifest (`scheduledJobs` + `scheduler` permission, handlers in `server/jobs.ts`). The scheduler runs inside the app process, keeps its state in the database (`platform.scheduled_jobs`, `platform.scheduled_job_runs`) and locks jobs with `FOR UPDATE SKIP LOCKED`, so a job runs once even with several app instances. Missed runs are caught up after a restart (`catchUp: 'once'`).
