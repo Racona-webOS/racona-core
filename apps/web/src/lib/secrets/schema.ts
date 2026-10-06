@@ -343,12 +343,15 @@ export function validEnvArbitrary(): fc.Arbitrary<Record<string, unknown>> {
 		.map(([user, pass, db, port]) => `postgresql://${user}:${pass}@localhost:${port}/${db}`);
 
 	// Érvényes HTTP/HTTPS URL generátor
+	// A szűrő kiejti a `new URL` által elutasított hostokat — pl. az `xn--` prefixű
+	// címkéket érvénytelen punycode-dal (`http://xn--.aa`), amelyek ritkán generálódnak.
 	const httpUrlArb = fc
 		.tuple(
 			fc.constantFrom('http', 'https'),
 			fc.stringMatching(/^[a-z][a-z0-9-]{0,20}\.[a-z]{2,6}$/)
 		)
-		.map(([scheme, host]) => `${scheme}://${host}`);
+		.map(([scheme, host]) => `${scheme}://${host}`)
+		.filter(isValidUrl);
 
 	// Érvényes port string generátor
 	const portStringArb = fc.integer({ min: 1, max: 65535 }).map(String);

@@ -128,8 +128,10 @@ export async function resizeImage(
 	// Átméretezés csak ha szükséges
 	let processedImage = image;
 	if (newDimensions.width !== originalWidth || newDimensions.height !== originalHeight) {
+		// 'fill': pontosan a kiszámított méretet kapjuk — az 'inside' a sharp saját
+		// lefelé kerekítésével 1px-lel kisebb oldalt adhatna (pl. 51×15 helyett 51×14)
 		processedImage = image.resize(newDimensions.width, newDimensions.height, {
-			fit: 'inside',
+			fit: 'fill',
 			withoutEnlargement: true
 		});
 	}
