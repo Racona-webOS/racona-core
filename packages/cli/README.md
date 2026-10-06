@@ -185,6 +185,14 @@ MIT
 
 ## Changelog
 
+### [0.5.2] - 2026-10-06
+
+- **Changed**: generated `package.json` depends on `@racona/sdk` `^0.8.0` (`sdk.context.shell` for the mobile interface, `replyTo` for plugin emails)
+
+### [0.5.1] - 2026-10-06
+
+- **Changed**: generated `package.json` depends on `@racona/sdk` `^0.7.0` (plugin file storage: `sdk.files`, `context.files`)
+
 ### [0.5.0] - 2026-10-05
 
 - **Changed**: generated `package.json` depends on `@racona/sdk` `^0.6.0` (was `^0.3.2`, which kept new projects on SDK 0.3.x); 0.6.0 is the first SDK with `@racona/sdk/server`
