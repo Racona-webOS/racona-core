@@ -37,8 +37,14 @@ export const baseAuthConfig: Omit<BetterAuthOptions, 'plugins'> = {
 	trustedOrigins: [
 		'http://localhost:5173',
 		'http://127.0.0.1:5173',
+		// Fejlesztéskor telefonról a helyi hálózaton (a dev szerver a 3000-es porton fut, `--host`-tal)
 		...(process.env.NODE_ENV === 'development'
-			? ['http://10.8.0.33:5173', 'http://192.168.*:5173']
+			? [
+					'http://10.8.0.33:5173',
+					'http://192.168.*:5173',
+					'http://10.8.0.33:3000',
+					'http://192.168.*:3000'
+				]
 			: [])
 	],
 	advanced: {
