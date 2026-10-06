@@ -23,6 +23,8 @@ export interface PluginEmailService {
 		template: string;
 		data: Record<string, unknown>;
 		locale?: string;
+		/** Válaszcím; ha nincs megadva, a rendszerszintű (SMTP_REPLY_TO) érvényes. */
+		replyTo?: string;
 	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
@@ -87,7 +89,7 @@ export function createPluginEmailService(
 	}
 
 	return {
-		async send({ to, template, data, locale = 'hu' }): Promise<EmailResult> {
+		async send({ to, template, data, locale = 'hu', replyTo }): Promise<EmailResult> {
 			try {
 				const emailManager = getEmailManager();
 				if (!emailManager) {
@@ -101,7 +103,8 @@ export function createPluginEmailService(
 					// A plugin sablonok típusa `<pluginId>:<név>`, nem a core enum értéke
 					template: prefixedTemplate as EmailTemplateType,
 					data,
-					locale
+					locale,
+					replyTo: replyTo?.trim() || undefined
 				});
 			} catch (err) {
 				const errorMessage = err instanceof Error ? err.message : 'Unknown email error';

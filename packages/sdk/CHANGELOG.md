@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`@racona/sdk/server`**: `PluginEmailService.send()` opcionális `replyTo` paramétere (Reply-To cím). A core ezt támogató verziója kell hozzá; régebbi core figyelmen kívül hagyja.
+
 ## [0.7.0] - 2026-10-06
 
 ### Added

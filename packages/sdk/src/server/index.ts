@@ -56,6 +56,8 @@ export interface PluginEmailService {
 		template: string;
 		data: Record<string, unknown>;
 		locale?: string;
+		/** Reply-To address; when omitted, the system default (SMTP_REPLY_TO) applies. */
+		replyTo?: string;
 	}): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
