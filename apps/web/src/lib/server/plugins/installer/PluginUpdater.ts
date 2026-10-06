@@ -424,6 +424,7 @@ export class PluginUpdater {
 					pluginDependencies: manifest.dependencies ?? null,
 					pluginMinWebosVersion: manifest.minWebOSVersion ?? null,
 					sidebarComponent: manifest.sidebarComponent ?? null,
+					mobile: manifest.mobile ?? null,
 					pluginUpdatedAt: new Date()
 
 					// NEM frissítjük: pluginInstalledAt, pluginStatus

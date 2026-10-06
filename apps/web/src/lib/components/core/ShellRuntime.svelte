@@ -19,10 +19,18 @@
 		setAiAssistantStore
 	} from '$apps/ai-assistant/stores/aiAssistantStore.svelte';
 	import { browser } from '$app/environment';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
+	import { toast } from 'svelte-sonner';
 	import { initializeSharedLibraries } from '$lib/sdk/shared-libraries';
 	import { getShellInfo } from '$lib/stores/shellMode';
+	import { getAppByName } from '$lib/services/client/appRegistry';
+	import { parseDeepLink, stripDeepLink, openDeepLink } from '$lib/services/client/deepLink';
+	import { useI18n } from '$lib/i18n/hooks';
 
 	let { children }: { children: Snippet } = $props();
+
+	const { t } = useI18n();
 
 	const settings = getContext<{ userId?: string }>('settings');
 	const shell = getShellInfo();
@@ -30,6 +38,11 @@
 	const windowManager = createWindowManager();
 	setWindowManager(windowManager);
 	windowManager.setPersistence(shell.mode === 'desktop');
+
+	// A pluginok az SDK-n át olvassák (sdk.context.shell)
+	if (browser) {
+		(window as unknown as Record<string, unknown>).__RACONA_SHELL__ = shell.mode;
+	}
 
 	const desktopStore = createDesktopStore();
 	setDesktopStore(desktopStore);
@@ -107,6 +120,33 @@
 		setTimeout(() => {
 			checkTTSProviderStatus();
 		}, 100);
+	}
+
+	// Közvetlen link (/admin?app=…&entry=…). A komponens a fordítások betöltése után jön
+	// létre, ezért nem az első navigáció eseményére várunk; a setTimeout miatt a
+	// SvelteKit router már kész, amikor a címet átírjuk.
+	onMount(() => {
+		const timer = setTimeout(openDeepLinkFromUrl, 0);
+		return () => clearTimeout(timer);
+	});
+
+	async function openDeepLinkFromUrl() {
+		const link = parseDeepLink(page.url);
+		if (!link) return;
+
+		// A paramétereket eltávolítjuk, hogy újratöltéskor ne nyíljon meg újra
+		replaceState(stripDeepLink(page.url), page.state);
+
+		try {
+			const app = await getAppByName(link.app);
+			// Olyan app, amelyhez a felhasználónak nincs hozzáférése, nem nyílik meg
+			if (!app) return;
+			if (!openDeepLink(windowManager, app, link, shell.mode)) {
+				toast.info(t('desktop.mobile.notifications.desktopOnly'));
+			}
+		} catch (error) {
+			console.error('[ShellRuntime] Deep link failed:', error);
+		}
 	}
 
 	// CSS változók és osztályok alkalmazása a document root-ra (html elem)

@@ -14,7 +14,7 @@
 	import { getTranslationStore } from '$lib/i18n/store.svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 	import type { AppMetadata, AppParameters } from '$lib/types/window';
-	import { canOpenOnMobile } from './mobileNavigation';
+	import { canOpenOnMobile, openOnMobile } from './mobileNavigation';
 
 	const { t } = useI18n();
 	const notificationStore = getNotificationStore();
@@ -53,9 +53,7 @@
 		if (!notification.isRead) notificationStore.markAsRead(notification.id);
 
 		const target = targetOf(notification);
-		if (target?.openable && target.app) {
-			windowManager.openWindow(target.app.appName, target.app.title, target.app, target.parameters);
-		}
+		if (target?.openable) openOnMobile(windowManager, target.app, target.parameters);
 	}
 
 	const ICONS: Record<string, typeof Info> = {

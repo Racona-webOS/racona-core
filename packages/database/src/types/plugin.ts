@@ -4,11 +4,16 @@
  * Ez a fájl tartalmazza a plugin rendszer összes közös típusdefinícióját.
  */
 
-import type { LocalizedText, WindowSize } from '../schemas/platform/apps/apps';
+import type {
+	LocalizedText,
+	WindowSize,
+	AppMobileConfig,
+	AppMobileEntry
+} from '../schemas/platform/apps/apps';
 import type { PluginPermission } from '../schemas/platform/plugins/plugins';
 
 // Re-export a duplikáció elkerüléséhez
-export type { LocalizedText, WindowSize };
+export type { LocalizedText, WindowSize, AppMobileConfig, AppMobileEntry };
 export type { PluginPermission };
 
 /**
@@ -61,6 +66,11 @@ export interface PluginManifest {
 	sidebarComponent?: string;
 	/** Ütemezett feladatok (a `scheduler` jogosultsággal együtt) */
 	scheduledJobs?: ManifestScheduledJob[];
+	/**
+	 * Mobil támogatás: a mobil keret kezdőképernyőjén megjelenő bejegyzések.
+	 * Ha nincs megadva, a plugin mobilon nem jelenik meg.
+	 */
+	mobile?: AppMobileConfig;
 }
 
 /**

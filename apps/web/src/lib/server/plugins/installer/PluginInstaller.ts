@@ -213,7 +213,8 @@ export class PluginInstaller {
 				pluginStatus: 'active',
 				pluginInstalledAt: new Date(),
 				pluginUpdatedAt: null,
-				sidebarComponent: manifest.sidebarComponent || null
+				sidebarComponent: manifest.sidebarComponent || null,
+				mobile: manifest.mobile ?? null
 			});
 
 			console.log(`[PluginInstaller] Registered plugin in app registry: ${manifest.id}`);

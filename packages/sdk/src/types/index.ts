@@ -216,6 +216,13 @@ export interface WindowControls {
 	setTitle(title: string): void;
 }
 
+/**
+ * The Racona interface the app runs in:
+ * - `desktop` — windows and taskbar
+ * - `mobile` — phones: one app at a time, full screen
+ */
+export type ShellMode = 'desktop' | 'mobile';
+
 /** Context service — app identity, user info, permissions, and window controls */
 export interface ContextService {
 	/** This app's unique plugin ID */
@@ -228,6 +235,11 @@ export interface ContextService {
 	permissions: string[];
 	/** Window controls (close, setTitle) */
 	window: WindowControls;
+	/**
+	 * The interface the app runs in. On `mobile` the app is shown full screen on a
+	 * phone, typically through one of its manifest `mobile.entries` components.
+	 */
+	readonly shell: ShellMode;
 }
 
 /** Asset service — resolve URLs for bundled app assets */

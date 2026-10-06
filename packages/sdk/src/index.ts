@@ -36,6 +36,7 @@ export type {
 	FileUploadResult,
 	MockSDKConfig,
 	NotificationOptions,
+	ShellMode,
 	ThemeColors,
 	ToastType,
 	Transaction,

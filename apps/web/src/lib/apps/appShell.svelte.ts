@@ -29,6 +29,7 @@ import { getTranslationStore } from '$lib/i18n/store.svelte';
 import { getWindowManager } from '$lib/stores';
 import { getCapabilitiesVersion } from '$lib/stores/pluginCapabilitiesStore.svelte';
 import { getContext, untrack } from 'svelte';
+import { MOBILE_COMPONENT_PARAM } from '$lib/components/core/mobile/mobileNavigation';
 
 /** Svelte context kulcs az AppShell elérhetőségéhez dinamikusan betöltött komponensekből. */
 export const APP_SHELL_CONTEXT_KEY = Symbol('appShell');
@@ -345,6 +346,21 @@ export function createAppShell(options: AppShellOptions): AppShellReturn {
 			initialSetupDone = true;
 			handleMenuItemClick(targetItem);
 		}
+	});
+
+	// Mobil bejegyzés: az ablak paramétere megadja a megnyitandó komponenst, menüponttól
+	// függetlenül. Az initialSetupDone miatt a később betöltődő menü nem írja felül.
+	const mobileComponent = $derived(
+		appContext?.parameters?.[MOBILE_COMPONENT_PARAM] as string | undefined
+	);
+	$effect(() => {
+		const component = mobileComponent;
+		if (!component) return;
+		untrack(() => {
+			initialSetupDone = true;
+			// A bejegyzés nem menüpont: asztalon se maradjon kijelölve a korábbi menüpont
+			navigateTo(component, undefined, '');
+		});
 	});
 
 	return {

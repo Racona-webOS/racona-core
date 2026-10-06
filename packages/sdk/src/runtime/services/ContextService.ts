@@ -6,9 +6,13 @@
 
 import type {
 	ContextService as IContextService,
+	ShellMode,
 	UserInfo,
 	WindowControls
 } from '../../types/index.js';
+
+/** The core sets this global to the current interface before loading plugins */
+const SHELL_GLOBAL = '__RACONA_SHELL__';
 
 /** Context service — plugin identity, authenticated user, permissions, and window controls. */
 export class ContextService implements IContextService {
@@ -22,6 +26,12 @@ export class ContextService implements IContextService {
 	readonly permissions: string[];
 	/** Window controls (close, setTitle) */
 	readonly window: WindowControls;
+
+	/** The interface the app runs in (`desktop` unless the core reports `mobile`) */
+	get shell(): ShellMode {
+		const value = (globalThis as Record<string, unknown>)[SHELL_GLOBAL];
+		return value === 'mobile' ? 'mobile' : 'desktop';
+	}
 
 	/**
 	 * @param pluginId - Unique plugin identifier

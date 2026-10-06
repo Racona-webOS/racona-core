@@ -7,7 +7,8 @@
 import { command, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
 import { appRepository, type AppEntity } from '$lib/server/database/repositories';
-import type { AppMetadata } from '$lib/types/window';
+import type { AppMetadata, AppMobileSupport } from '$lib/types/window';
+import type { AppMobileConfig, LocalizedText } from '@racona/database/schemas';
 
 // Empty schema for parameterless queries
 const emptySchema = v.object({});
@@ -38,6 +39,24 @@ interface AppRegistryResponse {
  * @param locale - The user's locale preference.
  * @returns The converted AppMetadata object.
  */
+function localize(text: LocalizedText | string, locale: string): string {
+	if (typeof text === 'string') return text;
+	return text[locale] || text['hu'] || text['en'] || Object.values(text)[0] || '';
+}
+
+/** Mobil támogatás a felhasználó nyelvén (a bejegyzések felirata lefordítva) */
+function convertMobile(mobile: AppMobileConfig | null, locale: string): AppMobileSupport | undefined {
+	if (!mobile) return undefined;
+	return {
+		entries: (mobile.entries ?? []).map((entry) => ({
+			id: entry.id,
+			label: localize(entry.label, locale),
+			icon: entry.icon,
+			component: entry.component
+		}))
+	};
+}
+
 function convertToWindowMetadata(entity: AppEntity, locale: string): AppMetadata {
 	return {
 		appName: entity.appId,
@@ -53,7 +72,8 @@ function convertToWindowMetadata(entity: AppEntity, locale: string): AppMetadata
 		maximizable: true,
 		minimizable: true,
 		helpId: entity.helpId ?? undefined,
-		parameters: {}
+		parameters: {},
+		mobile: convertMobile(entity.mobile, locale)
 	};
 }
 

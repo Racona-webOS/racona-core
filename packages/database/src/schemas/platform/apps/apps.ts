@@ -32,6 +32,24 @@ export type AppPermission = {
 	action: string;
 };
 
+/** Egy mobil bejegyzés: az app egy komponense, amely mobilon önálló képernyőként nyílik meg */
+export type AppMobileEntry = {
+	/** Azonosító az appon belül (kebab-case; közvetlen linkben is ez szerepel) */
+	id: string;
+	/** Felirat a kezdőképernyőn */
+	label: LocalizedText | string;
+	/** Ikon (lucide név) */
+	icon?: string;
+	/** A megnyitandó komponens neve */
+	component: string;
+};
+
+/** Az app mobil támogatása. Ha nincs megadva, az app mobilon nem jelenik meg. */
+export type AppMobileConfig = {
+	/** Mobil bejegyzések (gyors műveletek); üres tömb esetén a teljes app nyílik meg */
+	entries: AppMobileEntry[];
+};
+
 // Valibot schemas for validation
 const localizedTextSchema = v.intersect([
 	v.object({
@@ -95,7 +113,8 @@ export const apps = schema.table(
 		pluginStatus: varchar('plugin_status', { length: 20 }).default('active'),
 		pluginInstalledAt: timestamp('plugin_installed_at', { withTimezone: true }),
 		pluginUpdatedAt: timestamp('plugin_updated_at', { withTimezone: true }),
-		sidebarComponent: varchar('sidebar_component', { length: 100 }) // Sidebar komponens neve (opcionális)
+		sidebarComponent: varchar('sidebar_component', { length: 100 }), // Sidebar komponens neve (opcionális)
+		mobile: jsonb('mobile').$type<AppMobileConfig>() // Mobil támogatás (NULL: mobilon nem jelenik meg)
 	},
 	(table) => ({
 		appTypeIdx: index('idx_apps_app_type').on(table.appType),

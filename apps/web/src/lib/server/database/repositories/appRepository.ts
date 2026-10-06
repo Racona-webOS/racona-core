@@ -7,6 +7,7 @@ import {
 	userRoles,
 	userGroups,
 	type AppSelectModel,
+	type AppMobileConfig,
 	type LocalizedText
 } from '@racona/database/schemas';
 
@@ -33,6 +34,8 @@ export interface AppEntity {
 	isActive: boolean;
 	isPublic: boolean;
 	sortOrder: number;
+	/** Mobil támogatás (NULL: mobilon nem jelenik meg) */
+	mobile: AppMobileConfig | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -73,6 +76,7 @@ function toAppEntity(model: AppSelectModel): AppEntity {
 		isActive: model.isActive ?? true,
 		isPublic: model.isPublic ?? false,
 		sortOrder: model.sortOrder ?? 0,
+		mobile: model.mobile ?? null,
 		createdAt: model.createdAt ?? new Date(),
 		updatedAt: model.updatedAt ?? new Date()
 	};

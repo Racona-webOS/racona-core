@@ -67,6 +67,28 @@ const scheduledJobSchema = v.object({
 	catchUp: v.optional(v.union([v.literal('once'), v.literal('skip')]))
 });
 
+/** Egy plugin legfeljebb ennyi mobil bejegyzést deklarálhat. */
+export const MAX_MOBILE_ENTRIES = 12;
+
+// Mobil bejegyzés séma (az egyediség ellenőrzése a validate()-ben)
+const mobileEntrySchema = v.object({
+	id: v.pipe(
+		v.string(),
+		v.regex(/^[a-z0-9-]+$/, 'Mobile entry ID must be kebab-case'),
+		v.maxLength(50, 'Mobile entry ID must be at most 50 characters')
+	),
+	label: localizedTextSchema,
+	icon: v.optional(v.string()),
+	component: v.pipe(v.string(), v.minLength(1, 'Mobile entry component is required'))
+});
+
+const mobileSchema = v.object({
+	entries: v.pipe(
+		v.array(mobileEntrySchema),
+		v.maxLength(MAX_MOBILE_ENTRIES, `At most ${MAX_MOBILE_ENTRIES} mobile entries are allowed`)
+	)
+});
+
 const pluginManifestSchema = v.object({
 	id: v.pipe(
 		v.string(),
@@ -138,7 +160,8 @@ const pluginManifestSchema = v.object({
 			v.array(scheduledJobSchema),
 			v.maxLength(MAX_SCHEDULED_JOBS, `At most ${MAX_SCHEDULED_JOBS} scheduled jobs are allowed`)
 		)
-	)
+	),
+	mobile: v.optional(mobileSchema)
 });
 
 /**
@@ -301,6 +324,19 @@ export class ManifestValidator {
 			if (manifest.scheduledJobs?.length) {
 				errors.push(...validateScheduledJobs(manifest));
 			}
+
+			// Mobil bejegyzések azonosítói egyediek
+			const mobileIds = new Set<string>();
+			manifest.mobile?.entries.forEach((entry, index) => {
+				if (mobileIds.has(entry.id)) {
+					errors.push({
+						code: PluginErrorCode.INVALID_MANIFEST,
+						message: `Duplicate mobile entry ID: ${entry.id}`,
+						field: `mobile.entries.${index}.id`
+					});
+				}
+				mobileIds.add(entry.id);
+			});
 
 			if (errors.length > 0) {
 				return { valid: false, errors };

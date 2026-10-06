@@ -4,7 +4,7 @@
  * Mock plugin context and window controls for dev mode.
  */
 
-import type { ContextService, UserInfo, WindowControls } from '../../types/index.js';
+import type { ContextService, ShellMode, UserInfo, WindowControls } from '../../types/index.js';
 
 /**
  * Configuration for the mock context service.
@@ -42,6 +42,11 @@ export interface MockContextConfig {
 	 * @default `["database", "notifications", "remote_functions"]`
 	 */
 	permissions?: string[];
+	/**
+	 * The interface to simulate (`mobile` for phone layouts).
+	 * @default `"desktop"`
+	 */
+	shell?: ShellMode;
 }
 
 /** Mock Context service — simulates plugin context and window controls for standalone development. */
@@ -56,6 +61,8 @@ export class MockContextService implements ContextService {
 	readonly permissions: string[];
 	/** Window controls — log to the console */
 	readonly window: WindowControls;
+	/** Simulated interface */
+	readonly shell: ShellMode;
 
 	/** @param config - Optional mock context configuration */
 	constructor(config?: MockContextConfig) {
@@ -70,6 +77,7 @@ export class MockContextService implements ContextService {
 		};
 		this.params = config?.params ?? {};
 		this.permissions = config?.permissions ?? ['database', 'notifications', 'remote_functions'];
+		this.shell = config?.shell ?? 'desktop';
 		this.window = {
 			close: () => console.log('[Mock Window] close()'),
 			setTitle: (title: string) => {
