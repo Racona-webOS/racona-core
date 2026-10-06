@@ -152,7 +152,14 @@ const perms = sdk.context.permissions; // ['database', 'notifications', ...]
 
 sdk.context.window.setTitle('My App — Settings');
 sdk.context.window.close();
+
+// 'desktop' (windows, taskbar) or 'mobile' (phone: one app at a time, full screen)
+if (sdk.context.shell === 'mobile') {
+	// compact layout
+}
 ```
+
+On phones the core opens the components listed in the manifest's `mobile.entries` as full-screen quick actions; `shell` tells a shared component which layout to render.
 
 ### `assets` — Asset Service
 
@@ -212,6 +219,11 @@ MIT
 ---
 
 ## Changelog
+
+### [0.8.0] - 2026-10-06
+
+- **Added**: `sdk.context.shell` (`'desktop' | 'mobile'`) and the `ShellMode` type — which interface the app runs in. Needs a Racona version with the mobile shell; older versions always report `desktop`. Set it in standalone mode with `MockSDKConfig.context.shell`
+- **Added**: `@racona/sdk/server` — optional `replyTo` for `PluginEmailService.send()`. Needs a Racona version that supports it; older versions ignore it
 
 ### [0.7.0] - 2026-10-06
 

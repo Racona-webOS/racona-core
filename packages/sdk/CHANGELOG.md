@@ -5,10 +5,11 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.0] - 2026-10-06
 
 ### Added
 
+- **`sdk.context.shell`** (`'desktop' | 'mobile'`) és a `ShellMode` típus: melyik felületen fut az app. Telefonon (`mobile`) a core egyszerre egy appot mutat teljes képernyőn, jellemzően a manifest `mobile.entries` bejegyzéseinek egyik komponensével. A core mobil keretet tartalmazó verziója kell hozzá; régebbi core-on mindig `desktop`. Standalone módban a `MockSDKConfig.context.shell` állítja (alapból `desktop`).
 - **`@racona/sdk/server`**: `PluginEmailService.send()` opcionális `replyTo` paramétere (Reply-To cím). A core ezt támogató verziója kell hozzá; régebbi core figyelmen kívül hagyja.
 
 ## [0.7.0] - 2026-10-06
