@@ -44,7 +44,7 @@
 - [Project Structure](#project-structure)
 - [Docker](#docker)
   - [Self-hosting](#self-hosting)
-  - [Using pre-built images from GitHub Container Registry](#using-pre-built-images-from-github-container-registry)
+  - [Running a locally built image on a server](#running-a-locally-built-image-on-a-server)
   - [Database initialization and reset](#database-initialization-and-reset)
   - [Environment Variables](#environment-variables)
   - [Building the image](#building-the-image)
@@ -318,30 +318,30 @@ Only the Racona app container starts. Set `DATABASE_URL` in your `.env` to point
 
 The app will be available at `http://localhost:3000` (configurable via `RACONA_PORT`), PostgreSQL on port `5432` (configurable via `POSTGRES_PORT`).
 
-### Using pre-built images from GitHub Container Registry
+### Running a locally built image on a server
 
-If you don't want to build the image locally, you can use the published version from GitHub Container Registry. Images are automatically built and published on every release (version tag push).
+Release images are not published to a registry: build the image on your own machine and copy it to the server. (The `Docker Image Publish` workflow can still be started by hand, but the images on GitHub Container Registry are not kept up to date.)
 
-**Available images:**
-
-- `ghcr.io/racona-webos/racona-core:latest` — latest stable release
-- `ghcr.io/racona-webos/racona-core:0.1.0` — specific version
-- `ghcr.io/racona-webos/racona-core:0.1` — major.minor version
-- `ghcr.io/racona-webos/racona-core:0` — major version
-
-**Using with Docker Compose:**
-
-Use the included `docker/docker-compose.ghcr.yml` example:
+**1. Build and compress the image** (on your machine):
 
 ```bash
-# With Bun (if installed)
-bun docker:up:ghcr
-
-# Or directly with Docker Compose
-docker compose -f docker/docker-compose.ghcr.yml up -d
+bun docker:build:amd64          # racona/core:latest-amd64
+bun docker:save:zstd:amd64      # docker/racona-core-amd64.tar.zst
 ```
 
-Or create your own `docker-compose.yml` file:
+Use the `arm64` variants for an ARM server.
+
+**2. Copy and load it:**
+
+```bash
+# on your machine
+scp docker/racona-core-amd64.tar.zst user@server:/srv/racona/
+
+# on the server
+zstd -dc /srv/racona/racona-core-amd64.tar.zst | docker load
+```
+
+**3. Start it with Docker Compose.** Create a `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -360,7 +360,7 @@ services:
       retries: 5
 
   db-init:
-    image: ghcr.io/racona-webos/racona-core:latest
+    image: racona/core:latest-amd64
     command: ['bun', '--filter', '@racona/database', 'db:init']
     env_file:
       - .env
@@ -370,7 +370,7 @@ services:
     restart: 'no'
 
   app:
-    image: ghcr.io/racona-webos/racona-core:latest
+    image: racona/core:latest-amd64
     ports:
       - '3000:3000'
     env_file:
@@ -391,6 +391,8 @@ Then start it:
 ```bash
 docker compose up -d
 ```
+
+On an upgrade, load the new image and run `docker compose up -d` again: `db-init` applies the pending migrations before the app starts. Back up the database and the `uploads` folder first (uploaded files and plugin files are stored there).
 
 **Important:** In your `.env` file, the `DATABASE_URL` must point to the postgres service within the Docker network:
 
@@ -428,7 +430,13 @@ bun docker:build:amd64        # Full image, linux/amd64
 bun docker:build:arm64        # Full image, linux/arm64
 bun docker:build:app:amd64    # App-only, linux/amd64
 bun docker:build:app:arm64    # App-only, linux/arm64
+
+# Save a compressed image for copying to a server
+bun docker:save:zstd:amd64    # docker/racona-core-amd64.tar.zst
+bun docker:save:zstd:arm64    # docker/racona-core-arm64.tar.zst
 ```
+
+The build stage runs Vite with a real Node binary (copied from the `node` image), so the `NODE_OPTIONS` heap limit applies; the final image only contains Bun.
 
 ## Plugin Development
 

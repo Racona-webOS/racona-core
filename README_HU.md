@@ -41,7 +41,7 @@
 - [Projekt struktúra](#projekt-struktúra)
 - [Docker](#docker)
   - [Önálló futtatás](#önálló-futtatás)
-  - [Előre buildelt image használata GitHub Container Registry-ből](#előre-buildelve-image-használata-github-container-registry-ből)
+  - [Helyben buildelt image futtatása szerveren](#helyben-buildelt-image-futtatása-szerveren)
   - [Adatbázis inicializálás és reset](#adatbázis-inicializálás-és-reset)
   - [Környezeti változók](#környezeti-változók)
   - [Image build](#image-build)
@@ -291,30 +291,30 @@ Ez elindítja a teljes rendszert három konténerben, sorban:
 
 Az alkalmazás elérhető lesz a `http://localhost:3000` címen (konfigurálható: `RACONA_PORT`), a PostgreSQL az `5432`-es porton (konfigurálható: `POSTGRES_PORT`).
 
-### Előre buildelt image használata GitHub Container Registry-ből
+### Helyben buildelt image futtatása szerveren
 
-Ha nem szeretnéd helyben buildelni az image-et, használhatod a GitHub Container Registry-ben publikált verziót. Az image automatikusan buildelődik és publikálódik minden release esetén (verzió tag push).
+A kiadások image-e nem kerül fel registrybe: az image-et a saját gépeden kell buildelni, és onnan átvinni a szerverre. (A `Docker Image Publish` workflow kézzel továbbra is indítható, de a GitHub Container Registry-ben lévő image-ek nincsenek naprakészen tartva.)
 
-**Elérhető image-ek:**
-
-- `ghcr.io/racona-webos/racona-core:latest` — legfrissebb stabil release
-- `ghcr.io/racona-webos/racona-core:0.1.0` — konkrét verzió
-- `ghcr.io/racona-webos/racona-core:0.1` — major.minor verzió
-- `ghcr.io/racona-webos/racona-core:0` — major verzió
-
-**Használat Docker Compose-zal:**
-
-Hozz létre egy `docker-compose.yml` fájlt, vagy használd a mellékelt `docker/docker-compose.ghcr.yml` példát:
+**1. Build és tömörítés** (a saját gépeden):
 
 ```bash
-# Bun-nal (ha telepítve van)
-bun docker:up:ghcr
-
-# Vagy közvetlenül Docker Compose-zal
-docker compose -f docker/docker-compose.ghcr.yml up -d
+bun docker:build:amd64          # racona/core:latest-amd64
+bun docker:save:zstd:amd64      # docker/racona-core-amd64.tar.zst
 ```
 
-Vagy hozz létre saját `docker-compose.yml` fájlt:
+ARM szerverhez az `arm64` változatokat használd.
+
+**2. Átvitel és betöltés:**
+
+```bash
+# a saját gépeden
+scp docker/racona-core-amd64.tar.zst user@szerver:/srv/racona/
+
+# a szerveren
+zstd -dc /srv/racona/racona-core-amd64.tar.zst | docker load
+```
+
+**3. Indítás Docker Compose-zal.** Hozz létre egy `docker-compose.yml` fájlt:
 
 ```yaml
 services:
@@ -333,7 +333,7 @@ services:
       retries: 5
 
   db-init:
-    image: ghcr.io/racona-webos/racona-core:latest
+    image: racona/core:latest-amd64
     command: ['bun', '--filter', '@racona/database', 'db:init']
     env_file:
       - .env
@@ -343,7 +343,7 @@ services:
     restart: 'no'
 
   app:
-    image: ghcr.io/racona-webos/racona-core:latest
+    image: racona/core:latest-amd64
     ports:
       - '3000:3000'
     env_file:
@@ -364,6 +364,8 @@ Majd indítsd el:
 ```bash
 docker compose up -d
 ```
+
+Frissítéskor töltsd be az új image-et, és futtasd újra a `docker compose up -d`-t: a `db-init` az app indulása előtt lefuttatja a még hiányzó migrációkat. Előtte mentsd az adatbázist és az `uploads` mappát (itt vannak a feltöltött és a pluginok által tárolt fájlok).
 
 **Fontos:** A `.env` fájlban a `DATABASE_URL` értékének a Docker network-ön belüli postgres service-re kell mutatnia:
 
@@ -390,8 +392,24 @@ Az összes konfigurációs lehetőségért lásd a [`.env.example`](./.env.examp
 ### Image build
 
 ```bash
+# Teljes image (db-init képességgel)
 docker build -f docker/Dockerfile -t racona/core:latest .
+
+# Csak az app (db-init nélkül, külső adatbázishoz)
+docker build -f docker/Dockerfile.app -t racona/core-app:latest .
+
+# Platform-specifikus build
+bun docker:build:amd64        # Teljes image, linux/amd64
+bun docker:build:arm64        # Teljes image, linux/arm64
+bun docker:build:app:amd64    # Csak app, linux/amd64
+bun docker:build:app:arm64    # Csak app, linux/arm64
+
+# Tömörített image mentése a szerverre vitelhez
+bun docker:save:zstd:amd64    # docker/racona-core-amd64.tar.zst
+bun docker:save:zstd:arm64    # docker/racona-core-arm64.tar.zst
 ```
+
+A build fázis valódi Node-dal futtatja a Vite-ot (a `node` image-ből másolva), így érvényes a `NODE_OPTIONS` heap-korlát; a kész image-ben csak a Bun van.
 
 ## Dokumentáció
 
