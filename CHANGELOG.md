@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-06
+
 ### Added
 
 - **Plugin email reply-to**: `context.email.send()` accepts an optional `replyTo` parameter, so a plugin can set the Reply-To address per email. When omitted, the system-wide `SMTP_REPLY_TO` applies as before.

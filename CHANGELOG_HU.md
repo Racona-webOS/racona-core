@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-06
+
 ### Hozzáadva
 
 - **Plugin email válaszcím**: a `context.email.send()` opcionális `replyTo` paramétert fogad, így a plugin levelenként megadhatja a Reply-To címet. Ha nincs megadva, a rendszerszintű `SMTP_REPLY_TO` érvényes, mint eddig.
