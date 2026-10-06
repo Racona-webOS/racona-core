@@ -236,6 +236,41 @@ export interface AssetService {
 	getUrl(assetPath: string): string;
 }
 
+/** Result of `sdk.files.upload()` — pass `fileId` to your remote function, which claims it. */
+export interface FileUploadResult {
+	fileId: string;
+	originalName: string;
+	/** MIME type detected by the server from the file content */
+	mimeType: string;
+	size: number;
+}
+
+/** Options of `sdk.files.upload()` */
+export interface FileUploadOptions {
+	/** Called while the file is being sent */
+	onProgress?: (progress: { loaded: number; total: number }) => void;
+	/** Abort the upload */
+	signal?: AbortSignal;
+}
+
+/**
+ * Error of `sdk.files.upload()`. `code` is set when the server rejected the
+ * file: `FILE_TOO_LARGE`, `INVALID_MIME`, `INVALID_TOKEN`, `PERMISSION_DENIED`, …
+ */
+export interface FileUploadError extends Error {
+	code?: string;
+	status?: number;
+}
+
+/**
+ * File service — upload files to the core file storage (`file_access` permission).
+ * The upload link comes from your remote function (`context.files.createUploadUrl`).
+ */
+export interface FileService {
+	/** Send a file to an upload link created by the plugin's server code. */
+	upload(uploadUrl: string, file: Blob, options?: FileUploadOptions): Promise<FileUploadResult>;
+}
+
 /** Shared Libraries service — access to libraries installed in the Racona core */
 export interface SharedLibrariesService {
 	/** Get a shared library by name */
@@ -354,6 +389,8 @@ export interface WebOSSDKInterface {
 	assets: AssetService;
 	/** Shared Libraries service — access to core libraries */
 	libs: SharedLibrariesService;
+	/** File service — upload files (`file_access` permission) */
+	files: FileService;
 	/** Racona UI components */
 	components: WebOSComponents;
 }
@@ -389,6 +426,11 @@ export interface MockSDKConfig {
 	assets?: {
 		/** Base URL prepended to all asset paths (default: `/assets`) */
 		baseUrl?: string;
+	};
+	/** Configure mock file service */
+	files?: {
+		/** Custom upload handler; by default the upload succeeds with a random file ID */
+		upload?: (uploadUrl: string, file: Blob) => FileUploadResult | Promise<FileUploadResult>;
 	};
 	/** Configure mock shared libraries service */
 	libs?: {

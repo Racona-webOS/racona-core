@@ -213,6 +213,11 @@ MIT
 
 ## Changelog
 
+### [0.7.0] - 2026-10-06
+
+- **Added**: `sdk.files.upload()` — upload a file to a signed link created by the plugin's server code (`context.files.createUploadUrl`), with progress reporting. Errors carry a `code` (`FILE_TOO_LARGE`, `INVALID_MIME`, …). Simulated by `MockFileService` in standalone mode
+- **Added**: `@racona/sdk/server` — `PluginFileService`, `PluginFileInfo`, `PluginFileError`, and `files?` on `RemoteFunctionContext` and `ScheduledJobContext` (`file_access` permission). Needs a Racona version with plugin file storage
+
 ### [0.6.0] - 2026-10-05
 
 - **Added**: `@racona/sdk/server` — types for plugin server code: `ScheduledJobHandler`, `ScheduledJobContext`, `ScheduledJobParams`, `ScheduledJobResult`, `ManifestScheduledJob`, `RemoteFunctionContext`, `PluginDb`, `PluginEmailService`, `PluginNotificationService`. Types only; scheduled jobs need a Racona version that includes the scheduler

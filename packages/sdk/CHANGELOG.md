@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-06
+
+### Added
+
+- **`sdk.files.upload(uploadUrl, file, { onProgress, signal })`**: fájl feltöltése a core fájltárolójába a plugin szerver kódja által kiadott, aláírt linkre (`context.files.createUploadUrl`). A fájl nyersen megy (nem base64), haladásjelzéssel; hibánál `FileUploadError` `code`-dal (`FILE_TOO_LARGE`, `INVALID_MIME`, …). Típusok: `FileService`, `FileUploadResult`, `FileUploadOptions`, `FileUploadError`. Standalone módban a `MockFileService` szimulálja (`MockSDKConfig.files.upload`).
+- **`@racona/sdk/server`**: `PluginFileService`, `PluginFileInfo`, `PluginFileError`, és `files?` a `RemoteFunctionContext`-ben és a `ScheduledJobContext`-ben (`file_access` jogosultsággal). A fájlok a lemezre kerülnek, az adatbázisba csak a metaadat. A core `file_access`-t támogató verziója kell hozzá.
+
 ## [0.6.0] - 2026-10-05
 
 ### Added

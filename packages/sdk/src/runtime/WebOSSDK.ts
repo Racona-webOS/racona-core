@@ -14,6 +14,7 @@ import { NotificationService } from './services/NotificationService.js';
 import { ContextService } from './services/ContextService.js';
 import { AssetService } from './services/AssetService.js';
 import { SharedLibrariesService } from './services/SharedLibrariesService.js';
+import { FileService } from './services/FileService.js';
 
 /** WebOS SDK — injected into plugins by the Racona core, aggregates all services. */
 export class WebOSSDK implements WebOSSDKInterface {
@@ -33,6 +34,8 @@ export class WebOSSDK implements WebOSSDKInterface {
 	readonly assets: AssetService;
 	/** Shared Libraries service — access to core libraries */
 	readonly libs: SharedLibrariesService;
+	/** File service — upload files (`file_access` permission) */
+	readonly files: FileService;
 	/** Racona UI components */
 	readonly components: WebOSComponents;
 
@@ -64,6 +67,7 @@ export class WebOSSDK implements WebOSSDKInterface {
 		this.context = new ContextService(pluginId, user, params, permissions, windowElement);
 		this.assets = new AssetService(pluginId);
 		this.libs = new SharedLibrariesService();
+		this.files = new FileService(pluginId);
 		this.components = components ?? {};
 		this.ui._setComponents(this.components);
 	}

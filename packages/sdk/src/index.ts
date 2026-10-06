@@ -23,6 +23,7 @@ export { NotificationService } from './runtime/services/NotificationService.js';
 export { ContextService } from './runtime/services/ContextService.js';
 export { AssetService } from './runtime/services/AssetService.js';
 export { SharedLibrariesService } from './runtime/services/SharedLibrariesService.js';
+export { FileService } from './runtime/services/FileService.js';
 
 export { PluginErrorCode } from './types/index.js';
 export type {
@@ -30,6 +31,9 @@ export type {
 	CallOptions,
 	DialogOptions,
 	DialogResult,
+	FileUploadError,
+	FileUploadOptions,
+	FileUploadResult,
 	MockSDKConfig,
 	NotificationOptions,
 	ThemeColors,

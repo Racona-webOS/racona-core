@@ -29,6 +29,7 @@ export { MockNotificationService } from './services/MockNotificationService.js';
 export { MockContextService } from './services/MockContextService.js';
 export { MockAssetService } from './services/MockAssetService.js';
 export { MockSharedLibrariesService } from './services/MockSharedLibrariesService.js';
+export { MockFileService } from './services/MockFileService.js';
 
 // Mock DataTable segédfüggvények
 export {

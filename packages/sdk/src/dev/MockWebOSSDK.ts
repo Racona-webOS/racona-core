@@ -30,6 +30,7 @@ import { MockNotificationService } from './services/MockNotificationService.js';
 import { MockContextService } from './services/MockContextService.js';
 import { MockAssetService } from './services/MockAssetService.js';
 import { MockSharedLibrariesService } from './services/MockSharedLibrariesService.js';
+import { MockFileService } from './services/MockFileService.js';
 
 /** Mock WebOS SDK — simulates all services locally for standalone plugin development. */
 export class MockWebOSSDK implements WebOSSDKInterface {
@@ -49,6 +50,8 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 	readonly assets: MockAssetService;
 	/** Mock Shared Libraries service */
 	readonly libs: MockSharedLibrariesService;
+	/** Mock File service */
+	readonly files: MockFileService;
 
 	/** Mock UI components — DataTable és segédfüggvények standalone módban */
 	get components(): WebOSSDKInterface['components'] {
@@ -67,6 +70,7 @@ export class MockWebOSSDK implements WebOSSDKInterface {
 		);
 		this.assets = new MockAssetService(config?.assets);
 		this.libs = new MockSharedLibrariesService(config?.libs?.mockLibraries);
+		this.files = new MockFileService(config?.files);
 	}
 
 	/**
