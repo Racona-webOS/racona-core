@@ -21,6 +21,7 @@ import {
 	PLUGIN_TEMP_DIR
 } from '$lib/server/plugins/config';
 import { activityLogService } from '$lib/server/activity-log/service';
+import { permissionRepository } from '$lib/server/database/repositories';
 
 const TEMP_DIR = PLUGIN_TEMP_DIR;
 const MAX_FILE_SIZE = PLUGIN_MAX_SIZE;
@@ -34,8 +35,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			throw error(401, 'Unauthorized - Authentication required');
 		}
 
-		// TODO: Check if user has admin permission
-		// For now, we allow any authenticated user
+		// Permission check — a feltöltés egyben telepít is, ezért ugyanaz a jog kell, mint az /install-hoz
+		const userId = parseInt(locals.user.id);
+		const permissions = await permissionRepository.findPermissionsForUser(userId);
+
+		if (!permissions.includes('plugin.manual.install')) {
+			throw error(
+				403,
+				'Forbidden - Insufficient permissions. Plugin management requires plugin.manual.install permission.'
+			);
+		}
 
 		// 2. Multipart form-data parsing
 		const formData = await request.formData();

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Plugin upload permission**: the `POST /api/plugins/upload` endpoint (which validates and also installs) allowed any logged-in user to install a plugin. It now requires the `plugin.manual.install` permission, same as `/install`; otherwise it returns 403.
+
 ## [0.7.3] - 2026-10-07
 
 ### Added
