@@ -5,6 +5,7 @@
  * - Más felhasználó célzásához a hívónak notifications.send core jogosultság kell,
  *   enélkül 403 és nem jön létre értesítés (a célfelhasználó létezése sem derül ki).
  * - A plugin oldali feltételek (létezik, aktív, van 'notifications' joga) továbbra is kellenek.
+ * - A hívónak az appot is el kell érnie (szerepkör/csoport hozzárendelés vagy nyilvános app).
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -14,6 +15,7 @@ import { apps, users } from '@racona/database';
 
 const mockSendNotification = vi.fn();
 const mockFindPermissionsForUser = vi.fn();
+const mockCanUserAccessApp = vi.fn();
 /** db.select().from(table).where().limit() eredménye táblánként */
 const tableRows = new Map<unknown, unknown[]>();
 
@@ -36,6 +38,9 @@ vi.mock('$lib/server/socket', () => ({
 vi.mock('$lib/server/database/repositories', () => ({
 	permissionRepository: {
 		findPermissionsForUser: (...args: unknown[]) => mockFindPermissionsForUser(...args)
+	},
+	appRepository: {
+		canUserAccessApp: (...args: unknown[]) => mockCanUserAccessApp(...args)
 	}
 }));
 
@@ -85,6 +90,7 @@ describe('POST /api/plugins/[pluginId]/notifications — jogosultság', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 		mockSendNotification.mockResolvedValue([{ id: 99 }]);
 		mockFindPermissionsForUser.mockResolvedValue([]);
+		mockCanUserAccessApp.mockResolvedValue(true);
 		tableRows.clear();
 		tableRows.set(apps, [activePlugin]);
 		tableRows.set(users, [{ id: CALLER_ID }]);
@@ -94,6 +100,16 @@ describe('POST /api/plugins/[pluginId]/notifications — jogosultság', () => {
 		const status = await callPost({ ...base, userId: OTHER_ID }, null);
 
 		expect(status).toBe(401);
+		expect(mockSendNotification).not.toHaveBeenCalled();
+	});
+
+	it('403-at ad, ha a hívó nem érheti el az appot (saját magának sem küldhet)', async () => {
+		mockCanUserAccessApp.mockResolvedValue(false);
+
+		const status = await callPost({ ...base, userId: CALLER_ID });
+
+		expect(status).toBe(403);
+		expect(mockCanUserAccessApp).toHaveBeenCalledWith(CALLER_ID, PLUGIN_ID);
 		expect(mockSendNotification).not.toHaveBeenCalled();
 	});
 

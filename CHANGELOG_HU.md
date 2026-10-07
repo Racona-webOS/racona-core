@@ -12,6 +12,7 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 ### Javítva
 
 - **Plugin feltöltés jogosultsága**: a `POST /api/plugins/upload` végpont (ami validál és telepít is) eddig bármely bejelentkezett felhasználónak engedte a telepítést. Mostantól a `plugin.manual.install` jog kell hozzá, ugyanúgy, mint az `/install` végponthoz; enélkül 403.
+- **Plugin végpontok app-hozzáférése**: a plugin remote függvényei, adat-végpontjai (`data/get|set|delete|query`) és értesítés-küldése eddig minden bejelentkezett felhasználót kiszolgáltak, akkor is, ha az app nem volt hozzárendelve. Mostantól ugyanaz a szabály dönt, mint az alkalmazáslistában (nyilvános app, vagy szerepkörön/csoporton keresztül hozzárendelt); enélkül 403 `PERMISSION_DENIED`. A statikus erőforrások (bundle, komponensek, menü, fordítás, assetek) változatlanul elérhetők, az ütemezett feladatokat nem érinti.
 
 ## [0.7.3] - 2026-10-07
 

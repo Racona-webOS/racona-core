@@ -14,6 +14,7 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { requirePluginAppAccess } from '$lib/server/plugins/runtime/appAccess';
 import { PluginErrorCode } from '@racona/database';
 import db from '$lib/server/database';
 import { apps, users } from '@racona/database';
@@ -102,6 +103,9 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have 'notifications' permission`
 			);
 		}
+
+		// A hívó felhasználó elérheti-e az appot
+		await requirePluginAppAccess(callerId, pluginId);
 
 		// Hívó jogosultság — más felhasználó célzása csak notifications.send joggal.
 		// A célfelhasználó létezését csak ezután ellenőrizzük, hogy a 404 ne szivárogtasson.

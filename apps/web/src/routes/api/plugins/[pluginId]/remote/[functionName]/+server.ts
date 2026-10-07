@@ -19,6 +19,7 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { requirePluginAppAccess } from '$lib/server/plugins/runtime/appAccess';
 import { PluginErrorCode } from '@racona/database';
 import db from '$lib/server/database';
 import { client as pool } from '$lib/server/database';
@@ -116,6 +117,9 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have 'remote_functions' permission`
 			);
 		}
+
+		// 5a. A hívó felhasználó elérheti-e az appot (szerepkör/csoport hozzárendelés vagy nyilvános app)
+		await requirePluginAppAccess(userId, pluginId);
 
 		// 5b. Az ütemezett feladatok handlerei rendszerjogon futnak, felhasználó nem hívhatja
 		// (a `server/jobs` modulban vannak; ez arra az esetre véd, ha a functions is exportálja)

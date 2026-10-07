@@ -1,5 +1,5 @@
 import db from '$lib/server/database';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, or, inArray, exists, sql } from 'drizzle-orm';
 import {
 	apps,
 	roleAppAccess,
@@ -50,6 +50,7 @@ export interface IAppRepository {
 	findActiveApps(): Promise<AppEntity[]>;
 	findAppsForUser(userId: number, locale: string): Promise<AppEntity[]>;
 	searchAppsForUser(userId: number, query: string, locale: string): Promise<AppEntity[]>;
+	canUserAccessApp(userId: number, appId: string): Promise<boolean>;
 }
 
 /**
@@ -203,6 +204,40 @@ export class AppRepository implements IAppRepository {
 		});
 
 		return uniqueApps;
+	}
+
+	/**
+	 * Elérheti-e a felhasználó az adott appot.
+	 *
+	 * Ugyanaz a szabály, mint a findAppsForUser-ben (aktív, és nyilvános vagy a felhasználó
+	 * szerepkörén/csoportján keresztül hozzárendelt), de egyetlen lekérdezéssel, a teljes lista nélkül.
+	 */
+	async canUserAccessApp(userId: number, appId: string): Promise<boolean> {
+		const viaRole = db
+			.select({ one: sql`1` })
+			.from(roleAppAccess)
+			.innerJoin(userRoles, eq(userRoles.roleId, roleAppAccess.roleId))
+			.where(and(eq(roleAppAccess.appId, apps.id), eq(userRoles.userId, userId)));
+
+		const viaGroup = db
+			.select({ one: sql`1` })
+			.from(groupAppAccess)
+			.innerJoin(userGroups, eq(userGroups.groupId, groupAppAccess.groupId))
+			.where(and(eq(groupAppAccess.appId, apps.id), eq(userGroups.userId, userId)));
+
+		const [row] = await db
+			.select({ id: apps.id })
+			.from(apps)
+			.where(
+				and(
+					eq(apps.appId, appId),
+					eq(apps.isActive, true),
+					or(eq(apps.isPublic, true), exists(viaRole), exists(viaGroup))
+				)
+			)
+			.limit(1);
+
+		return row !== undefined;
 	}
 
 	/**

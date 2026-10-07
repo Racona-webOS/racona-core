@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Plugin upload permission**: the `POST /api/plugins/upload` endpoint (which validates and also installs) allowed any logged-in user to install a plugin. It now requires the `plugin.manual.install` permission, same as `/install`; otherwise it returns 403.
+- **Plugin endpoint app access**: a plugin's remote functions, data endpoints (`data/get|set|delete|query`) and notification sending served any logged-in user, even if the app was not assigned to them. They now apply the same rule as the app list (public app, or assigned through a role or group); otherwise they return 403 `PERMISSION_DENIED`. Static resources (bundle, components, menu, translations, assets) stay available, and scheduled jobs are not affected.
 
 ## [0.7.3] - 2026-10-07
 

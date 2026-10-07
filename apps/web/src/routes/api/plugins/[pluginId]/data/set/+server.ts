@@ -8,12 +8,13 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { requirePluginAppAccess } from '$lib/server/plugins/runtime/appAccess';
 import { PluginErrorCode } from '@racona/database';
 import db from '$lib/server/database';
 import { apps } from '@racona/database';
 import { eq, sql } from 'drizzle-orm';
 
-export const POST: RequestHandler = async ({ params, request }) => {
+export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const { pluginId } = params;
 
 	try {
@@ -55,6 +56,9 @@ export const POST: RequestHandler = async ({ params, request }) => {
 				`${PluginErrorCode.PERMISSION_DENIED}: Plugin does not have database permission`
 			);
 		}
+
+		// A hívó felhasználó elérheti-e az appot
+		await requirePluginAppAccess(locals.user?.id, pluginId);
 		if (!/^[a-z0-9-]+$/.test(pluginId)) {
 			throw error(400, 'Invalid plugin ID format');
 		}
