@@ -6,7 +6,8 @@
  */
 
 import { readdir, readFile, stat } from 'fs/promises';
-import { join, relative, basename, extname, resolve } from 'path';
+import { join, relative, basename, extname } from 'path';
+import { parseFrontmatter, stemVariants, tokenize } from './text.js';
 import type {
 	Document,
 	DocumentChunk,
@@ -25,188 +26,11 @@ const CHUNK_CONFIG = {
 	overlap: 100
 } as const;
 
-/** Kulcsszó extrakció konfigurációja */
-const KEYWORD_CONFIG = {
-	/** Minimum szó hossz */
-	minWordLength: 3,
-	/** Maximum kulcsszavak száma chunk-onként */
-	maxKeywordsPerChunk: 20,
-	/** Kizárt szavak (stop words) */
-	stopWords: new Set([
-		// Magyar stop words
-		'a',
-		'az',
-		'és',
-		'vagy',
-		'de',
-		'hogy',
-		'ha',
-		'ez',
-		'az',
-		'egy',
-		'van',
-		'volt',
-		'lesz',
-		'be',
-		'ki',
-		'el',
-		'fel',
-		'le',
-		'meg',
-		'át',
-		'össze',
-		'szét',
-		'vissza',
-		'ide',
-		'oda',
-		'itt',
-		'ott',
-		'ahol',
-		'amikor',
-		'amely',
-		'amit',
-		'aki',
-		'akik',
-		'amik',
-		'amelyek',
-		'nem',
-		'igen',
-		'csak',
-		'már',
-		'még',
-		'is',
-		'sem',
-		'se',
-		'pedig',
-		'tehát',
-		'így',
-		'mint',
-		'mintha',
-		'mindig',
-		'soha',
-		'néha',
-		'gyakran',
-		'ritkán',
-		'most',
-		'akkor',
-		'után',
-		'előtt',
-		'alatt',
-		'felett',
-		'mellett',
-		'között',
-		'nélkül',
-		'miatt',
-		'helyett',
-		// Angol stop words
-		'the',
-		'a',
-		'an',
-		'and',
-		'or',
-		'but',
-		'in',
-		'on',
-		'at',
-		'to',
-		'for',
-		'of',
-		'with',
-		'by',
-		'from',
-		'up',
-		'about',
-		'into',
-		'through',
-		'during',
-		'before',
-		'after',
-		'above',
-		'below',
-		'between',
-		'among',
-		'under',
-		'over',
-		'out',
-		'off',
-		'down',
-		'upon',
-		'near',
-		'is',
-		'are',
-		'was',
-		'were',
-		'be',
-		'been',
-		'being',
-		'have',
-		'has',
-		'had',
-		'do',
-		'does',
-		'did',
-		'will',
-		'would',
-		'could',
-		'should',
-		'may',
-		'might',
-		'must',
-		'can',
-		'shall',
-		'this',
-		'that',
-		'these',
-		'those',
-		'i',
-		'you',
-		'he',
-		'she',
-		'it',
-		'we',
-		'they',
-		'me',
-		'him',
-		'her',
-		'us',
-		'them',
-		'my',
-		'your',
-		'his',
-		'her',
-		'its',
-		'our',
-		'their',
-		'not',
-		'no',
-		'yes',
-		'all',
-		'any',
-		'some',
-		'each',
-		'every',
-		'other',
-		'another',
-		'such',
-		'what',
-		'which',
-		'who',
-		'when',
-		'where',
-		'why',
-		'how',
-		'than',
-		'so',
-		'very'
-	])
-} as const;
-
 export class DocumentIndexer {
 	private knowledgeBasePath: string;
 
 	constructor(knowledgeBasePath: string) {
 		this.knowledgeBasePath = knowledgeBasePath;
-		console.log('[DocumentIndexer] Konstruktor - knowledgeBasePath:', knowledgeBasePath);
 	}
 
 	/**
@@ -216,22 +40,14 @@ export class DocumentIndexer {
 		const localePath = join(this.knowledgeBasePath, locale);
 		const documents: Document[] = [];
 
-		console.log(`[DocumentIndexer] Dokumentumok betöltése: ${localePath}`);
-		console.log(`[DocumentIndexer] Abszolút útvonal: ${resolve(localePath)}`);
-
 		try {
-			// Ellenőrizzük, hogy létezik-e a nyelvi mappa
 			await stat(localePath);
-			console.log(`[DocumentIndexer] Nyelvi mappa létezik: ${localePath}`);
-		} catch (error) {
-			console.warn(`[DocumentIndexer] Nyelvi mappa nem található: ${localePath}`, error);
+		} catch {
+			console.warn(`[DocumentIndexer] Nyelvi mappa nem található: ${localePath}`);
 			return documents;
 		}
 
-		// Rekurzívan betöltjük a dokumentumokat
 		await this.loadDocumentsRecursive(localePath, locale, documents);
-
-		console.log(`[DocumentIndexer] Betöltve ${documents.length} dokumentum (${locale})`);
 		return documents;
 	}
 
@@ -243,35 +59,19 @@ export class DocumentIndexer {
 		locale: KnowledgeBaseLocale,
 		documents: Document[]
 	): Promise<void> {
-		console.log(`[DocumentIndexer] Könyvtár olvasása: ${dirPath}`);
 		try {
 			const entries = await readdir(dirPath, { withFileTypes: true });
-			console.log(
-				`[DocumentIndexer] Talált bejegyzések (${entries.length}):`,
-				entries.map((e) => e.name)
-			);
 
 			for (const entry of entries) {
 				const fullPath = join(dirPath, entry.name);
 
 				if (entry.isDirectory()) {
-					console.log(`[DocumentIndexer] Almappa feldolgozása: ${fullPath}`);
-					// Rekurzív hívás almappákhoz
 					await this.loadDocumentsRecursive(fullPath, locale, documents);
 				} else if (entry.isFile() && this.isMarkdownFile(entry.name)) {
-					console.log(`[DocumentIndexer] Markdown fájl betöltése: ${fullPath}`);
-					// Markdown fájl betöltése
 					const document = await this.loadDocument(fullPath, locale);
 					if (document) {
 						documents.push(document);
-						console.log(
-							`[DocumentIndexer] Dokumentum hozzáadva: ${document.title} (${document.content.length} karakter)`
-						);
-					} else {
-						console.warn(`[DocumentIndexer] Dokumentum betöltése sikertelen: ${fullPath}`);
 					}
-				} else {
-					console.log(`[DocumentIndexer] Fájl kihagyva (nem markdown): ${entry.name}`);
 				}
 			}
 		} catch (error) {
@@ -287,29 +87,24 @@ export class DocumentIndexer {
 		locale: KnowledgeBaseLocale
 	): Promise<Document | null> {
 		try {
-			const content = await readFile(filePath, 'utf-8');
+			const raw = await readFile(filePath, 'utf-8');
 			const stats = await stat(filePath);
+			const { frontmatter, body } = parseFrontmatter(raw);
 
 			// Relatív útvonal a knowledge-base-hez képest
 			const relativePath = relative(this.knowledgeBasePath, filePath);
+			const content = body.trim();
 
-			// Kategória meghatározása az útvonal alapján
-			const category = this.extractCategory(relativePath);
-
-			// Cím kinyerése a fájlnévből vagy a tartalom első sorából
-			const title = this.extractTitle(content, filePath);
-
-			const document: Document = {
+			return {
 				id: relativePath,
-				title,
-				content: content.trim(),
+				title: frontmatter.title ?? this.extractTitle(content, filePath),
+				content,
+				tags: [...frontmatter.tags, ...frontmatter.aliases],
 				filePath: relativePath,
 				locale,
-				category,
+				category: this.extractCategory(relativePath),
 				lastModified: stats.mtime
 			};
-
-			return document;
 		} catch (error) {
 			console.error(`[DocumentIndexer] Hiba a dokumentum betöltésekor: ${filePath}`, error);
 			return null;
@@ -322,20 +117,29 @@ export class DocumentIndexer {
 	chunkDocument(document: Document): DocumentChunk[] {
 		const chunks: DocumentChunk[] = [];
 		const content = document.content;
+		const metaKeywords = this.extractMetaKeywords(document);
+
+		const makeChunk = (
+			index: number,
+			text: string,
+			startIndex: number,
+			endIndex: number
+		): DocumentChunk => ({
+			id: `${document.id}:${index}`,
+			documentId: document.id,
+			content: text,
+			startIndex,
+			endIndex,
+			documentTitle: document.title,
+			documentPath: document.filePath,
+			metaKeywords,
+			locale: document.locale,
+			category: document.category
+		});
 
 		if (content.length <= CHUNK_CONFIG.maxSize) {
 			// Ha a dokumentum elég kicsi, egy chunk-ban hagyjuk
-			chunks.push({
-				id: `${document.id}:0`,
-				documentId: document.id,
-				content: content,
-				startIndex: 0,
-				endIndex: content.length,
-				documentTitle: document.title,
-				documentPath: document.filePath,
-				locale: document.locale,
-				category: document.category
-			});
+			chunks.push(makeChunk(0, content, 0, content.length));
 			return chunks;
 		}
 
@@ -354,19 +158,11 @@ export class DocumentIndexer {
 			const chunkContent = content.slice(startIndex, endIndex).trim();
 
 			if (chunkContent.length >= CHUNK_CONFIG.minSize || endIndex === content.length) {
-				chunks.push({
-					id: `${document.id}:${chunkIndex}`,
-					documentId: document.id,
-					content: chunkContent,
-					startIndex,
-					endIndex,
-					documentTitle: document.title,
-					documentPath: document.filePath,
-					locale: document.locale,
-					category: document.category
-				});
+				chunks.push(makeChunk(chunkIndex, chunkContent, startIndex, endIndex));
 				chunkIndex++;
 			}
+
+			if (endIndex === content.length) break;
 
 			// Következő chunk kezdete (átfedéssel)
 			startIndex = Math.max(endIndex - CHUNK_CONFIG.overlap, startIndex + 1);
@@ -383,28 +179,36 @@ export class DocumentIndexer {
 		const chunksMap = new Map<string, DocumentChunk>();
 		const keywordIndex = new Map<string, string[]>();
 
-		// Dokumentumok feldolgozása
 		for (const document of documents) {
 			documentsMap.set(document.id, document);
 
-			// Chunk-ok létrehozása
-			const chunks = this.chunkDocument(document);
-
-			for (const chunk of chunks) {
+			for (const chunk of this.chunkDocument(document)) {
 				chunksMap.set(chunk.id, chunk);
 
-				// Kulcsszavak kinyerése és indexelése
-				const keywords = this.extractKeywords(chunk.content);
-				for (const keyword of keywords) {
-					if (!keywordIndex.has(keyword)) {
-						keywordIndex.set(keyword, []);
+				// A chunk összes szava, a szótövek és a dokumentum címkéi is kereshetők
+				const keywords = new Set<string>(chunk.metaKeywords);
+				for (const word of tokenize(chunk.content)) {
+					for (const variant of stemVariants(word)) {
+						keywords.add(variant);
 					}
-					keywordIndex.get(keyword)!.push(chunk.id);
+				}
+
+				for (const keyword of keywords) {
+					const ids = keywordIndex.get(keyword);
+					if (ids) {
+						ids.push(chunk.id);
+					} else {
+						keywordIndex.set(keyword, [chunk.id]);
+					}
 				}
 			}
 		}
 
-		const index: DocumentIndex = {
+		console.log(
+			`[DocumentIndexer] Index építve (${locale}): ${documentsMap.size} dokumentum, ${chunksMap.size} chunk, ${keywordIndex.size} kulcsszó`
+		);
+
+		return {
 			locale,
 			documents: documentsMap,
 			chunks: chunksMap,
@@ -413,12 +217,19 @@ export class DocumentIndexer {
 			documentCount: documentsMap.size,
 			chunkCount: chunksMap.size
 		};
+	}
 
-		console.log(
-			`[DocumentIndexer] Index építve (${locale}): ${index.documentCount} dokumentum, ${index.chunkCount} chunk, ${keywordIndex.size} kulcsszó`
-		);
-
-		return index;
+	/**
+	 * A cím és a frontmatter címkék kulcsszavai (szótövekkel együtt)
+	 */
+	private extractMetaKeywords(document: Document): string[] {
+		const keywords = new Set<string>();
+		for (const word of tokenize([document.title, ...document.tags].join(' '))) {
+			for (const variant of stemVariants(word)) {
+				keywords.add(variant);
+			}
+		}
+		return [...keywords];
 	}
 
 	/**
@@ -433,13 +244,9 @@ export class DocumentIndexer {
 	 * Kategória kinyerése az útvonalból
 	 */
 	private extractCategory(relativePath: string): DocumentCategory {
-		if (relativePath.includes('/user/') || relativePath.includes('\\user\\')) {
-			return 'user';
-		}
 		if (relativePath.includes('/developer/') || relativePath.includes('\\developer\\')) {
 			return 'developer';
 		}
-		// Alapértelmezett: user
 		return 'user';
 	}
 
@@ -485,41 +292,5 @@ export class DocumentIndexer {
 
 		// Ha semmi sem található, az eredeti végpont
 		return maxEndIndex;
-	}
-
-	/**
-	 * Kulcsszavak kinyerése a szövegből
-	 */
-	private extractKeywords(content: string): string[] {
-		// Markdown formázás eltávolítása
-		const cleanContent = content
-			.replace(/[#*_`\[\]()]/g, ' ') // Markdown karakterek
-			.replace(/https?:\/\/[^\s]+/g, ' ') // URL-ek
-			.replace(/\s+/g, ' ') // Többszörös szóközök
-			.toLowerCase();
-
-		// Szavakra bontás
-		const words = cleanContent
-			.split(/[^\w\u00C0-\u017F]+/) // Unicode karakterek megtartása (ékezetek)
-			.filter(
-				(word) =>
-					word.length >= KEYWORD_CONFIG.minWordLength &&
-					!KEYWORD_CONFIG.stopWords.has(word) &&
-					!/^\d+$/.test(word) // Csak számok kizárása
-			);
-
-		// Gyakoriság számítás
-		const wordFreq = new Map<string, number>();
-		for (const word of words) {
-			wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
-		}
-
-		// Leggyakoribb szavak kiválasztása
-		const sortedWords = Array.from(wordFreq.entries())
-			.sort((a, b) => b[1] - a[1])
-			.slice(0, KEYWORD_CONFIG.maxKeywordsPerChunk)
-			.map(([word]) => word);
-
-		return sortedWords;
 	}
 }

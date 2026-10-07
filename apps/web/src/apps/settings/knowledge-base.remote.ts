@@ -2,15 +2,14 @@
  * Knowledge Base Admin Remote Actions
  *
  * Admin funkciók a Knowledge Base kezeléséhez.
- * Csak admin jogosultsággal rendelkező felhasználók használhatják.
+ * Csak settings.admin.aiAssistant jogosultsággal használhatók.
  */
 
-import { command, query, getRequestEvent } from '$app/server';
+import { command, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
-import { KnowledgeBaseService } from '$lib/server/ai-assistant/knowledgeBaseService.js';
+import { permissionRepository } from '$lib/server/database/repositories';
+import { getKnowledgeBase } from '$lib/server/ai-assistant/knowledgeBaseService.js';
 import type { KnowledgeBaseLocale, KnowledgeBaseStatus } from '$lib/server/ai-assistant/types.js';
-import { join } from 'path';
-import { dev } from '$app/environment';
 
 // ============================================================================
 // Sémák
@@ -44,30 +43,25 @@ export interface GetKnowledgeBaseStatusResult {
 // ============================================================================
 
 /**
- * Admin jogosultság ellenőrzése
+ * Admin jogosultság ellenőrzése (ugyanaz a jog, mint az AI asszisztens beállításainál)
  */
 async function checkAdminPermission(): Promise<{ success: boolean; error?: string }> {
-	const event = getRequestEvent();
-	const { locals } = event;
+	const { locals } = getRequestEvent();
 
 	if (!locals.user?.id) {
 		return { success: false, error: 'Nem vagy bejelentkezve.' };
 	}
 
-	// TODO: Implement proper admin role checking
-	// For now, we'll allow all authenticated users to access Knowledge Base admin functions
-	// In a production environment, you should implement proper role-based access control
-
-	// Example implementation would be:
-	// const userWithRoles = await userRepository.findByIdWithGroupsAndRoles(parseInt(locals.user.id));
-	// const hasAdminRole = userWithRoles?.roles.some(role =>
-	//   role.name.en === 'admin' || role.name.hu === 'admin'
-	// );
-	// if (!hasAdminRole) {
-	//   return { success: false, error: 'Nincs jogosultságod ehhez a művelethez.' };
-	// }
-
-	return { success: true };
+	try {
+		const permissions = await permissionRepository.findPermissionsForUser(parseInt(locals.user.id));
+		if (!permissions.includes('settings.admin.aiAssistant')) {
+			return { success: false, error: 'Nincs jogosultságod ehhez a művelethez.' };
+		}
+		return { success: true };
+	} catch (error) {
+		console.error('[KnowledgeBase] Jogosultság ellenőrzési hiba:', error);
+		return { success: false, error: 'Nincs jogosultságod ehhez a művelethez.' };
+	}
 }
 
 // ============================================================================
@@ -77,7 +71,6 @@ async function checkAdminPermission(): Promise<{ success: boolean; error?: strin
 export const reindexKnowledgeBase = command(
 	reindexKnowledgeBaseSchema,
 	async (data): Promise<ReindexKnowledgeBaseResult> => {
-		// Admin jogosultság ellenőrzése
 		const permissionCheck = await checkAdminPermission();
 		if (!permissionCheck.success) {
 			return { success: false, error: permissionCheck.error };
@@ -85,40 +78,17 @@ export const reindexKnowledgeBase = command(
 
 		try {
 			const startTime = Date.now();
+			await getKnowledgeBase().reindex(data.locale);
+			const duration = Date.now() - startTime;
 
-			// Knowledge Base szolgáltatás inicializálása
-			const knowledgeBasePath = dev
-				? join(process.cwd(), 'static/knowledge-base')
-				: join(process.cwd(), 'static/knowledge-base');
-
-			// Singleton resetelése, hogy az új útvonallal jöjjön létre
-			KnowledgeBaseService.resetInstance();
-			const kbService = KnowledgeBaseService.getInstance(knowledgeBasePath);
-
-			// Újraindexelés végrehajtása
-			if (data.locale) {
-				// Egy adott nyelv újraindexelése
-				await kbService.reindex(data.locale);
-				const duration = Date.now() - startTime;
-
-				return {
-					success: true,
-					message: `${data.locale} nyelv újraindexelése sikeresen befejezve.`,
-					reindexedLocales: [data.locale],
-					duration
-				};
-			} else {
-				// Összes nyelv újraindexelése
-				await kbService.reindex();
-				const duration = Date.now() - startTime;
-
-				return {
-					success: true,
-					message: 'Összes nyelv újraindexelése sikeresen befejezve.',
-					reindexedLocales: ['hu', 'en'],
-					duration
-				};
-			}
+			return {
+				success: true,
+				message: data.locale
+					? `${data.locale} nyelv újraindexelése sikeresen befejezve.`
+					: 'Összes nyelv újraindexelése sikeresen befejezve.',
+				reindexedLocales: data.locale ? [data.locale] : ['hu', 'en'],
+				duration
+			};
 		} catch (err) {
 			console.error('[KnowledgeBase] Újraindexelési hiba:', err);
 			return {
@@ -137,46 +107,15 @@ export const reindexKnowledgeBase = command(
 export const getKnowledgeBaseStatus = command(
 	v.object({}),
 	async (): Promise<GetKnowledgeBaseStatusResult> => {
-		console.log('[KnowledgeBase] getKnowledgeBaseStatus hívás kezdete');
-
-		// Admin jogosultság ellenőrzése
 		const permissionCheck = await checkAdminPermission();
 		if (!permissionCheck.success) {
-			console.log(
-				'[KnowledgeBase] Admin jogosultság ellenőrzés sikertelen:',
-				permissionCheck.error
-			);
 			return { success: false, error: permissionCheck.error };
 		}
 
-		console.log('[KnowledgeBase] Admin jogosultság OK');
-
 		try {
-			// Knowledge Base szolgáltatás inicializálása
-			const knowledgeBasePath = dev
-				? join(process.cwd(), 'static/knowledge-base')
-				: join(process.cwd(), 'static/knowledge-base');
-
-			console.log('[KnowledgeBase] Knowledge Base útvonal:', knowledgeBasePath);
-			console.log('[KnowledgeBase] Dev mód:', dev);
-
-			// Singleton resetelése, hogy az új útvonallal jöjjön létre
-			KnowledgeBaseService.resetInstance();
-			const kbService = KnowledgeBaseService.getInstance(knowledgeBasePath);
-
-			// Inicializálás biztosítása
-			console.log('[KnowledgeBase] Inicializálás indítása...');
+			const kbService = getKnowledgeBase();
 			await kbService.initialize();
-			console.log('[KnowledgeBase] Inicializálás befejezve');
-
-			// Státusz lekérdezése
-			const status = kbService.getStatus();
-			console.log('[KnowledgeBase] Státusz:', status);
-
-			return {
-				success: true,
-				status
-			};
+			return { success: true, status: kbService.getStatus() };
 		} catch (err) {
 			console.error('[KnowledgeBase] Státusz lekérdezési hiba:', err);
 			return {

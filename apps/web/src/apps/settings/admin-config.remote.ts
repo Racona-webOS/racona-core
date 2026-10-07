@@ -433,20 +433,17 @@ export const testAIAgentConnection = command(
 
 				return { success: true, message: 'Connection successful' };
 			} else if (provider === 'anthropic') {
-				// Anthropic API test
-				const response = await fetch('https://api.anthropic.com/v1/messages', {
-					method: 'POST',
-					headers: {
-						'x-api-key': apiKey,
-						'anthropic-version': '2023-06-01',
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						model: model,
-						max_tokens: 10,
-						messages: [{ role: 'user', content: 'test' }]
-					})
-				});
+				// Anthropic API test — a Models API ellenőrzi a kulcsot és a modell nevét, szöveget nem generál
+				const response = await fetch(
+					`https://api.anthropic.com/v1/models/${encodeURIComponent(model)}`,
+					{
+						method: 'GET',
+						headers: {
+							'x-api-key': apiKey,
+							'anthropic-version': '2023-06-01'
+						}
+					}
+				);
 
 				if (!response.ok) {
 					const errorData = await response.json().catch(() => ({}));

@@ -48,3 +48,4 @@ Thumbs.db
 *.log
 # *.lock removed - we need bun.lock
 # !bun.lock moved to top of file
+apps/web/knowledge-base/*.zip

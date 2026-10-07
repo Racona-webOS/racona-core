@@ -22,7 +22,7 @@ INSERT INTO platform.ai_provider_configs (provider_id, config_key, config_value,
 ((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'temperature', '0.70', 'string', false),
 
 -- Anthropic provider konfigurációk
-((SELECT id FROM platform.ai_providers WHERE name = 'anthropic'), 'default_model', 'claude-3-5-sonnet-20241022', 'string', false),
+((SELECT id FROM platform.ai_providers WHERE name = 'anthropic'), 'default_model', 'claude-opus-5-5', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'anthropic'), 'base_url', 'https://api.anthropic.com/v1/messages', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'anthropic'), 'max_tokens', '1000', 'number', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'anthropic'), 'temperature', '0.70', 'string', false),

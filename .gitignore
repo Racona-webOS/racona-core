@@ -39,4 +39,4 @@ apps/web/uploads/ai-avatar
 *.tar.zst
 
 # Knowledge base csomagolt export (a hu/ .md forrásokból generált)
-apps/web/static/knowledge-base/*.zip
+apps/web/knowledge-base/*.zip

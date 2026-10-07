@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **AI assistant knowledge base in production**: the knowledge base moved from `static/knowledge-base` to `apps/web/knowledge-base`, and the Docker image copies it to `/app/knowledge-base`. Before, production could not find the files (answers were generated without documentation), while the `static` folder made them publicly downloadable.
+- **Knowledge base admin permission**: reindexing and the status query require the `settings.admin.aiAssistant` permission; before, any signed-in user could call them.
+- **No reindexing on every message**: the index is built once and only refreshed by the admin reindex.
+- **Chunking bug**: longer documents produced ~100 overlapping duplicate chunks at their end; the 13 Hungarian documents now yield 119 chunks in total (over 100 per document before).
+- **Search**: whole-word matching works for accented words (`\b` only knew ASCII letters), and keywords are escaped before going into the regex. Frontmatter is no longer sent to the model; `title`, `tags` and `aliases` get a higher weight. Inflected Hungarian forms are matched (e.g. "jelszavamat" → jelszó, "tálcát" → tálca), and longer stems also match words starting with them (módosít → módosítás).
+- **Anthropic**: the system prompt goes in the `system` field, and only text blocks are read from the response (on newer models the first block can be `thinking`). Newer models (Opus 4.7+, Sonnet 5+) get no `temperature`, since they reject it with a 400. Default model: `claude-opus-5-5`. The connection test calls the Models API instead of generating text.
+- **Gemini**: the system prompt is sent as `systemInstruction`, the API key in a header (`x-goog-api-key`) instead of the URL. **Hugging Face**: only the generated text is returned, not the prompt.
+
+### Changed
+
+- For developers: the six AI provider calls moved into one module (`$lib/server/ai-assistant/providers.ts`), the prompts into `prompts.ts`. `chat.remote.ts` went from 942 to about 300 lines. New tests for search and provider requests.
+
 ## [0.6.0] - 2026-10-06
 
 ### Added

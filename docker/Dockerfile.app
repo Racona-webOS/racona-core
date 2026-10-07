@@ -78,6 +78,9 @@ COPY --from=deps --chown=racona:nodejs /app/examples/plugins/weather/package.jso
 COPY --from=builder --chown=racona:nodejs /app/apps/web/build ./apps/web/build
 COPY --from=builder --chown=racona:nodejs /app/apps/web/server.js ./apps/web/server.js
 
+# AI asszisztens tudásbázis — a futtatási könyvtárhoz (process.cwd()) relatívan keresi
+COPY --from=builder --chown=racona:nodejs /app/apps/web/knowledge-base ./knowledge-base
+
 # Entrypoint script (Infisical opcionális)
 COPY --chmod=755 docker/prod/app/entrypoint.sh /app/entrypoint.sh
 

@@ -104,6 +104,9 @@ COPY --from=builder --chown=racona:nodejs /app/apps/web/build ./apps/web/build
 # Express + Socket.IO szerver
 COPY --from=builder --chown=racona:nodejs /app/apps/web/server.js ./apps/web/server.js
 
+# AI asszisztens tudásbázis — a futtatási könyvtárhoz (process.cwd()) relatívan keresi
+COPY --from=builder --chown=racona:nodejs /app/apps/web/knowledge-base ./knowledge-base
+
 # Demo reset cron script
 COPY --chmod=755 docker/prod/demo-reset-cron.sh /app/demo-reset-cron.sh
 

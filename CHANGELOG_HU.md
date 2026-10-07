@@ -9,6 +9,20 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Javítva
+
+- **AI asszisztens tudásbázis élesben**: a tudásbázis a `static/knowledge-base` helyett az `apps/web/knowledge-base` mappába került, a Docker image `/app/knowledge-base` alá másolja. Eddig élesben nem találta a fájlokat (a válaszok dokumentáció nélkül készültek), a `static` mappa miatt viszont bárki letölthette őket.
+- **Tudásbázis-admin jogosultság**: az újraindexelés és a státusz lekérdezése `settings.admin.aiAssistant` jogot kér; eddig minden bejelentkezett felhasználó elérte.
+- **Nem indexel újra minden üzenetnél**: a tudásbázis-index egyszer épül fel, utána csak az admin újraindexelés frissíti.
+- **Darabolási hiba**: a hosszabb dokumentumok végéből kb. 100 egymást átfedő, duplikált darab keletkezett; a 13 magyar dokumentum most összesen 119 darab (eddig dokumentumonként 100 fölött).
+- **Keresés**: a teljes szavas egyezés ékezetes szavakra is működik (a `\b` csak ASCII betűket ismert), a kulcsszó escape-elve kerül a regexbe. A frontmatter nem kerül a modellnek küldött szövegbe; a `title`, `tags` és `aliases` mezők erősebb súllyal számítanak. Ragozott alakokra is talál (pl. „jelszavamat” → jelszó, „tálcát” → tálca), és a hosszabb szótövek az ugyanígy kezdődő szavakra is keresnek (módosít → módosítás).
+- **Anthropic**: a rendszerprompt a `system` mezőben megy, a válaszból csak a szöveges blokkokat veszi (az új modelleknél az első blokk `thinking` is lehet). Az új modelleknél (Opus 4.7+, Sonnet 5+) nem küld `temperature` értéket, mert azt 400-as hibával utasítják el. Alapértelmezett modell: `claude-opus-5-5`. A kapcsolatteszt a Models API-t hívja, szöveget nem generál.
+- **Gemini**: a rendszerprompt `systemInstruction`-ként megy, az API kulcs fejlécben (`x-goog-api-key`), nem az URL-ben. **Hugging Face**: csak a generált szöveget kéri vissza, a promptot nem.
+
+### Változott
+
+- Fejlesztőknek: a hat AI provider hívása egy közös modulba került (`$lib/server/ai-assistant/providers.ts`), a promptok a `prompts.ts`-be. A `chat.remote.ts` 942 sorról kb. 300-ra csökkent. Új tesztek a keresésre és a provider-kérésekre.
+
 ## [0.6.0] - 2026-10-06
 
 ### Hozzáadva

@@ -16,8 +16,10 @@ export interface Document {
 	id: string;
 	/** Dokumentum címe */
 	title: string;
-	/** Teljes markdown tartalom */
+	/** Markdown tartalom (frontmatter nélkül) */
 	content: string;
+	/** Címkék és alternatív nevek a frontmatterből */
+	tags: string[];
 	/** Fájl útvonal a knowledge-base-ben */
 	filePath: string;
 	/** Nyelv */
@@ -44,6 +46,8 @@ export interface DocumentChunk {
 	documentTitle: string;
 	/** Dokumentum útvonala (gyors hozzáféréshez) */
 	documentPath: string;
+	/** A dokumentum címéből és címkéiből képzett kulcsszavak (erősebb súllyal számítanak) */
+	metaKeywords: string[];
 	/** Nyelv */
 	locale: KnowledgeBaseLocale;
 	/** Kategória */
@@ -99,16 +103,6 @@ export interface KnowledgeBaseStatus {
 	totalChunks: number;
 	/** Rendszer indítása óta eltelt idő */
 	uptime: number;
-}
-
-/** Agent API konfiguráció (már létezik, de referencia) */
-export interface AgentApiConfig {
-	provider: string;
-	apiKey: string;
-	modelName?: string;
-	baseUrl?: string;
-	maxTokens?: number;
-	temperature?: string;
 }
 
 /** Keresési paraméterek */
