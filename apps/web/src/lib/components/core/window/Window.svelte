@@ -3,7 +3,8 @@
  Ez a komponens felel az egyes ablakok felépítésért, műveletekért.
  -->
 <script lang="ts">
-	import { getAppByName } from '$lib/services/client/appRegistry';
+	import { openHelp } from '$lib/services/client/help';
+	import { getAppHelpTopic } from '$apps/help/utils/helpContent';
 	import { getContext } from 'svelte';
 	import { getWindowManager, type WindowState, RESTORE_SIZE_THRESHOLD } from '$lib/stores';
 	import WindowControlButton from './WindowControlButton.svelte';
@@ -263,25 +264,16 @@
 		windowManager.maximizeWindow(windowState.id);
 	}
 
+	// Súgó gomb: akkor jelenik meg, ha az apphoz van súgó oldal (a Súgó appnál nem)
+	const helpTopic = $derived(
+		windowState.appName === 'help' ? null : getAppHelpTopic(windowState.appName)
+	);
+
 	/**
-	 * Súgó gomb esemény
-	 * @param helpId Súgó azonosító
+	 * Súgó gomb esemény: megnyitja a Súgót az alkalmazás oldalán
 	 */
-	async function help(helpId: number | undefined) {
-		/*const helpApp = {
-			title: 'Súgó',
-			appName: 'help',
-			icon: 'icon.svg',
-			minSize: { width: 300, height: 300 },
-			defaultSize: { width: 500, height: 500, maximized: false },
-			allowMultiple: true
-		};*/
-		const helpApp = await getAppByName('help');
-		if (helpApp) {
-			windowManager.openWindow(helpApp.appName, helpApp.title, helpApp, {
-				helpId
-			});
-		}
+	function help() {
+		if (helpTopic) openHelp(windowManager, helpTopic);
 	}
 
 	async function link(): Promise<boolean | string> {
@@ -719,8 +711,8 @@
 	>
 		<div class="window-title">{windowState.title}</div>
 		<div class="window-controls">
-			{#if windowState.helpId}
-				<WindowControlButton controlType="help" onClick={() => help(windowState.helpId)} />
+			{#if helpTopic}
+				<WindowControlButton controlType="help" onClick={help} />
 			{/if}
 			<Tooltip.Provider>
 				<Tooltip.Root>

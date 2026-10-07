@@ -38,7 +38,6 @@ export type WindowState = {
 	instanceId?: string; // Példány azonosító több példány esetén
 	maximizable?: boolean;
 	resizable?: boolean;
-	helpId?: number;
 	allowMultiple?: boolean;
 	defaultSize?: WindowSize | { maximized?: boolean };
 	screenshot?: string; // Screenshot data URL (base64)
@@ -199,7 +198,6 @@ export class WindowManager {
 			instanceId,
 			maximizable: metadata.maximizable ?? true,
 			resizable: metadata.resizable ?? true,
-			helpId: metadata.helpId,
 			allowMultiple: metadata.allowMultiple ?? false,
 			defaultSize: metadata.defaultSize
 		};

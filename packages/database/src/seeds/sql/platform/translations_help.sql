@@ -7,8 +7,7 @@
 -- -----------------------------------------------------------------------------
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
-('hu', 'help', 'notFound', 'Nem található súgó'),
-('hu', 'help', 'generalContent', 'Általános súgó alkalmazás tartalom.')
+('hu', 'help', 'notFound', 'Nem található ilyen súgó oldal.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -16,6 +15,5 @@ ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updat
 -- -----------------------------------------------------------------------------
 
 INSERT INTO platform.translations (locale, namespace, key, value) VALUES
-('en', 'help', 'notFound', 'Help not found'),
-('en', 'help', 'generalContent', 'General help application content.')
+('en', 'help', 'notFound', 'Help page not found.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

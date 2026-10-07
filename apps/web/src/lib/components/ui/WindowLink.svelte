@@ -6,6 +6,7 @@
 	import LZString from 'lz-string';
 	import { getAppByName } from '$lib/services/client/appRegistry';
 	import { getWindowManager } from '$lib/stores';
+	import { openHelp } from '$lib/services/client/help';
 	import { toast } from 'svelte-sonner';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { useI18n } from '$lib/i18n/hooks';
@@ -51,13 +52,9 @@
 		}
 	}
 
-	async function help() {
-		const helpApp = await getAppByName('help');
-		if (helpApp) {
-			windowManager.openWindow(helpApp.appName, helpApp.title, helpApp, {
-				helpId: 1000
-			});
-		}
+	// Az alkalmazás megnyitó (GUID hivatkozás) leírása a Tálca súgó oldalán van
+	function help() {
+		openHelp(windowManager, 'desktop-basics/taskbar');
 	}
 </script>
 

@@ -1,53 +1,21 @@
 <script lang="ts">
-	import { getAppParameters, getParameter, getWindowId } from '$lib/services/client/appContext';
+	import { getWindowId } from '$lib/services/client/appContext';
 	import { getWindowManager } from '$lib/stores';
-	import { useI18n } from '$lib/i18n/hooks';
+	import { getTranslationStore } from '$lib/i18n/store.svelte';
+	import HelpLayout from './components/HelpLayout.svelte';
+	import { resolveHelpLocale } from './utils/helpContent';
 
-	const { t } = useI18n();
-	const helpId = getParameter<number | undefined>('helpId', undefined);
-	const parameters = getAppParameters();
-	const helps = [
-		{
-			id: 1,
-			title: 'Beállítások',
-			content: 'Beállítások súgó tartalom lesz ez.'
-		},
-		{
-			id: 2,
-			title: 'Felhasználók',
-			content: 'Felhasználók súgó tartalom lesz ez.'
-		},
-		{
-			id: 3,
-			title: 'Súgó',
-			content: 'Súgó súgó tartalom lesz ez.'
-		},
-		{
-			id: 1000,
-			title: 'Alkalmazás megnyitás guid alapján',
-			content: 'Súgó tartalom lesz ez.'
-		}
-	];
+	const translationStore = getTranslationStore();
+	const windowManager = getWindowManager();
+	const windowId = getWindowId();
 
-	const help = helps.find((h) => h.id === helpId);
-	if (help) {
-		const windowManager = getWindowManager();
-		const windowId = getWindowId();
-		const windowData = windowManager.windows.find((w) => w.id === windowId);
-		if (windowData) {
-			windowManager.updateWindowTitle(windowId, windowData.title + ' - ' + help.title);
-		}
-	}
+	// Az ablak eredeti címe ("Súgó"), a megnyitott oldal címe ehhez fűződik
+	const baseTitle = windowManager.windows.find((w) => w.id === windowId)?.title ?? '';
+
+	const locale = $derived(resolveHelpLocale(translationStore.currentLocale));
 </script>
 
-<div>
-	{#if helpId}
-		{#if help}
-			<p>{help.content}</p>
-		{:else}
-			<p>{t('help.notFound')}</p>
-		{/if}
-	{:else}
-		<p>{t('help.generalContent')}</p>
-	{/if}
-</div>
+<!-- A menü címei a súgó nyelvén vannak, nyelvváltáskor újraépítjük -->
+{#key locale}
+	<HelpLayout {locale} {baseTitle} />
+{/key}

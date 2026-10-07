@@ -1,0 +1,320 @@
+{
+	"source": "28bd464",
+	"groups": {
+		"desktop-basics": {
+			"order": 2,
+			"label": {
+				"hu": "A felület használata",
+				"en": "Using the Interface"
+			}
+		},
+		"ui-components": {
+			"order": 3,
+			"label": {
+				"hu": "UI komponensek",
+				"en": "UI Components"
+			}
+		},
+		"applications": {
+			"order": 4,
+			"label": {
+				"hu": "Alkalmazások",
+				"en": "Applications"
+			}
+		}
+	},
+	"pages": {
+		"hu": [
+			{
+				"slug": "applications/ai-assistant",
+				"title": "AI Asszisztens",
+				"description": "Az AI Asszisztens alkalmazás részletes használata",
+				"order": 9
+			},
+			{
+				"slug": "applications/chat",
+				"title": "Üzenetek",
+				"description": "Az üzenetek alkalmazás részletes használata",
+				"order": 4
+			},
+			{
+				"slug": "applications/help",
+				"title": "Súgó",
+				"description": "A súgó alkalmazás részletes használata",
+				"order": 6
+			},
+			{
+				"slug": "applications/index",
+				"title": "Áttekintés",
+				"description": "A Racona beépített alkalmazásainak használata",
+				"order": 0
+			},
+			{
+				"slug": "applications/log",
+				"title": "Napló",
+				"description": "A napló alkalmazás részletes használata",
+				"order": 7
+			},
+			{
+				"slug": "applications/map",
+				"title": "Térkép",
+				"description": "A Térkép alkalmazás részletes használata",
+				"order": 6
+			},
+			{
+				"slug": "applications/notifications",
+				"title": "Értesítések",
+				"description": "Az értesítések alkalmazás és értesítési rendszer részletes használata",
+				"order": 5
+			},
+			{
+				"slug": "applications/settings",
+				"title": "Beállítások",
+				"description": "A Beállítások alkalmazás részletes használata",
+				"order": 2
+			},
+			{
+				"slug": "applications/structure",
+				"title": "Általános alkalmazás felépítés",
+				"description": "A Racona beépített rendszeralkalmazásainak általános felépítése és használata",
+				"order": 1
+			},
+			{
+				"slug": "applications/users",
+				"title": "Felhasználók",
+				"description": "A Felhasználók alkalmazás részletes használata",
+				"order": 3
+			},
+			{
+				"slug": "authentication",
+				"title": "Bejelentkezés és hitelesítés",
+				"description": "Hogyan jelentkezhet be a Racona rendszerbe és hogyan védheti meg fiókját",
+				"order": 1
+			},
+			{
+				"slug": "desktop-basics/context-menu",
+				"title": "Helyi menü",
+				"description": "Helyi menü (jobb klikk) használata",
+				"order": 6
+			},
+			{
+				"slug": "desktop-basics/desktop-icons",
+				"title": "Asztali parancsikonok",
+				"description": "Asztali parancsikonok kezelése",
+				"order": 5
+			},
+			{
+				"slug": "desktop-basics/index",
+				"title": "Áttekintés",
+				"description": "A Racona felhasználói felületének áttekintése",
+				"order": 0
+			},
+			{
+				"slug": "desktop-basics/start-menu",
+				"title": "Indító panel",
+				"description": "Az Indító panel használata és funkciói",
+				"order": 4
+			},
+			{
+				"slug": "desktop-basics/taskbar",
+				"title": "Tálca",
+				"description": "A tálca használata és funkciói",
+				"order": 3
+			},
+			{
+				"slug": "desktop-basics/windows",
+				"title": "Ablakkezelés",
+				"description": "Ablakok kezelése és vezérlése a Racona-ben",
+				"order": 2
+			},
+			{
+				"slug": "faq",
+				"title": "Gyakori kérdések (FAQ)",
+				"description": "Válaszok a leggyakrabban feltett kérdésekre",
+				"order": 7
+			},
+			{
+				"slug": "index",
+				"title": "Bevezetés",
+				"description": "Üdvözöljük a Racona felhasználói dokumentációjában",
+				"order": 0
+			},
+			{
+				"slug": "troubleshooting",
+				"title": "Hibaelhárítás",
+				"description": "Gyakori problémák megoldása",
+				"order": 6
+			},
+			{
+				"slug": "ui-components/data-tables",
+				"title": "Adattáblák",
+				"description": "Adattáblák (listák) használata a Racona-ben",
+				"order": 1
+			},
+			{
+				"slug": "ui-components/dialogs",
+				"title": "Modális ablakok",
+				"description": "Modális ablakok használata a Racona-ben",
+				"order": 2
+			},
+			{
+				"slug": "ui-components/index",
+				"title": "Áttekintés",
+				"description": "A Racona rendszer UI komponenseinek áttekintése",
+				"order": 0
+			},
+			{
+				"slug": "ui-components/notifications",
+				"title": "Toast üzenetek",
+				"description": "Toast értesítések a Racona-ben",
+				"order": 3
+			}
+		],
+		"en": [
+			{
+				"slug": "applications/ai-assistant",
+				"title": "AI Assistant",
+				"description": "Detailed usage of the AI Assistant application",
+				"order": 9
+			},
+			{
+				"slug": "applications/chat",
+				"title": "Messages",
+				"description": "Detailed usage of the messages application",
+				"order": 4
+			},
+			{
+				"slug": "applications/help",
+				"title": "Help",
+				"description": "Detailed usage of the help application",
+				"order": 6
+			},
+			{
+				"slug": "applications/index",
+				"title": "Overview",
+				"description": "Using Racona built-in applications",
+				"order": 0
+			},
+			{
+				"slug": "applications/log",
+				"title": "Log",
+				"description": "Detailed usage of the log application",
+				"order": 7
+			},
+			{
+				"slug": "applications/map",
+				"title": "Map",
+				"description": "Detailed usage of the Map application",
+				"order": 6
+			},
+			{
+				"slug": "applications/notifications",
+				"title": "Notifications",
+				"description": "Detailed usage of the notifications application and notification system",
+				"order": 5
+			},
+			{
+				"slug": "applications/settings",
+				"title": "Settings",
+				"description": "Detailed usage of the Settings application",
+				"order": 2
+			},
+			{
+				"slug": "applications/structure",
+				"title": "General Application Structure",
+				"description": "General structure and usage of Racona built-in system applications",
+				"order": 1
+			},
+			{
+				"slug": "applications/users",
+				"title": "Users",
+				"description": "Detailed usage of the Users application",
+				"order": 3
+			},
+			{
+				"slug": "authentication",
+				"title": "Login and Authentication",
+				"description": "How to log in to the Racona system and protect your account",
+				"order": 1
+			},
+			{
+				"slug": "desktop-basics/context-menu",
+				"title": "Context Menu",
+				"description": "Using the context menu (right-click)",
+				"order": 6
+			},
+			{
+				"slug": "desktop-basics/desktop-icons",
+				"title": "Desktop Shortcuts",
+				"description": "Managing desktop shortcuts",
+				"order": 5
+			},
+			{
+				"slug": "desktop-basics/index",
+				"title": "Overview",
+				"description": "Overview of the Racona user interface",
+				"order": 0
+			},
+			{
+				"slug": "desktop-basics/start-menu",
+				"title": "Start Menu",
+				"description": "Using the Start Menu and its features",
+				"order": 4
+			},
+			{
+				"slug": "desktop-basics/taskbar",
+				"title": "Taskbar",
+				"description": "Using the taskbar and its features",
+				"order": 3
+			},
+			{
+				"slug": "desktop-basics/windows",
+				"title": "Window Management",
+				"description": "Managing and controlling windows in Racona",
+				"order": 2
+			},
+			{
+				"slug": "faq",
+				"title": "Frequently Asked Questions (FAQ)",
+				"description": "Answers to the most frequently asked questions",
+				"order": 7
+			},
+			{
+				"slug": "index",
+				"title": "Introduction",
+				"description": "Welcome to the Racona user documentation",
+				"order": 0
+			},
+			{
+				"slug": "troubleshooting",
+				"title": "Troubleshooting",
+				"description": "Solving common problems",
+				"order": 6
+			},
+			{
+				"slug": "ui-components/data-tables",
+				"title": "Data Tables",
+				"description": "Using data tables (lists) in Racona",
+				"order": 1
+			},
+			{
+				"slug": "ui-components/dialogs",
+				"title": "Modal Windows",
+				"description": "Using modal windows in Racona",
+				"order": 2
+			},
+			{
+				"slug": "ui-components/index",
+				"title": "Overview",
+				"description": "Overview of Racona system UI components",
+				"order": 0
+			},
+			{
+				"slug": "ui-components/notifications",
+				"title": "Toast Messages",
+				"description": "Toast notifications in Racona",
+				"order": 3
+			}
+		]
+	}
+}

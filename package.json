@@ -12,6 +12,7 @@
 		"app:dev:varlock": "bun --elide-lines=0 --filter @racona/core dev:varlock",
 		"app:build": "bun --filter @racona/core build",
 		"app:check": "bun --elide-lines=0 --filter @racona/core check",
+		"help:sync": "bun run scripts/sync-help-docs.ts",
 		"db:generate": "bun --filter @racona/database db:generate",
 		"db:migrate": "bun --filter @racona/database db:migrate",
 		"db:studio": "bun --filter @racona/database db:studio",
