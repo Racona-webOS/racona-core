@@ -6,6 +6,7 @@
   - Re-index gombok (külön minden nyelvhez + összes)
   - Státusz megjelenítés (indexelt dokumentumok száma nyelvenkénti bontásban)
   - Utolsó indexelés timestamp
+  - A bővítmények tudásbázisai (dokumentumok és chunk-ok száma)
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
@@ -15,9 +16,10 @@
 	import { useI18n } from '$lib/i18n/hooks';
 	import { reindexKnowledgeBase, getKnowledgeBaseStatus } from '../knowledge-base.remote.js';
 	import type { KnowledgeBaseStatus, KnowledgeBaseLocale } from '$lib/server/ai-assistant/types.js';
-	import { RefreshCw, Database, Clock, FileText, Languages } from 'lucide-svelte';
+	import { RefreshCw, Database, Clock, FileText, Languages, Puzzle } from 'lucide-svelte';
 
-	const { t } = useI18n();
+	const i18n = useI18n();
+	const { t } = i18n;
 
 	// -------------------------------------------------------------------------
 	// Állapot
@@ -127,6 +129,11 @@
 	function getLocaleFlag(locale: KnowledgeBaseLocale): string {
 		return locale === 'hu' ? '🇭🇺' : '🇬🇧';
 	}
+
+	function getPluginName(plugin: KnowledgeBaseStatus['plugins'][number]): string {
+		const name = plugin.name as Record<string, string | undefined>;
+		return name[i18n.locale] ?? name.hu ?? name.en ?? plugin.id;
+	}
 </script>
 
 <div class="kb-admin-panel">
@@ -225,6 +232,39 @@
 							</div>
 						</div>
 					</div>
+				{/each}
+			</div>
+
+			<!-- Bővítmények tudásbázisai -->
+			<div class="kb-admin-panel__locales">
+				<h3 class="kb-admin-panel__section-title">
+					<Puzzle class="h-5 w-5" />
+					{t('settings.admin.knowledgeBase.pluginDetails')}
+				</h3>
+
+				{#each status.plugins as plugin (plugin.id)}
+					<div class="kb-admin-panel__locale-card">
+						<div class="kb-admin-panel__locale-header">
+							<div class="kb-admin-panel__locale-title">
+								<span class="kb-admin-panel__locale-name">{getPluginName(plugin)}</span>
+							</div>
+						</div>
+
+						<div class="kb-admin-panel__locale-stats">
+							<div class="kb-admin-panel__stat">
+								<Label>{t('settings.admin.knowledgeBase.documents')}</Label>
+								<span class="kb-admin-panel__stat-value">{plugin.documentCount}</span>
+							</div>
+							<div class="kb-admin-panel__stat">
+								<Label>{t('settings.admin.knowledgeBase.chunks')}</Label>
+								<span class="kb-admin-panel__stat-value">{plugin.chunkCount}</span>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<p class="kb-admin-panel__summary-label">
+						{t('settings.admin.knowledgeBase.noPlugins')}
+					</p>
 				{/each}
 			</div>
 

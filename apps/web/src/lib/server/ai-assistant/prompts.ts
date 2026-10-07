@@ -4,7 +4,12 @@
  * A rendszerprompt és a tudásbázis-kontextus összeállítása a felhasználó nyelvén.
  */
 
-import type { KnowledgeBaseLocale, SearchResult } from './types.js';
+import type {
+	KnowledgeBaseLocale,
+	LocalizedName,
+	PluginKnowledgeInfo,
+	SearchResult
+} from './types.js';
 
 const SYSTEM_PROMPT_HU = `Te a Racona webes operációs rendszer hivatalos AI asszisztense vagy.
 
@@ -145,10 +150,42 @@ That's it!
 [APP:settings:background]"`;
 
 /**
- * Racona-specifikus rendszerprompt a felhasználó nyelvén
+ * Racona-specifikus rendszerprompt a felhasználó nyelvén, kiegészítve a
+ * felhasználó számára elérhető, tudásbázissal rendelkező pluginokkal
  */
-export function buildSystemPrompt(locale: KnowledgeBaseLocale): string {
-	return locale === 'hu' ? SYSTEM_PROMPT_HU : SYSTEM_PROMPT_EN;
+export function buildSystemPrompt(
+	locale: KnowledgeBaseLocale,
+	plugins: PluginKnowledgeInfo[] = []
+): string {
+	const base = locale === 'hu' ? SYSTEM_PROMPT_HU : SYSTEM_PROMPT_EN;
+	if (plugins.length === 0) return base;
+
+	const fallback: KnowledgeBaseLocale = locale === 'hu' ? 'en' : 'hu';
+	const text = (name: LocalizedName, id: string) => name[locale] ?? name[fallback] ?? id;
+
+	const list = plugins
+		.map((plugin) => {
+			const sections = plugin.sections
+				.map((section) => `  - ${section.id}: ${text(section.label, section.id)}`)
+				.join('\n');
+			return `- ${plugin.id}: ${text(plugin.name, plugin.id)}${sections ? `\n${sections}` : ''}`;
+		})
+		.join('\n');
+
+	if (locale === 'hu') {
+		return `${base}
+
+TELEPÍTETT BŐVÍTMÉNYEK:
+A következő bővítmények is a Racona részei, ezekről is válaszolhatsz a mellékelt dokumentáció alapján. Az alkalmazás jelölésben az azonosítójukat és a szekciójukat használd, pl. [APP:${plugins[0].id}${plugins[0].sections[0] ? `:${plugins[0].sections[0].id}` : ''}].
+
+${list}`;
+	}
+	return `${base}
+
+INSTALLED PLUGINS:
+The following plugins are also part of Racona; you can answer questions about them based on the attached documentation. Use their id and section in the application marker, e.g. [APP:${plugins[0].id}${plugins[0].sections[0] ? `:${plugins[0].sections[0].id}` : ''}].
+
+${list}`;
 }
 
 /**
@@ -170,7 +207,11 @@ export function buildKnowledgeContext(
 						? ` (forrás: ${result.chunk.locale === 'hu' ? 'magyar' : 'angol'} dokumentáció)`
 						: ` (source: ${result.chunk.locale === 'hu' ? 'Hungarian' : 'English'} documentation)`;
 
-			return `[${index + 1}] ${result.chunk.documentTitle}${sourceInfo}\n${result.chunk.content}`;
+			const title = result.chunk.sourceName
+				? `${result.chunk.sourceName} › ${result.chunk.documentTitle}`
+				: result.chunk.documentTitle;
+
+			return `[${index + 1}] ${title}${sourceInfo}\n${result.chunk.content}`;
 		})
 		.join('\n\n---\n\n');
 

@@ -977,7 +977,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'admin.knowledgeBase.reindexAll', 'Összes újraindexelése'),
 ('hu', 'settings', 'admin.knowledgeBase.refreshStatus', 'Státusz frissítése'),
 ('hu', 'settings', 'admin.knowledgeBase.statusUnavailable', 'A státusz nem elérhető'),
-('hu', 'settings', 'admin.knowledgeBase.retry', 'Újrapróbálás')
+('hu', 'settings', 'admin.knowledgeBase.retry', 'Újrapróbálás'),
+('hu', 'settings', 'admin.knowledgeBase.pluginDetails', 'Bővítmények tudásbázisa'),
+('hu', 'settings', 'admin.knowledgeBase.noPlugins', 'Egyik telepített bővítménynek sincs tudásbázisa.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -1005,7 +1007,9 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'admin.knowledgeBase.reindexAll', 'Reindex All'),
 ('en', 'settings', 'admin.knowledgeBase.refreshStatus', 'Refresh Status'),
 ('en', 'settings', 'admin.knowledgeBase.statusUnavailable', 'Status unavailable'),
-('en', 'settings', 'admin.knowledgeBase.retry', 'Retry')
+('en', 'settings', 'admin.knowledgeBase.retry', 'Retry'),
+('en', 'settings', 'admin.knowledgeBase.pluginDetails', 'Plugin knowledge bases'),
+('en', 'settings', 'admin.knowledgeBase.noPlugins', 'None of the installed plugins has a knowledge base.')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Auth beállítások (AuthSettings.svelte)

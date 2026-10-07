@@ -94,6 +94,22 @@ export const STOP_WORDS: ReadonlySet<string> = new Set([
 	'miért',
 	'kérdés',
 	'válasz',
+	// Általános kérdő igék, amik nem a témát jelölik
+	'látom',
+	'látok',
+	'látni',
+	'láthatom',
+	'látható',
+	'találom',
+	'találok',
+	'találni',
+	'található',
+	'tehetem',
+	'teszem',
+	'csinálom',
+	'csinálok',
+	'kérem',
+	'lehetséges',
 	// Angol
 	'the',
 	'an',
@@ -244,12 +260,16 @@ const SUFFIXES = [
 	'k'
 ];
 
-/** Toldalékolás előtti tőváltozások: tálcá(t) → tálca, jelszav(am) → jelszó */
+/** Toldalékolás előtti tőváltozások: tálcá(t) → tálca, jelszav(am) → jelszó, igényel → igényl */
 const STEM_ALTERNATIONS: [RegExp, string][] = [
 	[/á$/, 'a'],
 	[/é$/, 'e'],
 	[/av$/, 'ó'],
-	[/ev$/, 'ő']
+	[/ev$/, 'ő'],
+	// Kieső magánhangzó a toldalék előtt: igényel → igényl(és)
+	[/([^aáeéiíoóöőuúüű])[eoö]([lr])$/, '$1$2'],
+	// …és visszafelé: kérelm(et) → kérelem
+	[/([^aáeéiíoóöőuúüű])([lmr])$/, '$1e$2']
 ];
 
 /** Betű vagy szám (Unicode) — a \w csak ASCII-t ismer, ékezetes szavakhoz ez kell */

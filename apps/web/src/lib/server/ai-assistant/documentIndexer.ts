@@ -8,12 +8,14 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { join, relative, basename, extname } from 'path';
 import { parseFrontmatter, stemVariants, tokenize } from './text.js';
+import { CORE_SOURCE } from './types.js';
 import type {
 	Document,
 	DocumentChunk,
 	DocumentIndex,
 	KnowledgeBaseLocale,
-	DocumentCategory
+	DocumentCategory,
+	LocalizedName
 } from './types.js';
 
 /** Chunk méret konfigurációja */
@@ -28,9 +30,18 @@ const CHUNK_CONFIG = {
 
 export class DocumentIndexer {
 	private knowledgeBasePath: string;
+	private source: string;
+	private sourceName: LocalizedName;
 
-	constructor(knowledgeBasePath: string) {
+	/**
+	 * @param knowledgeBasePath - A tudásbázis gyökere (benne hu/, en/ mappák)
+	 * @param source - Forrás: 'core' vagy a plugin azonosítója
+	 * @param sourceName - A forrás neve nyelvenként (pluginnál a plugin neve)
+	 */
+	constructor(knowledgeBasePath: string, source = CORE_SOURCE, sourceName: LocalizedName = {}) {
 		this.knowledgeBasePath = knowledgeBasePath;
+		this.source = source;
+		this.sourceName = sourceName;
 	}
 
 	/**
@@ -96,7 +107,9 @@ export class DocumentIndexer {
 			const content = body.trim();
 
 			return {
-				id: relativePath,
+				id: `${this.source}/${relativePath}`,
+				source: this.source,
+				sourceName: this.sourceName[locale],
 				title: frontmatter.title ?? this.extractTitle(content, filePath),
 				content,
 				tags: [...frontmatter.tags, ...frontmatter.aliases],
@@ -127,6 +140,8 @@ export class DocumentIndexer {
 		): DocumentChunk => ({
 			id: `${document.id}:${index}`,
 			documentId: document.id,
+			source: document.source,
+			sourceName: document.sourceName,
 			content: text,
 			startIndex,
 			endIndex,
@@ -203,10 +218,6 @@ export class DocumentIndexer {
 				}
 			}
 		}
-
-		console.log(
-			`[DocumentIndexer] Index építve (${locale}): ${documentsMap.size} dokumentum, ${chunksMap.size} chunk, ${keywordIndex.size} kulcsszó`
-		);
 
 		return {
 			locale,

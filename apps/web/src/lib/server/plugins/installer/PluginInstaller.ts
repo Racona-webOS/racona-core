@@ -16,6 +16,10 @@ import { eq, like, sql } from 'drizzle-orm';
 import AdmZip from 'adm-zip';
 import path from 'path';
 import fs from 'fs/promises';
+import {
+	reloadPluginKnowledgeBase,
+	removePluginKnowledgeBase
+} from '$lib/server/ai-assistant/knowledgeBaseService';
 
 /**
  * Plugin Installer osztály
@@ -61,6 +65,9 @@ export class PluginInstaller {
 			if (manifest.scheduledJobs?.length) {
 				await syncPluginJobs(pluginId, manifest);
 			}
+
+			// 5c. Az AI asszisztens tudásbázisa (ha a csomag hoz knowledge-base mappát)
+			await reloadPluginKnowledgeBase(pluginId);
 
 			// 6. Esemény naplózása
 			await this.logEvent(pluginId, 'install', {
@@ -606,6 +613,7 @@ export class PluginInstaller {
 			const pluginDir = getPluginDir(pluginId);
 			await removeDir(pluginDir);
 			await invalidateServerSnapshots(pluginDir);
+			removePluginKnowledgeBase(pluginId);
 			console.log(`[PluginInstaller] Removed plugin files`);
 
 			// 2. App registry bejegyzés törlése

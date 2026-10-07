@@ -1,8 +1,8 @@
 /**
  * Plugin csomagoló script
  *
- * Összegyűjti a dist/, locales/, assets/, server/, migrations/, email-templates/
- * mappákat és a manifest.json-t,
+ * Összegyűjti a dist/, locales/, assets/, server/, migrations/, email-templates/,
+ * knowledge-base/ mappákat és a manifest.json-t,
  * majd ZIP archívumba tömöríti .raconapkg kiterjesztéssel.
  *
  * Használat: bun run package
@@ -47,6 +47,8 @@ if (existsSync(join(ROOT, 'server'))) entries.push('server');
 if (existsSync(join(ROOT, 'migrations'))) entries.push('migrations');
 // A core telepítéskor innen regisztrálja a plugin email sablonjait
 if (existsSync(join(ROOT, 'email-templates'))) entries.push('email-templates');
+// Az AI asszisztens innen olvassa a plugin dokumentációját (knowledge-base/{hu,en}/*.md)
+if (existsSync(join(ROOT, 'knowledge-base'))) entries.push('knowledge-base');
 
 // Rekurzív fájl hozzáadás függvény
 function addDirectoryToZip(zip, dirPath, zipPath = '') {

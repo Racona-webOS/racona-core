@@ -22,6 +22,7 @@ import { apps, pluginLogs } from '@racona/database';
 import { eq } from 'drizzle-orm';
 import { existsSync } from 'fs';
 import { pluginInstaller } from './PluginInstaller';
+import { reloadPluginKnowledgeBase } from '$lib/server/ai-assistant/knowledgeBaseService';
 
 // ============================================================================
 // isVersionGreater segédfüggvény
@@ -333,6 +334,9 @@ export class PluginUpdater {
 				);
 			}
 
+			// Az AI asszisztens tudásbázisa a visszaállított fájlokból
+			await reloadPluginKnowledgeBase(pluginId);
+
 			// Req 7.3: Adatbázis mezők visszaállítása
 			await db
 				.update(apps)
@@ -536,6 +540,9 @@ export class PluginUpdater {
 			// 3f. Ütemezett feladatok szinkronizálása (a migrációk után, hogy az új kód
 			// ne fusson a régi sémán); a manifestből eltűnt feladatok törlődnek
 			await syncPluginJobs(pluginId, manifest);
+
+			// 3g. Az AI asszisztens tudásbázisa az új csomagból
+			await reloadPluginKnowledgeBase(pluginId);
 
 			// 4. Sikeres frissítés naplózása
 			// Req 7.6, 10.1

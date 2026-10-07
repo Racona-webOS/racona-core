@@ -9,6 +9,15 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Hozzáadva
+
+- **Plugin tudásbázis az AI asszisztenshez**: egy plugin a csomagjában `knowledge-base/{hu,en}/*.md` mappát hozhat, és az asszisztens ebből is válaszol. Manifest mező és jogosultság nem kell hozzá.
+  - Csak azoknak a felhasználóknak, akik a plugint elérik (ugyanaz dönti el, mint az alkalmazáslistát); letiltott plugin dokumentációja nem jelenik meg.
+  - A rendszerprompt felsorolja az elérhető pluginokat a `menu.json` menüpontjaival, így a „Megnyitás” gomb a plugin megfelelő menüpontjára visz (`[APP:plugin-id:settings/leave]`; a szekcióban perjel is lehet).
+  - Telepítéskor és frissítéskor a tudásbázis azonnal újratöltődik, eltávolításkor kikerül. Telepítéskor csak `.md`/`.mdx` fájl lehet benne, összesen legfeljebb 2 MB.
+  - A Beállítások → Tudásbázis panel pluginonként mutatja a dokumentumok számát; az „Összes újraindexelése” a pluginokat is újratölti (`translations_settings` seed: `admin.knowledgeBase.pluginDetails`, `noPlugins`).
+  - A CLI által generált `build-package.js` is csomagolja a `knowledge-base/` mappát.
+
 ### Javítva
 
 - **AI asszisztens tudásbázis élesben**: a tudásbázis a `static/knowledge-base` helyett az `apps/web/knowledge-base` mappába került, a Docker image `/app/knowledge-base` alá másolja. Eddig élesben nem találta a fájlokat (a válaszok dokumentáció nélkül készültek), a `static` mappa miatt viszont bárki letölthette őket.

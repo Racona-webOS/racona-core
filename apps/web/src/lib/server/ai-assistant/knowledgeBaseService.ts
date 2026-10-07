@@ -5,17 +5,31 @@
  * fallback logikával: ha a felhasználó nyelvén nincs elegendő találat,
  * keres a másik nyelven is.
  *
- * Az index egyszer épül fel (első használatkor), utána csak az admin
- * újraindexelés frissíti. Mindenhonnan a getKnowledgeBase() függvénnyel érjük el.
+ * A tudásbázis forrásokból áll: a core dokumentáció ('core') és a telepített
+ * pluginok saját tudásbázisa (forrásazonosító = plugin azonosító). Az index
+ * forrásonként és nyelvenként épül, így egy plugin a többi újraindexelése
+ * nélkül tölthető be, frissíthető vagy törölhető.
+ *
+ * Az index egyszer épül fel (első használatkor); a plugin telepítése, frissítése
+ * és törlése, valamint az admin újraindexelés frissíti. Mindenhonnan a
+ * getKnowledgeBase() függvénnyel érjük el.
  */
 
 import { join } from 'path';
 import { DocumentIndexer } from './documentIndexer.js';
+import {
+	listPluginsWithKnowledgeBase,
+	hasKnowledgeBase,
+	readPluginInfo,
+	PLUGIN_KNOWLEDGE_BASE_DIR
+} from './pluginKnowledge.js';
 import { countWholeWord, stemVariants, tokenize } from './text.js';
+import { CORE_SOURCE } from './types.js';
 import type {
 	DocumentIndex,
 	KnowledgeBaseLocale,
 	KnowledgeBaseStatus,
+	PluginKnowledgeInfo,
 	SearchParams,
 	SearchResponse,
 	SearchResult,
@@ -31,10 +45,16 @@ const SEARCH_CONFIG = {
 	minPrimaryResults: 2,
 	/** Relevancia küszöb (0-1) */
 	relevanceThreshold: 0.02,
-	/** Maximum kulcsszavak száma egy lekérdezésben */
-	maxQueryKeywords: 40,
-	/** Ennél hosszabb kulcsszó az ugyanígy kezdődő indexelt szavakra is keres (módosít → módosítás) */
-	minPrefixLength: 5,
+	/** Maximum kérdésszavak száma egy lekérdezésben */
+	maxQueryTerms: 12,
+	/** Szótő (toldalék nélküli alak) súlya az eredeti szóhoz képest */
+	stemWeight: 0.9,
+	/** Szinonima súlya */
+	synonymWeight: 0.7,
+	/** Prefixes egyezés súlya (pl. módosít → módosítás) */
+	prefixWeight: 0.6,
+	/** Legalább ilyen hosszú kulcsszó az ugyanígy kezdődő indexelt szavakra is keres (módosít → módosítás) */
+	minPrefixLength: 4,
 	/** Egy kulcsszóhoz legfeljebb ennyi prefixes egyezés */
 	maxPrefixMatches: 10
 } as const;
@@ -71,8 +91,13 @@ const SYNONYM_GROUPS: string[][] = [
 	// Beállítások
 	['beállítás', 'beállítások', 'setting', 'konfiguráció', 'config', 'opció'],
 	// Asztal
-	['asztal', 'desktop', 'munkaasztal']
+	['asztal', 'desktop', 'munkaasztal'],
+	// Jogosultság
+	['jog', 'jogosultság', 'jogkör', 'szerep', 'szerepkör', 'képesség', 'permission']
 ];
+
+/** Egy kérdésszó változatai: kulcsszó → súly */
+type SearchTerm = Map<string, number>;
 
 const SYNONYMS = new Map<string, string[]>();
 for (const group of SYNONYM_GROUPS) {
@@ -90,38 +115,59 @@ export function getKnowledgeBasePath(): string {
 }
 
 /**
+ * A telepített pluginok mappája (lásd PLUGIN_DIRS.PLUGINS)
+ */
+export function getPluginsPath(): string {
+	return join(process.cwd(), 'uploads', 'plugins');
+}
+
+/**
  * A közös KnowledgeBaseService példány
  */
 export function getKnowledgeBase(): KnowledgeBaseService {
-	return KnowledgeBaseService.getInstance(getKnowledgeBasePath());
+	return KnowledgeBaseService.getInstance(getKnowledgeBasePath(), getPluginsPath());
+}
+
+/** Egy forrás (core vagy plugin) indexei */
+interface KnowledgeSource {
+	indexer: DocumentIndexer;
+	indexes: Map<KnowledgeBaseLocale, DocumentIndex>;
+	/** Csak pluginnál: név és menü szekciók */
+	plugin?: PluginKnowledgeInfo;
 }
 
 export class KnowledgeBaseService {
 	private static instance: KnowledgeBaseService | null = null;
 	private knowledgeBasePath: string;
-	private indexer: DocumentIndexer;
-	private indexes: Map<KnowledgeBaseLocale, DocumentIndex> = new Map();
+	private pluginsPath: string | null;
+	private sources: Map<string, KnowledgeSource> = new Map();
 	private isInitialized = false;
 	private initializationPromise: Promise<void> | null = null;
 	private startTime: Date;
 
-	private constructor(knowledgeBasePath: string) {
+	private constructor(knowledgeBasePath: string, pluginsPath: string | null) {
 		this.knowledgeBasePath = knowledgeBasePath;
-		this.indexer = new DocumentIndexer(knowledgeBasePath);
+		this.pluginsPath = pluginsPath;
 		this.startTime = new Date();
 	}
 
 	/**
 	 * Singleton instance lekérése
+	 *
+	 * @param knowledgeBasePath - A core tudásbázis mappája
+	 * @param pluginsPath - A telepített pluginok mappája (null: pluginok nélkül)
 	 */
-	static getInstance(knowledgeBasePath?: string): KnowledgeBaseService {
+	static getInstance(
+		knowledgeBasePath?: string,
+		pluginsPath: string | null = null
+	): KnowledgeBaseService {
 		if (!KnowledgeBaseService.instance) {
 			if (!knowledgeBasePath) {
 				throw new Error(
 					'KnowledgeBaseService: knowledgeBasePath szükséges az első inicializáláshoz'
 				);
 			}
-			KnowledgeBaseService.instance = new KnowledgeBaseService(knowledgeBasePath);
+			KnowledgeBaseService.instance = new KnowledgeBaseService(knowledgeBasePath, pluginsPath);
 		}
 		return KnowledgeBaseService.instance;
 	}
@@ -152,34 +198,50 @@ export class KnowledgeBaseService {
 	}
 
 	/**
-	 * Inicializálás végrehajtása
+	 * Inicializálás végrehajtása: a core és az összes plugin tudásbázisa
 	 */
 	private async performInitialization(): Promise<void> {
 		const startTime = Date.now();
 
-		for (const locale of LOCALES) {
-			await this.indexLocale(locale);
-		}
+		await this.loadSource(CORE_SOURCE, new DocumentIndexer(this.knowledgeBasePath));
+		await this.syncPlugins();
 
 		this.isInitialized = true;
 		const status = this.getStatus();
 		console.log(
-			`[KnowledgeBaseService] Inicializálva ${Date.now() - startTime}ms alatt (${this.knowledgeBasePath}): ${status.totalDocuments} dokumentum, ${status.totalChunks} chunk`
+			`[KnowledgeBaseService] Inicializálva ${Date.now() - startTime}ms alatt (${this.knowledgeBasePath}): ${status.totalDocuments} dokumentum, ${status.totalChunks} chunk, ${status.plugins.length} plugin`
 		);
 	}
 
 	/**
-	 * Egy nyelv indexelése
+	 * Egy forrás betöltése (minden nyelv)
 	 */
-	private async indexLocale(locale: KnowledgeBaseLocale): Promise<void> {
+	private async loadSource(
+		id: string,
+		indexer: DocumentIndexer,
+		plugin?: PluginKnowledgeInfo
+	): Promise<void> {
+		const source: KnowledgeSource = { indexer, indexes: new Map(), plugin };
+		for (const locale of LOCALES) {
+			source.indexes.set(locale, await this.buildIndex(indexer, locale));
+		}
+		this.sources.set(id, source);
+	}
+
+	/**
+	 * Egy nyelv indexelése egy forrásban
+	 */
+	private async buildIndex(
+		indexer: DocumentIndexer,
+		locale: KnowledgeBaseLocale
+	): Promise<DocumentIndex> {
 		try {
-			const documents = await this.indexer.loadDocuments(locale);
-			const index = this.indexer.buildIndex(documents, locale);
-			this.indexes.set(locale, index);
+			const documents = await indexer.loadDocuments(locale);
+			return indexer.buildIndex(documents, locale);
 		} catch (error) {
 			console.error(`[KnowledgeBaseService] Hiba a ${locale} nyelv indexelésekor:`, error);
 			// Üres index létrehozása hiba esetén
-			this.indexes.set(locale, {
+			return {
 				locale,
 				documents: new Map(),
 				chunks: new Map(),
@@ -187,8 +249,72 @@ export class KnowledgeBaseService {
 				lastIndexed: new Date(),
 				documentCount: 0,
 				chunkCount: 0
-			});
+			};
 		}
+	}
+
+	/**
+	 * A plugin források igazítása a plugin mappához: újak betöltése,
+	 * meglévők újratöltése, eltávolítottak törlése
+	 */
+	private async syncPlugins(): Promise<void> {
+		if (!this.pluginsPath) return;
+
+		const pluginIds = await listPluginsWithKnowledgeBase(this.pluginsPath);
+		for (const id of this.sources.keys()) {
+			if (id !== CORE_SOURCE && !pluginIds.includes(id)) {
+				this.sources.delete(id);
+			}
+		}
+		for (const pluginId of pluginIds) {
+			await this.loadPlugin(pluginId);
+		}
+	}
+
+	/**
+	 * Egy plugin tudásbázisának betöltése
+	 */
+	private async loadPlugin(pluginId: string): Promise<void> {
+		if (!this.pluginsPath) return;
+
+		const pluginDir = join(this.pluginsPath, pluginId);
+		if (!(await hasKnowledgeBase(pluginDir))) {
+			this.sources.delete(pluginId);
+			return;
+		}
+
+		const info = await readPluginInfo(pluginDir, pluginId);
+		const indexer = new DocumentIndexer(
+			join(pluginDir, PLUGIN_KNOWLEDGE_BASE_DIR),
+			pluginId,
+			info.name
+		);
+		await this.loadSource(pluginId, indexer, info);
+	}
+
+	/**
+	 * Plugin tudásbázisának (újra)töltése telepítés vagy frissítés után.
+	 * Ha az index még nem épült fel, nem csinál semmit: az inicializálás betölti.
+	 */
+	async reloadPlugin(pluginId: string): Promise<void> {
+		if (!this.isInitialized) return;
+		await this.loadPlugin(pluginId);
+	}
+
+	/**
+	 * Plugin tudásbázisának eltávolítása a plugin törlésekor
+	 */
+	removePlugin(pluginId: string): void {
+		if (pluginId !== CORE_SOURCE) {
+			this.sources.delete(pluginId);
+		}
+	}
+
+	/**
+	 * A betöltött plugin tudásbázisok adatai (név, menü szekciók)
+	 */
+	getPlugins(): PluginKnowledgeInfo[] {
+		return [...this.sources.values()].flatMap((source) => (source.plugin ? [source.plugin] : []));
 	}
 
 	/**
@@ -203,13 +329,22 @@ export class KnowledgeBaseService {
 			userLocale,
 			maxResults = SEARCH_CONFIG.defaultMaxResults,
 			category,
-			enableFallback = true
+			enableFallback = true,
+			sources
 		} = params;
 
-		const keywords = this.prepareSearchKeywords(query);
+		const terms = this.prepareSearchTerms(query);
+		const sourceIds = sources ?? [...this.sources.keys()];
 
 		// 1. lépés: Keresés a felhasználó nyelvén
-		const primaryResults = this.searchInLocale(keywords, query, userLocale, maxResults, category);
+		const primaryResults = this.searchInLocale(
+			terms,
+			query,
+			userLocale,
+			sourceIds,
+			maxResults,
+			category
+		);
 
 		let allResults = primaryResults;
 		let searchStrategy: 'primary-only' | 'primary-with-fallback' = 'primary-only';
@@ -222,9 +357,10 @@ export class KnowledgeBaseService {
 
 			if (remainingSlots > 0) {
 				fallbackResults = this.searchInLocale(
-					keywords,
+					terms,
 					query,
 					fallbackLocale,
+					sourceIds,
 					remainingSlots,
 					category
 				);
@@ -250,17 +386,22 @@ export class KnowledgeBaseService {
 	}
 
 	/**
-	 * Keresés egy adott nyelven
+	 * Keresés egy adott nyelven a megadott forrásokban.
+	 *
+	 * Minden kérdésszó (term) egyszer számít egy chunk-nál: a változatai
+	 * (szótövek, szinonimák, prefixes egyezések) közül a legjobb. A pontszámot
+	 * a kulcsszó ritkasága (IDF) súlyozza, így a jellemző szavak többet érnek,
+	 * mint a mindenhol előforduló gyakori szavak.
 	 */
 	private searchInLocale(
-		keywords: string[],
+		terms: SearchTerm[],
 		query: string,
 		locale: KnowledgeBaseLocale,
+		sourceIds: string[],
 		maxResults: number,
 		category?: DocumentCategory
 	): SearchResult[] {
-		const index = this.indexes.get(locale);
-		if (!index || keywords.length === 0) {
+		if (terms.length === 0) {
 			return [];
 		}
 
@@ -270,24 +411,56 @@ export class KnowledgeBaseService {
 			{ chunk: DocumentChunk; score: number; matchedKeywords: string[] }
 		>();
 
-		for (const keyword of this.expandKeywords(keywords, index)) {
-			for (const chunkId of index.keywordIndex.get(keyword) ?? []) {
-				const chunk = index.chunks.get(chunkId);
-				if (!chunk) continue;
+		const indexes = sourceIds.flatMap((sourceId) => {
+			const index = this.sources.get(sourceId)?.indexes.get(locale);
+			return index && index.chunkCount > 0 ? [index] : [];
+		});
 
-				// Kategória szűrés
-				if (category && chunk.category !== category) {
-					continue;
+		// A ritkaság (IDF) az összes keresett forrás együttes állományán számít,
+		// hogy egy kis plugin tudásbázis szavai ne tűnjenek gyakorinak
+		const totalChunks = indexes.reduce((sum, index) => sum + index.chunkCount, 0);
+		const idf = (keyword: string) => {
+			const df = indexes.reduce(
+				(sum, index) => sum + (index.keywordIndex.get(keyword)?.length ?? 0),
+				0
+			);
+			return Math.log(1 + totalChunks / Math.max(df, 1));
+		};
+
+		for (const index of indexes) {
+			for (const term of terms) {
+				// chunk ID → a term legjobb egyezése ebben a chunk-ban
+				const best = new Map<string, { score: number; keyword: string }>();
+
+				for (const [keyword, weight] of this.expandTerm(term, index)) {
+					const chunkIds = index.keywordIndex.get(keyword) ?? [];
+					const weightedIdf = weight * idf(keyword);
+
+					for (const chunkId of chunkIds) {
+						const chunk = index.chunks.get(chunkId);
+						if (!chunk) continue;
+
+						// Kategória szűrés
+						if (category && chunk.category !== category) {
+							continue;
+						}
+
+						const score = this.calculateKeywordScore(keyword, chunk, query) * weightedIdf;
+						if (score > (best.get(chunkId)?.score ?? 0)) {
+							best.set(chunkId, { score, keyword });
+						}
+					}
 				}
 
-				let entry = chunkScores.get(chunkId);
-				if (!entry) {
-					entry = { chunk, score: 0, matchedKeywords: [] };
-					chunkScores.set(chunkId, entry);
+				for (const [chunkId, match] of best) {
+					let entry = chunkScores.get(chunkId);
+					if (!entry) {
+						entry = { chunk: index.chunks.get(chunkId)!, score: 0, matchedKeywords: [] };
+						chunkScores.set(chunkId, entry);
+					}
+					entry.score += match.score;
+					entry.matchedKeywords.push(match.keyword);
 				}
-
-				entry.score += this.calculateKeywordScore(keyword, chunk, query);
-				entry.matchedKeywords.push(keyword);
 			}
 		}
 
@@ -298,23 +471,27 @@ export class KnowledgeBaseService {
 			.map((entry) => ({
 				chunk: entry.chunk,
 				score: entry.score,
-				matchedKeywords: [...new Set(entry.matchedKeywords)]
+				matchedKeywords: entry.matchedKeywords
 			}));
 	}
 
 	/**
-	 * Kulcsszavak kiegészítése az indexben velük kezdődő szavakkal
+	 * Egy kérdésszó változatai súllyal, kiegészítve az indexben velük kezdődő
+	 * szavakkal (kisebb súllyal)
 	 */
-	private expandKeywords(keywords: string[], index: DocumentIndex): Set<string> {
-		const expanded = new Set(keywords);
+	private expandTerm(term: SearchTerm, index: DocumentIndex): Map<string, number> {
+		const expanded = new Map(term);
 
-		for (const keyword of keywords) {
+		for (const [keyword, weight] of term) {
 			if (keyword.length < SEARCH_CONFIG.minPrefixLength) continue;
 
 			let matches = 0;
 			for (const indexed of index.keywordIndex.keys()) {
 				if (indexed !== keyword && indexed.startsWith(keyword)) {
-					expanded.add(indexed);
+					const prefixWeight = weight * SEARCH_CONFIG.prefixWeight;
+					if (prefixWeight > (expanded.get(indexed) ?? 0)) {
+						expanded.set(indexed, prefixWeight);
+					}
 					if (++matches >= SEARCH_CONFIG.maxPrefixMatches) break;
 				}
 			}
@@ -324,21 +501,32 @@ export class KnowledgeBaseService {
 	}
 
 	/**
-	 * Keresési kulcsszavak előkészítése: szavak, szótövek és szinonimák
+	 * Keresési kifejezések előkészítése: kérdésszavanként a szó, a szótövei
+	 * és a szinonimái, súllyal
 	 */
-	private prepareSearchKeywords(query: string): string[] {
-		const keywords = new Set<string>();
+	private prepareSearchTerms(query: string): SearchTerm[] {
+		const terms: SearchTerm[] = [];
+		const seen = new Set<string>();
 
 		for (const word of tokenize(query)) {
+			if (seen.has(word)) continue;
+			seen.add(word);
+
+			const term: SearchTerm = new Map();
+			const add = (keyword: string, weight: number) => {
+				if (weight > (term.get(keyword) ?? 0)) term.set(keyword, weight);
+			};
+
 			for (const variant of stemVariants(word)) {
-				keywords.add(variant);
+				add(variant, variant === word ? 1 : SEARCH_CONFIG.stemWeight);
 				for (const synonym of SYNONYMS.get(variant) ?? []) {
-					keywords.add(synonym);
+					add(synonym, SEARCH_CONFIG.synonymWeight);
 				}
 			}
+			terms.push(term);
 		}
 
-		return Array.from(keywords).slice(0, SEARCH_CONFIG.maxQueryKeywords);
+		return terms.slice(0, SEARCH_CONFIG.maxQueryTerms);
 	}
 
 	/**
@@ -383,7 +571,8 @@ export class KnowledgeBaseService {
 	}
 
 	/**
-	 * Újraindexelés (admin funkció)
+	 * Újraindexelés (admin funkció): a core adott nyelve vagy minden nyelve,
+	 * nyelv nélkül a plugin tudásbázisok is (újak, frissek, töröltek)
 	 */
 	async reindex(locale?: KnowledgeBaseLocale): Promise<void> {
 		// Ha még nem volt inicializálás, az amúgy is mindent indexel
@@ -392,8 +581,13 @@ export class KnowledgeBaseService {
 			return;
 		}
 
-		for (const loc of locale ? [locale] : LOCALES) {
-			await this.indexLocale(loc);
+		if (locale) {
+			for (const source of this.sources.values()) {
+				source.indexes.set(locale, await this.buildIndex(source.indexer, locale));
+			}
+		} else {
+			await this.loadSource(CORE_SOURCE, new DocumentIndexer(this.knowledgeBasePath));
+			await this.syncPlugins();
 		}
 		console.log(`[KnowledgeBaseService] Újraindexelve: ${locale ?? 'összes nyelv'}`);
 	}
@@ -402,30 +596,44 @@ export class KnowledgeBaseService {
 	 * Státusz lekérdezés
 	 */
 	getStatus(): KnowledgeBaseStatus {
-		const locales = {
-			hu: this.getLocaleStatus('hu'),
-			en: this.getLocaleStatus('en')
-		} as const;
+		const core = this.sources.get(CORE_SOURCE);
+		const localeStatus = (locale: KnowledgeBaseLocale) => {
+			const index = core?.indexes.get(locale);
+			return {
+				documentCount: index?.documentCount || 0,
+				chunkCount: index?.chunkCount || 0,
+				lastIndexed: index?.lastIndexed || null,
+				isLoaded: !!index
+			};
+		};
+
+		const plugins = [...this.sources.values()].flatMap((source) => {
+			if (!source.plugin) return [];
+			const indexes = [...source.indexes.values()];
+			return [
+				{
+					id: source.plugin.id,
+					name: source.plugin.name,
+					documentCount: indexes.reduce((sum, index) => sum + index.documentCount, 0),
+					chunkCount: indexes.reduce((sum, index) => sum + index.chunkCount, 0)
+				}
+			];
+		});
+
+		const locales = { hu: localeStatus('hu'), en: localeStatus('en') } as const;
 
 		return {
 			locales,
-			totalDocuments: locales.hu.documentCount + locales.en.documentCount,
-			totalChunks: locales.hu.chunkCount + locales.en.chunkCount,
+			plugins,
+			totalDocuments:
+				locales.hu.documentCount +
+				locales.en.documentCount +
+				plugins.reduce((sum, plugin) => sum + plugin.documentCount, 0),
+			totalChunks:
+				locales.hu.chunkCount +
+				locales.en.chunkCount +
+				plugins.reduce((sum, plugin) => sum + plugin.chunkCount, 0),
 			uptime: Date.now() - this.startTime.getTime()
-		};
-	}
-
-	/**
-	 * Egy nyelv státuszának lekérdezése
-	 */
-	private getLocaleStatus(locale: KnowledgeBaseLocale) {
-		const index = this.indexes.get(locale);
-
-		return {
-			documentCount: index?.documentCount || 0,
-			chunkCount: index?.chunkCount || 0,
-			lastIndexed: index?.lastIndexed || null,
-			isLoaded: !!index
 		};
 	}
 
@@ -435,4 +643,23 @@ export class KnowledgeBaseService {
 	get initialized(): boolean {
 		return this.isInitialized;
 	}
+}
+
+/**
+ * Plugin tudásbázisának újratöltése telepítés, frissítés vagy visszaállítás után.
+ * Hiba esetén csak naplóz: a tudásbázis nem akaszthatja meg a plugin kezelését.
+ */
+export async function reloadPluginKnowledgeBase(pluginId: string): Promise<void> {
+	try {
+		await getKnowledgeBase().reloadPlugin(pluginId);
+	} catch (error) {
+		console.error(`[KnowledgeBaseService] Plugin tudásbázis betöltési hiba (${pluginId}):`, error);
+	}
+}
+
+/**
+ * Plugin tudásbázisának eltávolítása a plugin törlésekor
+ */
+export function removePluginKnowledgeBase(pluginId: string): void {
+	getKnowledgeBase().removePlugin(pluginId);
 }

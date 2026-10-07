@@ -12,12 +12,18 @@ import * as v from 'valibot';
 import {
 	avatarRepository,
 	aiProviderRepository,
-	adminConfigRepository
+	adminConfigRepository,
+	appRepository
 } from '$lib/server/database/repositories';
 import { getKnowledgeBase } from '$lib/server/ai-assistant/knowledgeBaseService.js';
 import { buildKnowledgeContext, buildSystemPrompt } from '$lib/server/ai-assistant/prompts.js';
 import { callChatProvider, PROVIDER_DEFAULTS } from '$lib/server/ai-assistant/providers.js';
-import type { KnowledgeBaseLocale, SearchResponse } from '$lib/server/ai-assistant/types.js';
+import { CORE_SOURCE } from '$lib/server/ai-assistant/types.js';
+import type {
+	KnowledgeBaseLocale,
+	PluginKnowledgeInfo,
+	SearchResponse
+} from '$lib/server/ai-assistant/types.js';
 import { dev } from '$app/environment';
 import { decrypt } from '$lib/server/utils/encryption';
 import type { AIAssistantConfig } from '@racona/database/schemas';
@@ -34,7 +40,7 @@ function extractAppSuggestion(text: string): {
 	cleanText: string;
 	suggestedApp?: { appName: string; section?: string };
 } {
-	const appRegex = /\[APP:([a-z-]+)(?::([a-z-]+))?\]/i;
+	const appRegex = /\[APP:([a-z0-9-]+)(?::([a-z0-9/-]+))?\]/i;
 	const match = text.match(appRegex);
 
 	if (match) {
@@ -85,18 +91,45 @@ async function resolveProviderTarget(
 }
 
 /**
+ * A felhasználó számára elérhető pluginok, amelyeknek van tudásbázisa.
+ * A hozzáférést ugyanaz dönti el, mint az alkalmazáslistát (szerepkör, csoport,
+ * nyilvános app, aktív állapot). Hiba esetén csak a core tudásbázis marad.
+ */
+async function getAccessiblePluginKnowledge(
+	userId: number,
+	locale: KnowledgeBaseLocale
+): Promise<PluginKnowledgeInfo[]> {
+	try {
+		const kb = getKnowledgeBase();
+		await kb.initialize();
+		const plugins = kb.getPlugins();
+		if (plugins.length === 0) return [];
+
+		const accessible = new Set(
+			(await appRepository.findAppsForUser(userId, locale)).map((app) => app.appId)
+		);
+		return plugins.filter((plugin) => accessible.has(plugin.id));
+	} catch (err) {
+		console.warn('[AiChat] Plugin tudásbázisok lekérési hiba:', err);
+		return [];
+	}
+}
+
+/**
  * Tudásbázis keresés — hiba esetén üres eredménnyel folytatjuk
  */
 async function searchKnowledgeBase(
 	query: string,
-	locale: KnowledgeBaseLocale
+	locale: KnowledgeBaseLocale,
+	sources: string[]
 ): Promise<SearchResponse | null> {
 	try {
 		return await getKnowledgeBase().search({
 			query,
 			userLocale: locale,
 			maxResults: 5,
-			enableFallback: true
+			enableFallback: true,
+			sources
 		});
 	} catch (err) {
 		console.warn('[AiChat] Knowledge Base keresési hiba:', err);
@@ -200,8 +233,13 @@ export const sendChatMessage = command(
 			// Nyelvi beállítás meghatározása
 			const locale: KnowledgeBaseLocale = (locals.locale || 'hu') === 'hu' ? 'hu' : 'en';
 
-			// Knowledge Base keresés és kontextus a felhasználó üzenetéhez
-			const searchResponse = await searchKnowledgeBase(data.message, locale);
+			// Knowledge Base keresés (core + a felhasználó számára elérhető pluginok)
+			// és kontextus a felhasználó üzenetéhez
+			const plugins = await getAccessiblePluginKnowledge(parseInt(locals.user.id), locale);
+			const searchResponse = await searchKnowledgeBase(data.message, locale, [
+				CORE_SOURCE,
+				...plugins.map((plugin) => plugin.id)
+			]);
 			const knowledgeContext = buildKnowledgeContext(searchResponse?.results ?? [], locale);
 
 			const result = await callChatProvider({
@@ -214,7 +252,7 @@ export const sendChatMessage = command(
 					temperature: aiConfig.aiAgent.advancedParams.temperature ?? 0.7,
 					topP: aiConfig.aiAgent.advancedParams.topP ?? 0.9
 				},
-				system: buildSystemPrompt(locale),
+				system: buildSystemPrompt(locale, plugins),
 				history: data.conversationHistory ?? [],
 				userMessage: data.message + knowledgeContext
 			});

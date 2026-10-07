@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The generated `build-package.js` also packages the `knowledge-base/` folder (documentation for the AI assistant; needs a core version that supports plugin knowledge bases)
+
 ## [0.5.2] - 2026-10-06
 
 ### Changed

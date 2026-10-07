@@ -43,7 +43,8 @@ describe('DocumentIndexer', () => {
 		const indexer = new DocumentIndexer(KB_PATH);
 		const content = 'Bekezdés szövege, ami elég hosszú. '.repeat(100);
 		const chunks = indexer.chunkDocument({
-			id: 'teszt.md',
+			id: 'core/teszt.md',
+			source: 'core',
 			title: 'Teszt',
 			content,
 			tags: [],

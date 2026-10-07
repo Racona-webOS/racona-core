@@ -19,6 +19,7 @@ import { eq, and } from 'drizzle-orm';
 import { getPluginDir, removeDir } from '$lib/server/plugins/utils/filesystem';
 import { permissionRepository } from '$lib/server/database/repositories';
 import { pluginInstaller } from '$lib/server/plugins/installer/PluginInstaller';
+import { removePluginKnowledgeBase } from '$lib/server/ai-assistant/knowledgeBaseService';
 import { desktopShortcuts, translations } from '@racona/database/schemas';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import path from 'path';
@@ -68,8 +69,9 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			// Folytatjuk az adatbázis törlésével még ha a fájl törlés sikertelen is
 		}
 
-		// 5. Email template-ek törlése
+		// 5. Email template-ek és az AI asszisztens tudásbázisának törlése
 		await pluginInstaller.removeEmailTemplates(pluginId);
+		removePluginKnowledgeBase(pluginId);
 
 		// 6. Plugin séma törlése (app__<plugin_id> és benne minden tábla)
 		const schemaName = `app__${pluginId.replace(/-/g, '_').replace(/[^a-z0-9_]/g, '')}`;

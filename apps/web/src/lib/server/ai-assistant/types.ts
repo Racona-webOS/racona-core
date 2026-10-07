@@ -10,10 +10,30 @@ export type KnowledgeBaseLocale = 'hu' | 'en';
 /** Dokumentum kategóriák */
 export type DocumentCategory = 'user' | 'developer';
 
+/** A core tudásbázis forrásazonosítója; a pluginoké a plugin azonosítója */
+export const CORE_SOURCE = 'core';
+
+/** Lokalizált szöveg (pl. a plugin neve a manifestből) */
+export type LocalizedName = Partial<Record<KnowledgeBaseLocale, string>>;
+
+/** Egy plugin tudásbázisának adatai a prompthoz */
+export interface PluginKnowledgeInfo {
+	/** Plugin azonosító (egyben az app neve az [APP:...] jelölésben) */
+	id: string;
+	/** A plugin neve */
+	name: LocalizedName;
+	/** A plugin menüjének szekciói (href # nélkül) */
+	sections: { id: string; label: LocalizedName }[];
+}
+
 /** Egy dokumentum reprezentációja */
 export interface Document {
-	/** Egyedi azonosító (fájl útvonal alapján) */
+	/** Egyedi azonosító (forrás és fájl útvonal alapján) */
 	id: string;
+	/** Forrás: 'core' vagy a plugin azonosítója */
+	source: string;
+	/** A forrás neve a dokumentum nyelvén (pluginnál a plugin neve) */
+	sourceName?: string;
 	/** Dokumentum címe */
 	title: string;
 	/** Markdown tartalom (frontmatter nélkül) */
@@ -36,6 +56,10 @@ export interface DocumentChunk {
 	id: string;
 	/** Eredeti dokumentum ID */
 	documentId: string;
+	/** Forrás: 'core' vagy a plugin azonosítója */
+	source: string;
+	/** A forrás neve a chunk nyelvén (pluginnál a plugin neve) */
+	sourceName?: string;
 	/** Chunk tartalma */
 	content: string;
 	/** Chunk pozíciója a dokumentumban */
@@ -84,7 +108,7 @@ export interface DocumentIndex {
 
 /** Knowledge Base státusz */
 export interface KnowledgeBaseStatus {
-	/** Státusz nyelvenkénti bontásban */
+	/** A core tudásbázis státusza nyelvenkénti bontásban */
 	locales: {
 		[K in KnowledgeBaseLocale]: {
 			/** Indexelt dokumentumok száma */
@@ -97,7 +121,14 @@ export interface KnowledgeBaseStatus {
 			isLoaded: boolean;
 		};
 	};
-	/** Összes dokumentum száma */
+	/** A pluginok tudásbázisai (mindkét nyelv együtt) */
+	plugins: {
+		id: string;
+		name: LocalizedName;
+		documentCount: number;
+		chunkCount: number;
+	}[];
+	/** Összes dokumentum száma (core és pluginok) */
 	totalDocuments: number;
 	/** Összes chunk száma */
 	totalChunks: number;
@@ -117,6 +148,8 @@ export interface SearchParams {
 	category?: DocumentCategory;
 	/** Fallback keresés engedélyezése másik nyelven */
 	enableFallback?: boolean;
+	/** Csak ezekben a forrásokban keres ('core' és plugin azonosítók); ha nincs megadva, mindben */
+	sources?: string[];
 }
 
 /** Keresési eredmény */
