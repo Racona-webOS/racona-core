@@ -277,7 +277,7 @@
 										type="button"
 										class="flip-back-button"
 										onclick={() => toggleCardFlip(avatar.idname)}
-										aria-label={t('common.back')}
+										aria-label={t('common.buttons.back')}
 									>
 										<ArrowLeft class="h-4 w-4" />
 									</button>

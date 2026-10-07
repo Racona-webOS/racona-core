@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The AI avatar card's back button uses the existing `common.buttons.back` translation (the `common.back` key did not exist).
 - Cleaning up the plugin temp and backup folders no longer logs an error when the folder does not exist yet (before the first upload or update).
 
 ## [0.7.1] - 2026-10-07
