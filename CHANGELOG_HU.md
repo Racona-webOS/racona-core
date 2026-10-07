@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-07
+
 ### Javítva
 
 - A Beállítások → Névjegy a valódi Racona verziót mutatja (a gyökér `package.json`-ból, a build során), nem egy beégetett régi számot.
