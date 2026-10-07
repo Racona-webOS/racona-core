@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-10-07
+
 ### Javítva
 
 - **AI avatar telepítése élesben**: az avatar csomag (5–20 MB) eddig egy kérésben, base64-ben ment fel, ami átlépte a kérésméret-korlátot (`BODY_SIZE_LIMIT`, proxy), ezért a telepítés Dockerben `ERR_HTTP2_PROTOCOL_ERROR`-ral megszakadt. Most 512 KB-os darabokban megy fel (folyamatjelzővel), a szerver ideiglenes fájlba fűzi össze, a félbehagyott feltöltés egy óra után törlődik.
