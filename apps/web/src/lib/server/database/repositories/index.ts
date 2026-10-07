@@ -55,10 +55,6 @@ export { notificationRepository } from './notificationRepository';
 export { avatarRepository } from './avatarRepository';
 export type { InsertAvatarData, UpsertAvatarConfigData } from './avatarRepository';
 
-// Agent Config repository exports
-export { agentConfigRepository } from './agentConfigRepository';
-export type { UpsertAgentConfigData, AgentConfigWithMaskedKey } from './agentConfigRepository';
-
 // AI Provider repository exports
 export { aiProviderRepository } from './aiProviderRepository';
 export type { ProviderWithConfigs, ProviderConfigMap } from './aiProviderRepository';
