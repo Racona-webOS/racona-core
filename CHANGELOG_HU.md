@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-10-07
+
 ### Javítva
 
 - **Plugin feltöltés jogosultsága**: a `POST /api/plugins/upload` végpont (ami validál és telepít is) eddig bármely bejelentkezett felhasználónak engedte a telepítést. Mostantól a `plugin.manual.install` jog kell hozzá, ugyanúgy, mint az `/install` végponthoz; enélkül 403.
