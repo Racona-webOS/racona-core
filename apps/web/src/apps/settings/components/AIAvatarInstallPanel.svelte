@@ -6,7 +6,11 @@
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 	import { isAIAgentEnabled, listAvatarsForSettings } from '../admin-config.remote';
-	import { installAvatar } from '$apps/ai-assistant/avatar.remote';
+	import {
+		beginAvatarUpload,
+		uploadAvatarChunk,
+		installAvatar
+	} from '$apps/ai-assistant/avatar.remote';
 	import { ArrowLeft, Trash2 } from 'lucide-svelte/icons';
 
 	const { t } = useI18n();
@@ -17,6 +21,8 @@
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let selectedFile = $state<File | null>(null);
 	let installing = $state(false);
+	/** Feltöltés állapota százalékban (null: nem tölt fel) */
+	let uploadProgress = $state<number | null>(null);
 	let errorMessage = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
 	let avatars = $state<
@@ -102,13 +108,34 @@
 		successMessage = null;
 
 		try {
-			// Fájl beolvasása base64-be
-			const fileData = await readFileAsBase64(selectedFile);
-
-			const result = await installAvatar({
+			// A csomag darabokban megy fel: egy kérésben átlépné a szerver kérésméret-korlátját
+			const begin = await beginAvatarUpload({
 				fileName: selectedFile.name,
-				fileData
+				size: selectedFile.size
 			});
+			if (!begin.success || !begin.uploadId || !begin.chunkSize) {
+				throw new Error(begin.error ?? t('settings.admin.aiAvatar.installError'));
+			}
+
+			const { uploadId, chunkSize } = begin;
+			const chunkCount = Math.ceil(selectedFile.size / chunkSize);
+			uploadProgress = 0;
+
+			for (let index = 0; index < chunkCount; index++) {
+				const chunk = selectedFile.slice(index * chunkSize, (index + 1) * chunkSize);
+				const uploaded = await uploadAvatarChunk({
+					uploadId,
+					index,
+					data: await readBlobAsBase64(chunk)
+				});
+				if (!uploaded.success) {
+					throw new Error(uploaded.error ?? t('settings.admin.aiAvatar.installError'));
+				}
+				uploadProgress = Math.round(((index + 1) / chunkCount) * 100);
+			}
+
+			uploadProgress = null;
+			const result = await installAvatar({ uploadId });
 
 			if (result.success) {
 				successMessage = t('settings.admin.aiAvatar.installSuccess', {
@@ -126,15 +153,19 @@
 			}
 		} catch (err) {
 			console.error('[AIAvatarInstallPanel] Hiba:', err);
-			errorMessage = t('settings.admin.aiAvatar.installError');
+			errorMessage =
+				err instanceof Error && err.message !== 'Failed to fetch'
+					? err.message
+					: t('settings.admin.aiAvatar.installError');
 			toast.error(errorMessage);
 		} finally {
 			installing = false;
+			uploadProgress = null;
 		}
 	}
 
-	// Segédfüggvény: File → base64
-	function readFileAsBase64(file: File): Promise<string> {
+	// Segédfüggvény: Blob → base64 (data URL nélkül)
+	function readBlobAsBase64(file: Blob): Promise<string> {
 		return new Promise((resolve, reject) => {
 			const reader = new FileReader();
 			reader.onload = () => {
@@ -198,9 +229,11 @@
 					{/if}
 				</div>
 				<Button onclick={handleInstall} disabled={!selectedFile || installing} class="mt-6">
-					{installing
-						? t('settings.admin.aiAvatar.installing')
-						: t('settings.admin.aiAvatar.install')}
+					{uploadProgress !== null
+						? t('settings.admin.aiAvatar.uploading', { percent: uploadProgress })
+						: installing
+							? t('settings.admin.aiAvatar.installing')
+							: t('settings.admin.aiAvatar.install')}
 				</Button>
 			</div>
 

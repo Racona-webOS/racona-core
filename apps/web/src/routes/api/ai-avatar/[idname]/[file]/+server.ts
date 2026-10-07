@@ -9,6 +9,8 @@
  */
 
 import type { RequestHandler } from './$types';
+import { readFile } from 'fs/promises';
+import path from 'path';
 import { auth } from '$lib/auth/index';
 import { readFromFileSystem, validatePath } from '$lib/server/storage/filesystem';
 import { StorageError, getHttpStatusForError } from '$lib/server/storage/types';
@@ -32,6 +34,20 @@ function getAvatarMimeType(filename: string): string {
 			return 'image/jpeg';
 		default:
 			return 'application/octet-stream';
+	}
+}
+
+/**
+ * Az image-be épített avatarok (a seedben szereplő „default”) mappája. Dockerben az
+ * uploads egy külső kötet, amibe ezek a fájlok nem kerülnek be, ezért innen is keressük.
+ */
+const BUNDLED_AVATARS_DIR = path.join(process.cwd(), 'defaults', 'ai-avatar');
+
+async function readBundledAvatarFile(idname: string, file: string): Promise<Buffer | null> {
+	try {
+		return await readFile(path.join(BUNDLED_AVATARS_DIR, idname, file));
+	} catch {
+		return null;
 	}
 }
 
@@ -89,17 +105,25 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	try {
 		fileBuffer = await readFromFileSystem(relativePath);
 	} catch (error) {
-		if (error instanceof StorageError) {
+		// Ha az uploads-ban nincs, az image-be épített avatar fájlja
+		const bundled =
+			error instanceof StorageError && error.code === 'FILE_NOT_FOUND'
+				? await readBundledAvatarFile(idname, file)
+				: null;
+		if (bundled) {
+			fileBuffer = bundled;
+		} else if (error instanceof StorageError) {
 			return new Response(JSON.stringify({ error: error.message }), {
 				status: getHttpStatusForError(error.code),
 				headers: { 'Content-Type': 'application/json' }
 			});
+		} else {
+			console.error('[AI Avatar API] Váratlan hiba:', error);
+			return new Response(JSON.stringify({ error: 'Belső szerverhiba' }), {
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			});
 		}
-		console.error('[AI Avatar API] Váratlan hiba:', error);
-		return new Response(JSON.stringify({ error: 'Belső szerverhiba' }), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' }
-		});
 	}
 
 	// 5. Content-Type meghatározása és válasz küldése (Requirements: 8.5, 8.6)

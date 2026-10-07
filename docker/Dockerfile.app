@@ -81,6 +81,10 @@ COPY --from=builder --chown=racona:nodejs /app/apps/web/server.js ./apps/web/ser
 # AI asszisztens tudásbázis — a futtatási könyvtárhoz (process.cwd()) relatívan keresi
 COPY --from=builder --chown=racona:nodejs /app/apps/web/knowledge-base ./knowledge-base
 
+# A seedben szereplő alapértelmezett AI avatar fájljai — az uploads külső kötet, ezért
+# az API innen olvassa őket, ha ott nincsenek
+COPY --from=builder --chown=racona:nodejs /app/apps/web/uploads/ai-avatar/default ./defaults/ai-avatar/default
+
 # Entrypoint script (Infisical opcionális)
 COPY --chmod=755 docker/prod/app/entrypoint.sh /app/entrypoint.sh
 

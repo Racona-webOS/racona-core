@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Installing AI avatars in production**: the avatar package (5–20 MB) used to be sent in one base64 request, which exceeded the request size limit (`BODY_SIZE_LIMIT`, proxy), so installation failed in Docker with `ERR_HTTP2_PROTOCOL_ERROR`. It is now uploaded in 512 KB chunks (with a progress indicator), joined into a temporary file on the server; abandoned uploads are removed after an hour.
+- Installing an avatar requires the `settings.admin.aiAssistant` permission (signing in used to be enough).
+- The built-in "default" (Rico) avatar files are available in Docker too: the image ships them (`/app/defaults/ai-avatar`), since they never got into the external `uploads` volume (404).
+
 ## [0.7.4] - 2026-10-07
 
 ### Fixed

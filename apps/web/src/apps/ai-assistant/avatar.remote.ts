@@ -10,7 +10,15 @@ import * as v from 'valibot';
 import AdmZip from 'adm-zip';
 import fs from 'fs/promises';
 import path from 'path';
-import { avatarRepository } from '$lib/server/database/repositories';
+import { avatarRepository, permissionRepository } from '$lib/server/database/repositories';
+import {
+	AvatarUploadError,
+	appendChunk,
+	beginUpload,
+	discardUpload,
+	finishUpload,
+	AVATAR_CHUNK_SIZE
+} from '$lib/server/ai-avatar/uploadSessions';
 import type { AiAvatarSelectModel, UserAvatarConfigSelectModel } from '@racona/database/schemas';
 
 // ============================================================================
@@ -101,12 +109,24 @@ function getAvatarUploadDir(idname: string): string {
 // Sémák
 // ============================================================================
 
-/** installAvatar: base64 kódolt .raconapkg fájl */
-const installAvatarSchema = v.object({
+/** beginAvatarUpload: darabolt feltöltés indítása */
+const beginAvatarUploadSchema = v.object({
 	/** A .raconapkg fájl neve (pl. "my-avatar_ai_avatar.raconapkg") */
 	fileName: v.pipe(v.string(), v.endsWith('.raconapkg')),
-	/** A fájl tartalma base64 kódolva */
-	fileData: v.pipe(v.string(), v.minLength(1))
+	/** A fájl mérete bájtban */
+	size: v.pipe(v.number(), v.integer(), v.minValue(1))
+});
+
+/** uploadAvatarChunk: egy darab base64 kódolva (legfeljebb AVATAR_CHUNK_SIZE bájt) */
+const uploadAvatarChunkSchema = v.object({
+	uploadId: v.pipe(v.string(), v.uuid()),
+	index: v.pipe(v.number(), v.integer(), v.minValue(0)),
+	data: v.pipe(v.string(), v.minLength(1), v.maxLength(Math.ceil(AVATAR_CHUNK_SIZE / 3) * 4))
+});
+
+/** installAvatar: a feltöltött csomag telepítése */
+const installAvatarSchema = v.object({
+	uploadId: v.pipe(v.string(), v.uuid())
 });
 
 /** saveAvatarConfig: felhasználói avatar konfiguráció */
@@ -119,6 +139,19 @@ const saveAvatarConfigSchema = v.object({
 // ============================================================================
 // Válasz típusok
 // ============================================================================
+
+export interface BeginAvatarUploadResult {
+	success: boolean;
+	error?: string;
+	uploadId?: string;
+	chunkSize?: number;
+}
+
+export interface UploadAvatarChunkResult {
+	success: boolean;
+	error?: string;
+	received?: number;
+}
 
 export interface InstallAvatarResult {
 	success: boolean;
@@ -145,7 +178,86 @@ export interface SaveAvatarConfigResult {
 }
 
 // ============================================================================
-// installAvatar — .raconapkg csomag telepítése
+// Jogosultság
+// ============================================================================
+
+/**
+ * Az avatar telepítéshez a Beállítások AI asszisztens admin joga kell
+ * (ugyanaz, ami a menüpontot is mutatja)
+ *
+ * @returns A felhasználó azonosítója, vagy null ha nincs joga
+ */
+async function getAdminUserId(): Promise<number | null> {
+	const { locals } = getRequestEvent();
+	if (!locals.user?.id) return null;
+
+	const userId = parseInt(locals.user.id);
+	const permissions = await permissionRepository.findPermissionsForUser(userId);
+	return permissions.includes('settings.admin.aiAssistant') ? userId : null;
+}
+
+const NO_PERMISSION = 'Nincs jogosultságod avatar telepítéséhez.';
+
+/** A darabolt feltöltés hibakódjainak üzenete */
+function uploadErrorMessage(err: unknown): string {
+	if (err instanceof AvatarUploadError) {
+		switch (err.code) {
+			case 'TOO_LARGE':
+				return 'A csomag túl nagy.';
+			case 'NOT_FOUND':
+				return 'A feltöltés nem található vagy lejárt, kezdd újra.';
+			case 'OUT_OF_ORDER':
+			case 'OVERFLOW':
+			case 'INCOMPLETE':
+				return 'A feltöltés megszakadt, kezdd újra.';
+		}
+	}
+	return err instanceof Error ? err.message : 'Ismeretlen hiba történt.';
+}
+
+// ============================================================================
+// Darabolt feltöltés — beginAvatarUpload, uploadAvatarChunk
+// ============================================================================
+
+/**
+ * Avatar csomag feltöltésének indítása. A csomagot a böngésző kis darabokban
+ * küldi (uploadAvatarChunk), mert egy kérésben átlépné a kérésméret-korlátot.
+ */
+export const beginAvatarUpload = command(
+	beginAvatarUploadSchema,
+	async ({ size }): Promise<BeginAvatarUploadResult> => {
+		const userId = await getAdminUserId();
+		if (userId === null) return { success: false, error: NO_PERMISSION };
+
+		try {
+			const { uploadId, chunkSize } = await beginUpload(userId, size);
+			return { success: true, uploadId, chunkSize };
+		} catch (err) {
+			return { success: false, error: uploadErrorMessage(err) };
+		}
+	}
+);
+
+/**
+ * Egy darab fogadása (sorrendben)
+ */
+export const uploadAvatarChunk = command(
+	uploadAvatarChunkSchema,
+	async ({ uploadId, index, data }): Promise<UploadAvatarChunkResult> => {
+		const userId = await getAdminUserId();
+		if (userId === null) return { success: false, error: NO_PERMISSION };
+
+		try {
+			const received = await appendChunk(userId, uploadId, index, Buffer.from(data, 'base64'));
+			return { success: true, received };
+		} catch (err) {
+			return { success: false, error: uploadErrorMessage(err) };
+		}
+	}
+);
+
+// ============================================================================
+// installAvatar — a feltöltött .raconapkg csomag telepítése
 // ============================================================================
 
 /**
@@ -155,111 +267,112 @@ export interface SaveAvatarConfigResult {
  * - Kicsomagolja a fájlokat az uploads/ai-avatar/[idname]/ könyvtárba
  * - Létrehozza az adatbázis rekordot
  */
+async function installAvatarPackage(buffer: Buffer): Promise<InstallAvatarResult> {
+	// 1. ZIP megnyitása
+	let zip: AdmZip;
+	try {
+		zip = new AdmZip(buffer);
+	} catch {
+		return { success: false, error: 'Érvénytelen .raconapkg fájl (nem olvasható ZIP).' };
+	}
+
+	const entries = zip.getEntries();
+	const entryNames = entries.map((e) => e.entryName);
+
+	// 2. manifest.json beolvasása és validálása
+	const manifestEntry = entries.find((e) => e.entryName === MANIFEST_FILENAME);
+	if (!manifestEntry) {
+		return { success: false, error: `Hiányzó fájl a csomagból: ${MANIFEST_FILENAME}` };
+	}
+
+	let manifest: unknown;
+	try {
+		manifest = JSON.parse(manifestEntry.getData().toString('utf-8'));
+	} catch {
+		return { success: false, error: 'A manifest.json nem érvényes JSON.' };
+	}
+
+	const manifestValidation = validateManifest(manifest);
+	if (!manifestValidation.valid) {
+		return {
+			success: false,
+			error: `Érvénytelen manifest.json: ${manifestValidation.errors.join(', ')}`
+		};
+	}
+
+	const validatedManifest = manifestValidation.manifest!;
+	const { idname, displayName, descriptions, availableQualities } = validatedManifest;
+
+	// 3. Kötelező fájlok ellenőrzése (a manifest alapján)
+	const requiredFiles = [
+		...availableQualities.map((q) => `${idname}_${q}.glb`),
+		`${idname}_cover.jpg`
+	];
+
+	for (const filename of requiredFiles) {
+		if (!entryNames.includes(filename)) {
+			return { success: false, error: `Hiányzó fájl a csomagból: ${filename}` };
+		}
+	}
+
+	// 4. Duplikált idname ellenőrzése
+	const existing = await avatarRepository.findAvatarByIdname(idname);
+	if (existing) {
+		return {
+			success: false,
+			error: `Már telepített avatar ezzel az azonosítóval: "${idname}"`
+		};
+	}
+
+	// 5. Célkönyvtár létrehozása
+	const targetDir = getAvatarUploadDir(idname);
+	await fs.mkdir(targetDir, { recursive: true });
+
+	// 6. Fájlok kicsomagolása
+	const filesToExtract = [
+		MANIFEST_FILENAME,
+		...availableQualities.map((q) => `${idname}_${q}.glb`),
+		`${idname}_cover.jpg`
+	];
+
+	for (const filename of filesToExtract) {
+		const entry = entries.find((e) => e.entryName === filename);
+		if (!entry) continue;
+		const destPath = path.join(targetDir, filename);
+		await fs.writeFile(destPath, entry.getData());
+	}
+
+	// 7. Adatbázis rekord létrehozása
+	const avatar = await avatarRepository.insertAvatar({
+		idname,
+		displayName,
+		manifest: { descriptions },
+		availableQualities
+	});
+
+	console.log(`[AvatarInstall] Avatar telepítve: ${idname}`);
+
+	return { success: true, avatar };
+}
+
+/**
+ * A darabokban feltöltött csomag telepítése (utána a feltöltés törlődik)
+ */
 export const installAvatar = command(
 	installAvatarSchema,
-	async ({ fileName, fileData }): Promise<InstallAvatarResult> => {
-		const event = getRequestEvent();
-		const { locals } = event;
-
-		if (!locals.user?.id) {
-			return { success: false, error: 'Nem vagy bejelentkezve.' };
+	async ({ uploadId }): Promise<InstallAvatarResult> => {
+		const userId = await getAdminUserId();
+		if (userId === null) {
+			await discardUpload(uploadId);
+			return { success: false, error: NO_PERMISSION };
 		}
 
 		try {
-			// 1. Base64 dekódolás
-			const buffer = Buffer.from(fileData, 'base64');
-
-			// 2. ZIP megnyitása
-			let zip: AdmZip;
-			try {
-				zip = new AdmZip(buffer);
-			} catch {
-				return { success: false, error: 'Érvénytelen .raconapkg fájl (nem olvasható ZIP).' };
-			}
-
-			const entries = zip.getEntries();
-			const entryNames = entries.map((e) => e.entryName);
-
-			// 3. manifest.json beolvasása és validálása
-			const manifestEntry = entries.find((e) => e.entryName === MANIFEST_FILENAME);
-			if (!manifestEntry) {
-				return { success: false, error: `Hiányzó fájl a csomagból: ${MANIFEST_FILENAME}` };
-			}
-
-			let manifest: unknown;
-			try {
-				manifest = JSON.parse(manifestEntry.getData().toString('utf-8'));
-			} catch {
-				return { success: false, error: 'A manifest.json nem érvényes JSON.' };
-			}
-
-			const manifestValidation = validateManifest(manifest);
-			if (!manifestValidation.valid) {
-				return {
-					success: false,
-					error: `Érvénytelen manifest.json: ${manifestValidation.errors.join(', ')}`
-				};
-			}
-
-			const validatedManifest = manifestValidation.manifest!;
-			const { idname, displayName, descriptions, availableQualities } = validatedManifest;
-
-			// 4. Kötelező fájlok ellenőrzése (a manifest alapján)
-			const requiredFiles = [
-				...availableQualities.map((q) => `${idname}_${q}.glb`),
-				`${idname}_cover.jpg`
-			];
-
-			for (const filename of requiredFiles) {
-				if (!entryNames.includes(filename)) {
-					return { success: false, error: `Hiányzó fájl a csomagból: ${filename}` };
-				}
-			}
-
-			// 5. Duplikált idname ellenőrzése
-			const existing = await avatarRepository.findAvatarByIdname(idname);
-			if (existing) {
-				return {
-					success: false,
-					error: `Már telepített avatar ezzel az azonosítóval: "${idname}"`
-				};
-			}
-
-			// 6. Célkönyvtár létrehozása
-			const targetDir = getAvatarUploadDir(idname);
-			await fs.mkdir(targetDir, { recursive: true });
-
-			// 7. Fájlok kicsomagolása
-			const filesToExtract = [
-				MANIFEST_FILENAME,
-				...availableQualities.map((q) => `${idname}_${q}.glb`),
-				`${idname}_cover.jpg`
-			];
-
-			for (const filename of filesToExtract) {
-				const entry = entries.find((e) => e.entryName === filename);
-				if (!entry) continue;
-				const destPath = path.join(targetDir, filename);
-				await fs.writeFile(destPath, entry.getData());
-			}
-
-			// 8. Adatbázis rekord létrehozása
-			const avatar = await avatarRepository.insertAvatar({
-				idname,
-				displayName,
-				manifest: { descriptions },
-				availableQualities
-			});
-
-			console.log(`[AvatarInstall] Avatar telepítve: ${idname}`);
-
-			return { success: true, avatar };
+			const buffer = await finishUpload(userId, uploadId);
+			return await installAvatarPackage(buffer);
 		} catch (err) {
 			console.error('[AvatarInstall] Hiba:', err);
-			return {
-				success: false,
-				error: err instanceof Error ? err.message : 'Ismeretlen hiba történt.'
-			};
+			return { success: false, error: uploadErrorMessage(err) };
 		}
 	}
 );

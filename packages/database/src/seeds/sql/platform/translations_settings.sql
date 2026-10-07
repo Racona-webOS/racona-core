@@ -951,6 +951,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'admin.aiAvatar.fileLabel', 'Avatar csomag fájl (.raconapkg)'),
 ('hu', 'settings', 'admin.aiAvatar.install', 'Telepítés'),
 ('hu', 'settings', 'admin.aiAvatar.installing', 'Telepítés...'),
+('hu', 'settings', 'admin.aiAvatar.uploading', 'Feltöltés... {percent}%'),
 ('hu', 'settings', 'admin.aiAvatar.installSuccess', 'Avatar sikeresen telepítve: {name}'),
 ('hu', 'settings', 'admin.aiAvatar.installError', 'Avatar telepítése sikertelen'),
 ('hu', 'settings', 'admin.aiAvatar.validation.invalidFileType', 'Csak .raconapkg fájlok engedélyezettek')
@@ -966,6 +967,7 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'admin.aiAvatar.fileLabel', 'Avatar package file (.raconapkg)'),
 ('en', 'settings', 'admin.aiAvatar.install', 'Install'),
 ('en', 'settings', 'admin.aiAvatar.installing', 'Installing...'),
+('en', 'settings', 'admin.aiAvatar.uploading', 'Uploading... {percent}%'),
 ('en', 'settings', 'admin.aiAvatar.installSuccess', 'Avatar installed successfully: {name}'),
 ('en', 'settings', 'admin.aiAvatar.installError', 'Avatar installation failed'),
 ('en', 'settings', 'admin.aiAvatar.validation.invalidFileType', 'Only .raconapkg files are allowed')
