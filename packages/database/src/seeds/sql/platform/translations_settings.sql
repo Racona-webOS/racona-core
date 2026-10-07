@@ -983,7 +983,11 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('hu', 'settings', 'admin.aiAvatar.noAvatarsInstalled', 'Nincs telepített avatar'),
 ('hu', 'settings', 'admin.aiAvatar.quality', 'Minőség'),
 ('hu', 'settings', 'admin.aiAvatar.description', 'Leírás'),
-('hu', 'settings', 'admin.aiAvatar.delete', 'Törlés')
+('hu', 'settings', 'admin.aiAvatar.delete', 'Törlés'),
+('hu', 'settings', 'admin.aiAvatar.deleteConfirmTitle', 'Avatar törlése'),
+('hu', 'settings', 'admin.aiAvatar.deleteConfirmDescription', 'Biztosan törlöd a(z) {name} avatart? Akik ezt használják, az alapértelmezett avatart kapják.'),
+('hu', 'settings', 'admin.aiAvatar.deleteSuccess', 'Avatar törölve: {name}'),
+('hu', 'settings', 'admin.aiAvatar.deleteError', 'Az avatar törlése sikertelen')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- Angol fordítások
@@ -993,7 +997,11 @@ INSERT INTO platform.translations (locale, namespace, key, value) VALUES
 ('en', 'settings', 'admin.aiAvatar.noAvatarsInstalled', 'No avatars installed'),
 ('en', 'settings', 'admin.aiAvatar.quality', 'Quality'),
 ('en', 'settings', 'admin.aiAvatar.description', 'Description'),
-('en', 'settings', 'admin.aiAvatar.delete', 'Delete')
+('en', 'settings', 'admin.aiAvatar.delete', 'Delete'),
+('en', 'settings', 'admin.aiAvatar.deleteConfirmTitle', 'Delete avatar'),
+('en', 'settings', 'admin.aiAvatar.deleteConfirmDescription', 'Are you sure you want to delete the {name} avatar? Users of this avatar will get the default one.'),
+('en', 'settings', 'admin.aiAvatar.deleteSuccess', 'Avatar deleted: {name}'),
+('en', 'settings', 'admin.aiAvatar.deleteError', 'Could not delete the avatar')
 ON CONFLICT (locale, namespace, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 -- -----------------------------------------------------------------------------

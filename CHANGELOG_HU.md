@@ -9,6 +9,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Hozzáadva
+
+- **AI avatar törlése**: a Beállítások → AI avatar panelen a telepített avatar törölhető (megerősítés után). Akik használták, a beépített alapértelmezett avatart kapják, az egyéni nevük megmarad; a beépített „default” avatar nem törölhető. A törléshez `settings.admin.aiAssistant` jog kell.
+
 ## [0.7.5] - 2026-10-07
 
 ### Javítva

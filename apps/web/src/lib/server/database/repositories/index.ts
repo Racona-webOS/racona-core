@@ -52,7 +52,7 @@ export { TranslationRepository, translationRepository } from './translationRepos
 export { notificationRepository } from './notificationRepository';
 
 // Avatar repository exports
-export { avatarRepository } from './avatarRepository';
+export { avatarRepository, DEFAULT_AVATAR_IDNAME } from './avatarRepository';
 export type { InsertAvatarData, UpsertAvatarConfigData } from './avatarRepository';
 
 // AI Provider repository exports

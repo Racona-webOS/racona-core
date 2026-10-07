@@ -3,6 +3,9 @@ import { aiAvatars, userAvatarConfigs } from '@racona/database/schemas';
 import type { AiAvatarSelectModel, UserAvatarConfigSelectModel } from '@racona/database/schemas';
 import { eq } from 'drizzle-orm';
 
+/** A seedből jövő beépített avatar — ez a tartalék, nem törölhető */
+export const DEFAULT_AVATAR_IDNAME = 'default';
+
 // Avatar konfiguráció mentési adatok típusa
 export type UpsertAvatarConfigData = {
 	avatarIdname: string;
@@ -33,6 +36,26 @@ export const avatarRepository = {
 	async findAvatarByIdname(idname: string): Promise<AiAvatarSelectModel | null> {
 		const [avatar] = await db.select().from(aiAvatars).where(eq(aiAvatars.idname, idname));
 		return avatar ?? null;
+	},
+
+	/**
+	 * Avatar törlése. Akik ezt használták, a beépített „default” avatart kapják
+	 * (az egyéni nevük megmarad), mert a felhasználói beállítás nem mutathat
+	 * nem létező avatarra.
+	 *
+	 * @returns Hány felhasználó állt át a „default” avatarra
+	 */
+	async deleteAvatar(idname: string): Promise<number> {
+		return db.transaction(async (tx) => {
+			const reassigned = await tx
+				.update(userAvatarConfigs)
+				.set({ avatarIdname: DEFAULT_AVATAR_IDNAME, quality: 'sd' })
+				.where(eq(userAvatarConfigs.avatarIdname, idname))
+				.returning({ id: userAvatarConfigs.id });
+
+			await tx.delete(aiAvatars).where(eq(aiAvatars.idname, idname));
+			return reassigned.length;
+		});
 	},
 
 	/**
@@ -80,7 +103,7 @@ export const avatarRepository = {
 		}
 
 		// Ha nincs konfiguráció, ellenőrizzük hogy létezik-e a "default" avatar
-		const defaultAvatar = await this.findAvatarByIdname('default');
+		const defaultAvatar = await this.findAvatarByIdname(DEFAULT_AVATAR_IDNAME);
 		if (!defaultAvatar) {
 			return null; // Nincs default avatar sem
 		}
@@ -89,7 +112,7 @@ export const avatarRepository = {
 		return {
 			id: 0, // Dummy ID, mivel ez nem mentett konfiguráció
 			userId,
-			avatarIdname: 'default',
+			avatarIdname: DEFAULT_AVATAR_IDNAME,
 			quality: 'sd' as const,
 			customName: null
 		};

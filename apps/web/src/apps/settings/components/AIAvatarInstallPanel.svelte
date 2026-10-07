@@ -3,13 +3,15 @@
 	import { toast } from 'svelte-sonner';
 	import ContentSection from '$lib/components/shared/ContentSection.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { ConfirmDialog } from '$lib/components/ui';
 	import { getActionBar } from '$lib/apps/actionBar.svelte';
 	import { useI18n } from '$lib/i18n/hooks';
 	import { isAIAgentEnabled, listAvatarsForSettings } from '../admin-config.remote';
 	import {
 		beginAvatarUpload,
 		uploadAvatarChunk,
-		installAvatar
+		installAvatar,
+		deleteAvatar
 	} from '$apps/ai-assistant/avatar.remote';
 	import { ArrowLeft, Trash2 } from 'lucide-svelte/icons';
 
@@ -75,10 +77,44 @@
 		flippedCards = new Set(flippedCards);
 	}
 
-	function handleDeleteAvatar(idname: string) {
-		// TODO: Implement delete functionality
-		console.log('Delete avatar:', idname);
-		toast.info('Törlés funkció hamarosan elérhető');
+	/** A beépített avatar a tartalék, nem törölhető */
+	const DEFAULT_AVATAR_IDNAME = 'default';
+
+	// Törlés megerősítése
+	let avatarToDelete = $state<{ idname: string; displayName: string } | null>(null);
+	let deleteDialogOpen = $state(false);
+	let deleting = $state(false);
+
+	function handleDeleteAvatar(avatar: { idname: string; displayName: string }) {
+		avatarToDelete = avatar;
+		deleteDialogOpen = true;
+	}
+
+	function cancelDelete() {
+		avatarToDelete = null;
+	}
+
+	async function confirmDelete() {
+		if (!avatarToDelete || deleting) return;
+		const { idname, displayName } = avatarToDelete;
+		deleting = true;
+
+		try {
+			const result = await deleteAvatar({ idname });
+			if (result.success) {
+				toast.success(t('settings.admin.aiAvatar.deleteSuccess', { name: displayName }));
+				flippedCards.delete(idname);
+				await loadAvatars();
+			} else {
+				toast.error(result.error ?? t('settings.admin.aiAvatar.deleteError'));
+			}
+		} catch (err) {
+			console.error('[AIAvatarInstallPanel] Törlési hiba:', err);
+			toast.error(t('settings.admin.aiAvatar.deleteError'));
+		} finally {
+			deleting = false;
+			avatarToDelete = null;
+		}
 	}
 
 	// Fájl kiválasztás
@@ -339,16 +375,19 @@
 									{/if}
 								</div>
 
-								<div class="card-back-actions">
-									<button
-										type="button"
-										class="delete-button"
-										onclick={() => handleDeleteAvatar(avatar.idname)}
-									>
-										<Trash2 class="h-4 w-4" />
-										{t('settings.admin.aiAvatar.delete')}
-									</button>
-								</div>
+								{#if avatar.idname !== DEFAULT_AVATAR_IDNAME}
+									<div class="card-back-actions">
+										<button
+											type="button"
+											class="delete-button"
+											disabled={deleting}
+											onclick={() => handleDeleteAvatar(avatar)}
+										>
+											<Trash2 class="h-4 w-4" />
+											{t('settings.admin.aiAvatar.delete')}
+										</button>
+									</div>
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -357,6 +396,19 @@
 		{/if}
 	</ContentSection>
 {/if}
+
+<ConfirmDialog
+	bind:open={deleteDialogOpen}
+	title={t('settings.admin.aiAvatar.deleteConfirmTitle')}
+	description={t('settings.admin.aiAvatar.deleteConfirmDescription', {
+		name: avatarToDelete?.displayName ?? ''
+	})}
+	confirmText={t('settings.admin.aiAvatar.delete')}
+	cancelText={t('common.buttons.cancel')}
+	confirmVariant="destructive"
+	onConfirm={confirmDelete}
+	onCancel={cancelDelete}
+/>
 
 <style>
 	.spinner {

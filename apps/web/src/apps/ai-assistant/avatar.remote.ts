@@ -10,7 +10,11 @@ import * as v from 'valibot';
 import AdmZip from 'adm-zip';
 import fs from 'fs/promises';
 import path from 'path';
-import { avatarRepository, permissionRepository } from '$lib/server/database/repositories';
+import {
+	avatarRepository,
+	permissionRepository,
+	DEFAULT_AVATAR_IDNAME
+} from '$lib/server/database/repositories';
 import {
 	AvatarUploadError,
 	appendChunk,
@@ -129,6 +133,11 @@ const installAvatarSchema = v.object({
 	uploadId: v.pipe(v.string(), v.uuid())
 });
 
+/** deleteAvatar: telepített avatar törlése */
+const deleteAvatarSchema = v.object({
+	idname: v.pipe(v.string(), v.regex(KEBAB_CASE_RE))
+});
+
 /** saveAvatarConfig: felhasználói avatar konfiguráció */
 const saveAvatarConfigSchema = v.object({
 	avatarIdname: v.pipe(v.string(), v.minLength(1)),
@@ -157,6 +166,13 @@ export interface InstallAvatarResult {
 	success: boolean;
 	error?: string;
 	avatar?: AiAvatarSelectModel;
+}
+
+export interface DeleteAvatarResult {
+	success: boolean;
+	error?: string;
+	/** Hány felhasználó állt át a „default” avatarra */
+	reassignedUsers?: number;
 }
 
 export interface ListAvatarsResult {
@@ -373,6 +389,51 @@ export const installAvatar = command(
 		} catch (err) {
 			console.error('[AvatarInstall] Hiba:', err);
 			return { success: false, error: uploadErrorMessage(err) };
+		}
+	}
+);
+
+// ============================================================================
+// deleteAvatar — telepített avatar törlése
+// ============================================================================
+
+/**
+ * Avatar törlése: az adatbázis rekord (akik használták, a „default” avatart kapják)
+ * és az uploads/ai-avatar/[idname]/ könyvtár. A beépített „default” nem törölhető,
+ * mert az a tartalék.
+ */
+export const deleteAvatar = command(
+	deleteAvatarSchema,
+	async ({ idname }): Promise<DeleteAvatarResult> => {
+		const userId = await getAdminUserId();
+		if (userId === null) {
+			return { success: false, error: 'Nincs jogosultságod avatar törléséhez.' };
+		}
+
+		if (idname === DEFAULT_AVATAR_IDNAME) {
+			return { success: false, error: 'A beépített alapértelmezett avatar nem törölhető.' };
+		}
+
+		try {
+			const existing = await avatarRepository.findAvatarByIdname(idname);
+			if (!existing) {
+				return { success: false, error: `Nem található avatar ezzel az azonosítóval: "${idname}"` };
+			}
+
+			// Előbb az adatbázis: ha ez hibázik, a fájlok megmaradnak
+			const reassignedUsers = await avatarRepository.deleteAvatar(idname);
+			await fs.rm(getAvatarUploadDir(idname), { recursive: true, force: true });
+
+			console.log(
+				`[AvatarDelete] Avatar törölve: ${idname} (${reassignedUsers} felhasználó a default avatarra állt át)`
+			);
+			return { success: true, reassignedUsers };
+		} catch (err) {
+			console.error('[AvatarDelete] Hiba:', err);
+			return {
+				success: false,
+				error: err instanceof Error ? err.message : 'Ismeretlen hiba történt.'
+			};
 		}
 	}
 );

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Deleting AI avatars**: an installed avatar can be deleted on the Settings → AI Avatar panel (after confirmation). Its users get the built-in default avatar and keep their custom name; the built-in "default" avatar cannot be deleted. Deleting requires the `settings.admin.aiAssistant` permission.
+
 ## [0.7.5] - 2026-10-07
 
 ### Fixed
