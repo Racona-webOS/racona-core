@@ -173,6 +173,10 @@ Configured to build your plugin as an IIFE bundle (`dist/index.iife.js`) compati
 
 Server code is not compiled. `bun run package` puts the TypeScript sources (`server/`, plus `migrations/` and `email-templates/` when present) into the package, and Racona loads `server/functions.ts` and `server/jobs.ts` from the plugin root and runs them with Bun.
 
+### `knowledge-base/`
+
+Optional documentation for the Racona AI assistant (`knowledge-base/hu/*.md`, `knowledge-base/en/*.md`). Create the folder by hand; `bun run package` includes it when present, and after installation the assistant also answers from it for users who can access the plugin.
+
 ## Further Reading
 
 - [Racona Developer Documentation](https://docs.racona.hu)
@@ -184,6 +188,10 @@ MIT
 ---
 
 ## Changelog
+
+### [0.5.3] - 2026-10-07
+
+- **Added**: `build-package.js` packages the `knowledge-base/` folder (documentation for the AI assistant, core 0.7.0+)
 
 ### [0.5.2] - 2026-10-06
 
