@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-07
+
 ### Added
 
 - **Plugin knowledge base for the AI assistant**: a plugin can ship a `knowledge-base/{hu,en}/*.md` folder in its package, and the assistant answers from it too. No manifest field or permission is needed.

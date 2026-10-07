@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-07
+
 ### Hozzáadva
 
 - **Plugin tudásbázis az AI asszisztenshez**: egy plugin a csomagjában `knowledge-base/{hu,en}/*.md` mappát hozhat, és az asszisztens ebből is válaszol. Manifest mező és jogosultság nem kell hozzá.
