@@ -16,6 +16,7 @@
 	import { ConfirmDialog } from '$lib/components/ui';
 	import { toast } from 'svelte-sonner';
 	import { getClientAppRegistry } from '$lib/services/client/appRegistry';
+	import { refreshPluginHelp } from '$apps/help/utils/pluginHelp.svelte';
 	import { hasPermission } from '$lib/stores/permissionStore.svelte';
 	import { getWindowManager } from '$lib/stores/windowStore.svelte';
 	import { getDesktopStore } from '$lib/stores/desktopStore.svelte';
@@ -77,6 +78,7 @@
 		toast.success(t('plugin-manager.update.successMessage', { oldVersion, newVersion }));
 		const appRegistry = getClientAppRegistry();
 		await appRegistry.refresh();
+		void refreshPluginHelp();
 		await loadPlugin();
 		showUpdateUI = false;
 	}
@@ -117,6 +119,7 @@
 				// App registry frissítése, hogy a plugin eltűnjön a start menüből
 				const appRegistry = getClientAppRegistry();
 				await appRegistry.refresh();
+				void refreshPluginHelp();
 
 				// Visszanavigálás a listára
 				shell.navigateTo(returnTo);

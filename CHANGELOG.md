@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Plugin help**: a plugin package can ship `help/{hu,en}/*.md` pages and `help/assets/` images. They appear in Help under the plugin's name, and the plugin window's help button opens `help/<locale>/index.md`. No manifest field is needed. Help is visible to users who can access the plugin.
+
 ## [0.7.6] - 2026-10-07
 
 ### Added

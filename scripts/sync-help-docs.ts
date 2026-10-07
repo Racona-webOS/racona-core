@@ -21,6 +21,7 @@
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { parseHelpFrontmatter } from '../apps/web/src/apps/help/utils/frontmatter';
 
 // ─── Konfiguráció ───────────────────────────────────────────────
 
@@ -46,38 +47,6 @@ interface TocPage {
 	title: string;
 	description?: string;
 	order: number;
-}
-
-/** A frontmatter title, description és sidebar.order mezőinek kiolvasása. */
-function parseFrontmatter(source: string): {
-	title?: string;
-	description?: string;
-	order?: number;
-} {
-	const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	if (!match) return {};
-
-	const result: { title?: string; description?: string; order?: number } = {};
-	let section = '';
-	for (const line of match[1].split(/\r?\n/)) {
-		const top = line.match(/^([\w-]+):\s*(.*)$/);
-		if (top) {
-			section = top[1];
-			const value = unquote(top[2]);
-			if (section === 'title') result.title = value;
-			if (section === 'description') result.description = value;
-			continue;
-		}
-		const nested = line.match(/^\s+order:\s*(-?\d+)/);
-		if (nested && section === 'sidebar') result.order = Number(nested[1]);
-	}
-	return result;
-}
-
-function unquote(value: string): string {
-	const trimmed = value.trim();
-	if (/^(['"]).*\1$/.test(trimmed)) return trimmed.slice(1, -1);
-	return trimmed;
 }
 
 async function listMarkdown(dir: string): Promise<string[]> {
@@ -133,7 +102,7 @@ async function main() {
 			const rel = relative(localeDir, file);
 			const slug = rel.replace(/\.md$/, '').split('\\').join('/');
 			const content = await readFile(file, 'utf8');
-			const fm = parseFrontmatter(content);
+			const fm = parseHelpFrontmatter(content);
 
 			toc[locale].push({
 				slug,

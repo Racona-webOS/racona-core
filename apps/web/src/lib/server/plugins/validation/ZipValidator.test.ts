@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * A plugin csomag knowledge-base/ mappájának ellenőrzése.
+ * A plugin csomag knowledge-base/ és help/ mappájának ellenőrzése.
  */
 
 import { describe, it, expect, afterAll } from 'vitest';
@@ -62,5 +62,27 @@ describe('ZipValidator — knowledge-base/', () => {
 	it('a knowledge-base mappán kívüli fájlokat nem korlátozza', async () => {
 		const result = await zipValidator.validate(await makePackage({ 'assets/icon.png': 'x' }));
 		expect(result.valid).toBe(true);
+	});
+});
+
+describe('ZipValidator — help/', () => {
+	it('elfogadja a markdown oldalakat és a képeket', async () => {
+		const result = await zipValidator.validate(
+			await makePackage({
+				'help/hu/index.md': '# Súgó',
+				'help/en/index.md': '# Help',
+				'help/assets/screen.webp': 'x',
+				'help/assets/diagram.svg': '<svg/>'
+			})
+		);
+		expect(result.valid).toBe(true);
+	});
+
+	it('elutasítja a nem megengedett fájltípust', async () => {
+		const result = await zipValidator.validate(
+			await makePackage({ 'help/hu/page.html': '<script>alert(1)</script>' })
+		);
+		expect(result.valid).toBe(false);
+		expect(result.errors[0].message).toContain('help/hu/page.html');
 	});
 });

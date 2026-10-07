@@ -317,10 +317,19 @@ The AI Agent is the system's central AI engine that enables the AI Assistant to 
 
 **Configuration:**
 
-- **Provider**: Choose AI provider (OpenAI, Anthropic Claude, Google Gemini)
+- **Provider**: Choose AI provider (Google Gemini, OpenAI, Anthropic, Groq, Hugging Face or a custom endpoint)
 - **API Key**: Enter the provider's API key
-- **Model**: Enter the model name you want to use (e.g., gpt-4, claude-3-opus)
+- **Model**: Pick the model from the provider's list. When you switch providers, the provider's default model is selected. If the model is not in the list, choose "Custom model…" and enter its ID. For a custom endpoint, enter the model ID by hand.
 - **Base URL**: Optional custom API endpoint URL
+
+**Available models:**
+
+At the bottom of the panel you can manage the models of the selected provider:
+
+- **Switch**: when off, the model does not appear in the model picker
+- **Star**: makes the model the provider's default
+- **New model**: enter the model ID (e.g. gpt-6.1-sol) and optionally a display name, then click Add
+- **Delete**: only models you added yourself can be deleted; built-in models can only be turned off
 
 **Advanced parameters:**
 

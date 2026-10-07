@@ -4,6 +4,7 @@
 	import { getTranslationStore } from '$lib/i18n/store.svelte';
 	import HelpLayout from './components/HelpLayout.svelte';
 	import { resolveHelpLocale } from './utils/helpContent';
+	import { getPluginHelpVersion, refreshPluginHelp } from './utils/pluginHelp.svelte';
 
 	const translationStore = getTranslationStore();
 	const windowManager = getWindowManager();
@@ -13,9 +14,14 @@
 	const baseTitle = windowManager.windows.find((w) => w.id === windowId)?.title ?? '';
 
 	const locale = $derived(resolveHelpLocale(translationStore.currentLocale));
+
+	// A pluginek súgója megnyitáskor frissül, hogy az újonnan telepítettek is látszódjanak
+	const pluginHelpReady = refreshPluginHelp();
 </script>
 
-<!-- A menü címei a súgó nyelvén vannak, nyelvváltáskor újraépítjük -->
-{#key locale}
-	<HelpLayout {locale} {baseTitle} />
-{/key}
+{#await pluginHelpReady then}
+	<!-- A menü a súgó nyelvén és a pluginek súgójából épül, változáskor újraépítjük -->
+	{#key `${locale}:${getPluginHelpVersion()}`}
+		<HelpLayout {locale} {baseTitle} />
+	{/key}
+{/await}

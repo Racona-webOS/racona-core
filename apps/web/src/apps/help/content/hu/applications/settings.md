@@ -317,10 +317,19 @@ Az AI Agent a rendszer központi AI motorja, amely lehetővé teszi az AI Asszis
 
 **Konfiguráció:**
 
-- **Provider**: Válassz AI szolgáltatót (OpenAI, Anthropic Claude, Google Gemini)
+- **Provider**: Válassz AI szolgáltatót (Google Gemini, OpenAI, Anthropic, Groq, Hugging Face vagy egyéni endpoint)
 - **API Kulcs**: Add meg a szolgáltató API kulcsát
-- **Model**: Add meg a használni kívánt modell nevét (pl. gpt-4, claude-3-opus)
+- **Model**: Válaszd ki a modellt a szolgáltató listájából. Szolgáltatóváltáskor a szolgáltató alapértelmezett modellje lesz kiválasztva. Ha a modell nincs a listában, válaszd az „Egyéni modell…” lehetőséget, és add meg az azonosítóját. Egyéni endpointnál a modell azonosítóját kézzel kell megadni.
 - **Base URL**: Opcionális egyedi API végpont URL
+
+**Választható modellek:**
+
+A panel alján a kiválasztott szolgáltató modelljeit kezelheted:
+
+- **Kapcsoló**: kikapcsolva a modell nem jelenik meg a modellválasztóban
+- **Csillag**: a modell lesz a szolgáltató alapértelmezettje
+- **Új modell**: add meg a modell azonosítóját (pl. gpt-6.1-sol) és opcionálisan a megjelenített nevét, majd kattints a Hozzáadás gombra
+- **Törlés**: csak a saját magad által felvett modellek törölhetők; a beépített modellek csak kikapcsolhatók
 
 **Haladó paraméterek:**
 
@@ -442,7 +451,7 @@ A felhasználók a Beállítások > AI Asszisztens > Avatar Beállítások menü
 A felhasználók a Beállítások > AI Asszisztens > TTS Beállítások menüpontban állíthatják be a hang sebességét és hangerejét. A TTS szolgáltató (Browser Web Speech API vagy ElevenLabs) konfigurálása adminisztrátori jogosultságot igényel (Beállítások > AI Asszisztens > TTS Provider Konfiguráció).
 
 **Milyen AI szolgáltatókat támogat a rendszer?**
-A rendszer jelenleg három AI szolgáltatót támogat: OpenAI (GPT modellek), Anthropic (Claude modellek) és Google Gemini.
+A rendszer hat AI szolgáltatót támogat: Google Gemini, OpenAI (GPT modellek), Anthropic (Claude modellek), Groq, Hugging Face és tetszőleges OpenAI-kompatibilis egyéni endpoint. A szolgáltatók modelljei listából választhatók, és a lista a beállításoknál bővíthető.
 
 **Hogyan telepíthetek új avatart?**
 Az új avatarok telepítése adminisztrátori jogosultságot igényel. Az adminisztrátorok a Beállítások > Hitelesítés > Avatar Telepítés menüpontban tölthetnek fel új avatarokat `.raconapkg` formátumban.

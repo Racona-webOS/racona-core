@@ -177,6 +177,20 @@ Server code is not compiled. `bun run package` puts the TypeScript sources (`ser
 
 Optional documentation for the Racona AI assistant (`knowledge-base/hu/*.md`, `knowledge-base/en/*.md`). Create the folder by hand; `bun run package` includes it when present, and after installation the assistant also answers from it for users who can access the plugin.
 
+### `help/`
+
+Optional user guide shown in the Racona Help app. Create the folder by hand; `bun run package` includes it when present.
+
+```
+help/
+  hu/index.md          main page: the window's ? button opens this
+  hu/projects.md       further pages (subfolders are allowed)
+  en/index.md          other languages are optional, Help falls back to Hungarian
+  assets/screen.webp   images, referenced relative to the page: ![Screen](../assets/screen.webp)
+```
+
+Pages use Starlight-style frontmatter (`title`, `description`, `sidebar.order`). Link between pages with relative paths (`./projects.md`); link to the built-in Racona help with `/hu/user/...` paths. Only Markdown and image files (`png`, `jpg`, `gif`, `webp`, `svg`) are allowed, at most 10 MB in total. Help is visible to users who can access the plugin.
+
 ## Further Reading
 
 - [Racona Developer Documentation](https://docs.racona.hu)
@@ -188,6 +202,10 @@ MIT
 ---
 
 ## Changelog
+
+### [Unreleased]
+
+- **Added**: `build-package.js` packages the `help/` folder (plugin user guide for the Racona Help app)
 
 ### [0.5.3] - 2026-10-07
 

@@ -22,7 +22,13 @@ export const ZIP_CONFIG = {
 	/** Az AI asszisztens tudásbázisának mappája a csomagban */
 	KNOWLEDGE_BASE_DIR: 'knowledge-base/',
 	/** A tudásbázis maximális mérete (2 MB) */
-	MAX_KNOWLEDGE_BASE_SIZE: 2 * 1024 * 1024
+	MAX_KNOWLEDGE_BASE_SIZE: 2 * 1024 * 1024,
+	/** A Súgó alkalmazásban megjelenő plugin dokumentáció mappája a csomagban */
+	HELP_DIR: 'help/',
+	/** A súgóban megengedett fájltípusok: markdown oldalak és képek */
+	HELP_FILE_PATTERN: /\.(md|png|jpe?g|gif|webp|svg)$/i,
+	/** A súgó maximális mérete (10 MB, a képek miatt nagyobb, mint a tudásbázisé) */
+	MAX_HELP_SIZE: 10 * 1024 * 1024
 } as const;
 
 /**
@@ -106,6 +112,9 @@ export class ZipValidator {
 			// Tudásbázis: csak markdown fájlok, korlátozott méretben
 			errors.push(...this.validateKnowledgeBase(entries));
 
+			// Súgó: csak markdown oldalak és képek, korlátozott méretben
+			errors.push(...this.validateHelp(entries));
+
 			// Kötelező fájlok ellenőrzése
 			for (const requiredFile of ZIP_CONFIG.REQUIRED_FILES) {
 				const found = entries.some(
@@ -162,6 +171,36 @@ export class ZipValidator {
 
 			return { valid: false, errors };
 		}
+	}
+
+	/**
+	 * A help/ mappa ellenőrzése: csak .md és képfájlok, összesen legfeljebb 10 MB
+	 */
+	private validateHelp(entries: AdmZip.IZipEntry[]): ValidationError[] {
+		const errors: ValidationError[] = [];
+		let totalSize = 0;
+
+		for (const entry of entries) {
+			if (entry.isDirectory || !entry.entryName.startsWith(ZIP_CONFIG.HELP_DIR)) continue;
+
+			if (!ZIP_CONFIG.HELP_FILE_PATTERN.test(entry.entryName)) {
+				errors.push({
+					code: PluginErrorCode.INVALID_PACKAGE,
+					message: `Only Markdown and image files are allowed in help/: ${entry.entryName}`
+				});
+			}
+			totalSize += entry.header.size;
+		}
+
+		if (totalSize > ZIP_CONFIG.MAX_HELP_SIZE) {
+			const maxSizeMB = ZIP_CONFIG.MAX_HELP_SIZE / (1024 * 1024);
+			errors.push({
+				code: PluginErrorCode.INVALID_PACKAGE,
+				message: `help/ exceeds the maximum size of ${maxSizeMB} MB`
+			});
+		}
+
+		return errors;
 	}
 
 	/**

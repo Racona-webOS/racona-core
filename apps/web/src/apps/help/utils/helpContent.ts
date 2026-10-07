@@ -7,12 +7,18 @@
  *
  * Az oldalak azonosítója (slug) a docs projekt user/ mappájához viszonyított
  * útvonal kiterjesztés nélkül, pl. `applications/settings`, `desktop-basics/index`.
+ *
+ * A pluginek súgója (a csomag help/ mappája) futásidőben, a szerverről töltődik:
+ * ezek azonosítója `plugins/<pluginId>/<útvonal>`, pl. `plugins/racona-work/index`.
  */
 
 import { Marked, type Tokens } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
 import type { RawMenuItem } from '$lib/types/menu';
 import toc from '../content/toc.json';
+import type { HelpTocPage, PluginHelpInfo } from '../types';
+import { stripHelpFrontmatter } from './frontmatter';
+import { findPluginHelp, getPluginHelpList } from './pluginHelp.svelte';
 
 /** Ennek a nyelvnek a tartalma jelenik meg, ha a felület nyelvéhez nincs súgó. */
 export const DEFAULT_HELP_LOCALE = 'hu';
@@ -20,12 +26,7 @@ export const DEFAULT_HELP_LOCALE = 'hu';
 /** A Súgó app tartalom-komponense, amit a menüpontok betöltenek. */
 export const HELP_PAGE_COMPONENT = 'HelpPage';
 
-interface TocPage {
-	slug: string;
-	title: string;
-	description?: string;
-	order: number;
-}
+type TocPage = HelpTocPage;
 
 interface TocGroup {
 	order: number;
@@ -54,8 +55,41 @@ const MENU_ICONS: Record<string, string> = {
 	faq: 'CircleHelp',
 	'desktop-basics': 'Monitor',
 	'ui-components': 'LayoutPanelTop',
-	applications: 'AppWindow'
+	applications: 'AppWindow',
+	plugins: 'Puzzle'
 };
+
+/** A plugin súgó oldalak azonosítójának előtagja. */
+export const PLUGIN_HELP_PREFIX = 'plugins/';
+
+/** A plugin csoportok helye a menüben (az Alkalmazások után). */
+const PLUGIN_GROUPS_ORDER = 4.5;
+
+interface PluginSlug {
+	pluginId: string;
+	/** Az oldal útvonala a plugin súgóján belül (pl. 'index'). */
+	path: string;
+}
+
+function parsePluginSlug(slug: string): PluginSlug | null {
+	if (!slug.startsWith(PLUGIN_HELP_PREFIX)) return null;
+	const rest = slug.slice(PLUGIN_HELP_PREFIX.length);
+	const idx = rest.indexOf('/');
+	if (idx < 1 || idx === rest.length - 1) return null;
+	return { pluginId: rest.slice(0, idx), path: rest.slice(idx + 1) };
+}
+
+/**
+ * A plugin súgójának nyelve: a kért nyelv, ha a plugin hoz hozzá tartalmat,
+ * különben az alapértelmezett, végül bármelyik meglévő.
+ */
+function resolvePluginLocale(plugin: PluginHelpInfo, locale: string): string {
+	if (plugin.pages[locale]?.length) return locale;
+	if (plugin.pages[DEFAULT_HELP_LOCALE]?.length) return DEFAULT_HELP_LOCALE;
+	return Object.keys(plugin.pages)[0];
+}
+
+const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
 /**
  * A megjelenítendő súgó nyelv: a kért nyelv, ha van hozzá tartalom, különben az alapértelmezett.
@@ -68,6 +102,13 @@ export function resolveHelpLocale(locale: string | undefined): string {
 }
 
 function findPage(slug: string, locale: string): TocPage | undefined {
+	const pluginSlug = parsePluginSlug(slug);
+	if (pluginSlug) {
+		const plugin = findPluginHelp(pluginSlug.pluginId);
+		if (!plugin) return undefined;
+		const list = plugin.pages[resolvePluginLocale(plugin, locale)];
+		return list?.find((p) => p.slug === pluginSlug.path);
+	}
 	return pages[resolveHelpLocale(locale)]?.find((p) => p.slug === slug);
 }
 
@@ -82,24 +123,66 @@ export function hasHelpTopic(slug: string, locale: string = DEFAULT_HELP_LOCALE)
 }
 
 /**
- * Egy alkalmazás súgó oldala, ha van: az `applications/<appName>` oldal.
+ * Egy alkalmazás súgó oldala, ha van. Beépített appnál az `applications/<appName>`
+ * oldal, pluginnál a plugin súgójának főoldala (index, ennek híján az első oldal).
  *
- * @param appName - Az alkalmazás azonosítója (pl. 'settings')
+ * @param appName - Az alkalmazás azonosítója (pl. 'settings', 'racona-work')
+ * @param locale - A felület nyelve (alapértelmezett: DEFAULT_HELP_LOCALE)
  * @returns Az oldal azonosítója vagy null
  */
-export function getAppHelpTopic(appName: string): string | null {
+export function getAppHelpTopic(
+	appName: string,
+	locale: string = DEFAULT_HELP_LOCALE
+): string | null {
 	const slug = `applications/${appName}`;
-	return hasHelpTopic(slug) ? slug : null;
+	if (hasHelpTopic(slug)) return slug;
+
+	const plugin = findPluginHelp(appName);
+	if (!plugin) return null;
+	const list = [...(plugin.pages[resolvePluginLocale(plugin, locale)] ?? [])].sort(byOrder);
+	const entry = list.find((p) => p.slug === 'index') ?? list[0];
+	return entry ? `${PLUGIN_HELP_PREFIX}${appName}/${entry.slug}` : null;
 }
 
-function pageMenuItem(page: TocPage, icon?: string): RawMenuItem {
+function pageMenuItem(page: TocPage, icon?: string, slugPrefix = ''): RawMenuItem {
+	const slug = slugPrefix + page.slug;
 	return {
 		label: page.title,
-		href: `#${page.slug}`,
+		href: `#${slug}`,
 		icon,
 		component: HELP_PAGE_COMPONENT,
-		props: { slug: page.slug }
+		props: { slug }
 	};
+}
+
+/** Pluginenként egy menücsoport, egyetlen oldalnál maga az oldal a plugin nevével. */
+function pluginMenuEntries(locale: string): { order: number; item: RawMenuItem }[] {
+	const plugins = [...getPluginHelpList()].sort((a, b) => a.title.localeCompare(b.title));
+	return plugins.flatMap((plugin, i) => {
+		const prefix = `${PLUGIN_HELP_PREFIX}${plugin.pluginId}/`;
+		const list = [...(plugin.pages[resolvePluginLocale(plugin, locale)] ?? [])].sort(byOrder);
+		if (list.length === 0) return [];
+		const order = PLUGIN_GROUPS_ORDER + i / 1000;
+		if (list.length === 1) {
+			return [
+				{
+					order,
+					item: pageMenuItem({ ...list[0], title: plugin.title }, MENU_ICONS.plugins, prefix)
+				}
+			];
+		}
+		return [
+			{
+				order,
+				item: {
+					label: plugin.title,
+					href: '#',
+					icon: MENU_ICONS.plugins,
+					children: list.map((p) => pageMenuItem(p, undefined, prefix))
+				}
+			}
+		];
+	});
 }
 
 /**
@@ -111,7 +194,6 @@ function pageMenuItem(page: TocPage, icon?: string): RawMenuItem {
 export function buildHelpMenu(locale: string): RawMenuItem[] {
 	const helpLocale = resolveHelpLocale(locale);
 	const list = pages[helpLocale] ?? [];
-	const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
 	const entries: { order: number; item: RawMenuItem }[] = list
 		.filter((p) => !p.slug.includes('/'))
@@ -133,6 +215,8 @@ export function buildHelpMenu(locale: string): RawMenuItem[] {
 			}
 		});
 	}
+
+	entries.push(...pluginMenuEntries(helpLocale));
 
 	return entries.sort(byOrder).map((e) => e.item);
 }
@@ -241,13 +325,34 @@ function htmlToText(html: string): string {
 		.replace(/&amp;/g, '&');
 }
 
-function resolveAsset(href: string): string | null {
+type ImageResolver = (href: string) => string | null;
+
+/** A beépített súgó képei a bundle-ből (a docs src/assets mappájára mutató hivatkozások). */
+function resolveBundledImage(href: string): string | null {
 	const idx = href.indexOf('assets/');
 	if (idx === -1) return null;
 	return assetUrls[`../content/${href.slice(idx)}`] ?? null;
 }
 
-function renderMarkdown(source: string, slug: string, locale: string): string {
+/**
+ * Plugin súgó képei: a markdown fájlhoz relatív útvonal a plugin help/ mappáján belül,
+ * a szerver /api/plugins/<id>/help/ végpontján keresztül.
+ */
+function pluginImageResolver(pluginId: string, file: string): ImageResolver {
+	return (href) => {
+		if (href.startsWith('/') || /^[a-z]+:/i.test(href)) return null;
+		const segments = joinPath(dirOf(file), href.split(/[?#]/)[0]);
+		if (segments.length === 0) return null;
+		return `/api/plugins/${encodeURIComponent(pluginId)}/help/${segments.map(encodeURIComponent).join('/')}`;
+	};
+}
+
+function renderMarkdown(
+	source: string,
+	slug: string,
+	locale: string,
+	resolveImage: ImageResolver
+): string {
 	const usedIds = new Map<string, number>();
 
 	const marked = new Marked({
@@ -275,15 +380,14 @@ function renderMarkdown(source: string, slug: string, locale: string): string {
 				return `<a href="#${escapeAttr(target.slug + hash)}" data-help-slug="${escapeAttr(target.slug)}"${anchor}>${inner}</a>`;
 			},
 			image({ href, text }: Tokens.Image) {
-				const src = resolveAsset(href) ?? (/^https?:/i.test(href) ? href : null);
+				const src = /^https?:/i.test(href) ? href : resolveImage(href);
 				if (!src) return '';
 				return `<img src="${escapeAttr(src)}" alt="${escapeAttr(text)}" loading="lazy" />`;
 			}
 		}
 	});
 
-	const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
-	return DOMPurify.sanitize(marked.parse(body, { async: false }));
+	return DOMPurify.sanitize(marked.parse(stripHelpFrontmatter(source), { async: false }));
 }
 
 export interface HelpPageContent {
@@ -303,14 +407,46 @@ export interface HelpPageContent {
 export async function loadHelpPage(slug: string, locale: string): Promise<HelpPageContent | null> {
 	const helpLocale = resolveHelpLocale(locale);
 	const page = findPage(slug, helpLocale);
-	const loader = pageLoaders[`../content/${helpLocale}/${slug}.md`];
-	if (!page || !loader) return null;
+	if (!page) return null;
 
+	const pluginSlug = parsePluginSlug(slug);
+	if (pluginSlug) return loadPluginHelpPage(pluginSlug, slug, page, helpLocale);
+
+	const loader = pageLoaders[`../content/${helpLocale}/${slug}.md`];
+	if (!loader) return null;
 	const source = await loader();
 	return {
 		slug,
 		title: page.title,
 		description: page.description,
-		html: renderMarkdown(source, slug, helpLocale)
+		html: renderMarkdown(source, slug, helpLocale, resolveBundledImage)
+	};
+}
+
+async function loadPluginHelpPage(
+	pluginSlug: PluginSlug,
+	slug: string,
+	page: TocPage,
+	locale: string
+): Promise<HelpPageContent | null> {
+	const plugin = findPluginHelp(pluginSlug.pluginId);
+	if (!plugin) return null;
+
+	// A help/ mappán belüli fájl, pl. hu/index.md
+	const file = `${resolvePluginLocale(plugin, locale)}/${pluginSlug.path}.md`;
+	const url = `/api/plugins/${encodeURIComponent(plugin.pluginId)}/help/${file.split('/').map(encodeURIComponent).join('/')}`;
+	const response = await fetch(url);
+	if (!response.ok) return null;
+
+	return {
+		slug,
+		title: page.title,
+		description: page.description,
+		html: renderMarkdown(
+			await response.text(),
+			slug,
+			locale,
+			pluginImageResolver(plugin.pluginId, file)
+		)
 	};
 }

@@ -7,3 +7,6 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# A racona-docs-user projektből szinkronizált súgó tartalom (bun run help:sync)
+/src/apps/help/content/

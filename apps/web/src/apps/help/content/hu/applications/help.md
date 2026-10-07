@@ -15,7 +15,7 @@ A Súgó alkalmazás a Racona felhasználói dokumentációját jeleníti meg k�
 
 ## Az alkalmazás felépítése
 
-- **Tartalomjegyzék**: A bal oldali panelen témakörök szerint csoportosítva találod az oldalakat (A felület használata, UI komponensek, Alkalmazások, Hibaelhárítás, GYIK)
+- **Tartalomjegyzék**: A bal oldali panelen témakörök szerint csoportosítva találod az oldalakat (A felület használata, UI komponensek, Alkalmazások, Hibaelhárítás, GYIK). Az Alkalmazások után a telepített pluginek súgója következik, ha a plugin hoz ilyet és eléred a plugint
 - **Keresés**: A tartalomjegyzék feletti keresőmezővel az oldalak címei között szűrhetsz
 - **Tartalom**: A jobb oldalon az éppen kiválasztott oldal jelenik meg, képekkel együtt
 - **Hivatkozások**: A szövegben lévő hivatkozások a Súgón belül nyitják meg a kapcsolódó oldalt, a külső hivatkozások új böngészőlapon nyílnak meg
@@ -28,7 +28,7 @@ A Súgó alkalmazást a következő módokon nyithatod meg:
 
 - **Indító Panel**: Az Indító Panelből a Súgó alkalmazás ikonra kattintva
 - **Asztali ikon**: Ha a Súgó alkalmazás ikonja ki van téve az asztalra, arra kattintva
-- **Súgó gomb**: Az alkalmazások ablakának címsorában lévő **?** gombbal. Ilyenkor a Súgó közvetlenül az adott alkalmazás oldalán nyílik meg
+- **Súgó gomb**: Az alkalmazások ablakának címsorában lévő **?** gombbal. Ilyenkor a Súgó közvetlenül az adott alkalmazás oldalán nyílik meg (pluginnál a plugin súgójának főoldalán)
 - **Alkalmazás megnyitó**: A tálca alkalmazás megnyitó ablakában lévő **?** ikonnal
 
 ## Többpéldányos működés

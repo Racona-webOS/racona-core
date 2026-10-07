@@ -9,6 +9,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Hozzáadva
+
+- **Plugin súgó**: egy plugin a csomagjában `help/{hu,en}/*.md` oldalakat és `help/assets/` képeket hozhat. Ezek a Súgóban a plugin nevével jelennek meg, a plugin ablakának súgó gombja a `help/<nyelv>/index.md` oldalt nyitja meg. Manifest mező nem kell hozzá. A súgót az látja, aki a plugint is elérheti.
+
 ## [0.7.6] - 2026-10-07
 
 ### Hozzáadva

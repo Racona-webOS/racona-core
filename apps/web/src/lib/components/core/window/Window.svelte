@@ -5,7 +5,9 @@
 <script lang="ts">
 	import { openHelp } from '$lib/services/client/help';
 	import { getAppHelpTopic } from '$apps/help/utils/helpContent';
-	import { getContext } from 'svelte';
+	import { ensurePluginHelp } from '$apps/help/utils/pluginHelp.svelte';
+	import { getTranslationStore } from '$lib/i18n/store.svelte';
+	import { getContext, onMount } from 'svelte';
 	import { getWindowManager, type WindowState, RESTORE_SIZE_THRESHOLD } from '$lib/stores';
 	import WindowControlButton from './WindowControlButton.svelte';
 	import WindowContent from './WindowContent.svelte';
@@ -264,10 +266,17 @@
 		windowManager.maximizeWindow(windowState.id);
 	}
 
-	// Súgó gomb: akkor jelenik meg, ha az apphoz van súgó oldal (a Súgó appnál nem)
+	// Súgó gomb: akkor jelenik meg, ha az apphoz van súgó oldal (a Súgó appnál nem).
+	// A pluginek súgója a szerverről töltődik, betöltés után a gomb magától megjelenik.
+	const translationStore = getTranslationStore();
 	const helpTopic = $derived(
-		windowState.appName === 'help' ? null : getAppHelpTopic(windowState.appName)
+		windowState.appName === 'help'
+			? null
+			: getAppHelpTopic(windowState.appName, translationStore.currentLocale)
 	);
+	onMount(() => {
+		void ensurePluginHelp();
+	});
 
 	/**
 	 * Súgó gomb esemény: megnyitja a Súgót az alkalmazás oldalán

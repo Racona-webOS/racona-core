@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import type { PluginHelpInfo } from '../types';
+
+const pluginIndex: PluginHelpInfo[] = [];
+vi.mock('../help.remote', () => ({ getPluginHelpIndex: vi.fn(async () => pluginIndex) }));
 import {
 	buildHelpMenu,
 	getAppHelpTopic,
@@ -7,6 +11,7 @@ import {
 	resolveHelpLocale,
 	slugifyHeading
 } from './helpContent';
+import { refreshPluginHelp } from './pluginHelp.svelte';
 
 describe('resolveHelpLocale', () => {
 	it('a tartalommal rendelkező nyelvet megtartja', () => {
@@ -163,5 +168,86 @@ describe('szinkronizált tartalom', () => {
 			}
 		}
 		expect(broken).toEqual([]);
+	});
+});
+
+describe('plugin súgó', () => {
+	beforeAll(async () => {
+		pluginIndex.push(
+			{
+				pluginId: 'demo',
+				title: 'Demo plugin',
+				pages: {
+					hu: [
+						{ slug: 'projects/create', title: 'Projekt létrehozása', order: 2 },
+						{ slug: 'index', title: 'Áttekintés', order: 0 }
+					]
+				}
+			},
+			{
+				pluginId: 'mini',
+				title: 'Mini plugin',
+				pages: { hu: [{ slug: 'intro', title: 'Bevezető', order: 999 }] }
+			}
+		);
+		await refreshPluginHelp();
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it('a plugin ablakának súgója a plugin főoldala', () => {
+		expect(getAppHelpTopic('demo')).toBe('plugins/demo/index');
+		expect(getAppHelpTopic('mini')).toBe('plugins/mini/intro');
+		// Angolul is a magyar tartalom látszik, ha a plugin nem hoz angolt
+		expect(getAppHelpTopic('demo', 'en')).toBe('plugins/demo/index');
+	});
+
+	it('a menüben az Alkalmazások után, pluginenként jelenik meg', () => {
+		const menu = buildHelpMenu('hu');
+		const labels = menu.map((m) => m.label);
+		expect(labels.indexOf('Demo plugin')).toBe(labels.indexOf('Alkalmazások') + 1);
+
+		const demo = menu.find((m) => m.label === 'Demo plugin');
+		expect(demo?.children?.map((c) => c.href)).toEqual([
+			'#plugins/demo/index',
+			'#plugins/demo/projects/create'
+		]);
+		// Egyetlen oldalnál nincs csoport, a menüpont a plugin nevét viseli
+		expect(menu.find((m) => m.label === 'Mini plugin')).toMatchObject({
+			href: '#plugins/mini/intro',
+			component: 'HelpPage'
+		});
+	});
+
+	it('a plugin oldalai között relatív hivatkozással lehet navigálni', () => {
+		expect(resolveHelpLink('./projects/create.md', 'plugins/demo/index', 'hu')).toMatchObject({
+			slug: 'plugins/demo/projects/create'
+		});
+		expect(resolveHelpLink('../index.md', 'plugins/demo/projects/create', 'hu')).toMatchObject({
+			slug: 'plugins/demo/index'
+		});
+		// A beépített súgóra abszolút útvonallal
+		expect(
+			resolveHelpLink('/hu/user/applications/settings/', 'plugins/demo/index', 'hu')
+		).toMatchObject({ slug: 'applications/settings' });
+	});
+
+	it('az oldalt és a képeket a plugin súgó végpontjáról tölti', async () => {
+		const fetchMock = vi.fn(async () => new Response('# Cím\n\n![Kép](../../assets/screen.webp)'));
+		vi.stubGlobal('fetch', fetchMock);
+
+		const page = await loadHelpPage('plugins/demo/projects/create', 'hu');
+		expect(fetchMock).toHaveBeenCalledWith('/api/plugins/demo/help/hu/projects/create.md');
+		expect(page?.title).toBe('Projekt létrehozása');
+		expect(page?.html).toContain('src="/api/plugins/demo/help/assets/screen.webp"');
+	});
+
+	it('ismeretlen plugin oldalára null, lekérés nélkül', async () => {
+		const fetchMock = vi.fn();
+		vi.stubGlobal('fetch', fetchMock);
+		expect(await loadHelpPage('plugins/nincs/index', 'hu')).toBeNull();
+		expect(fetchMock).not.toHaveBeenCalled();
 	});
 });

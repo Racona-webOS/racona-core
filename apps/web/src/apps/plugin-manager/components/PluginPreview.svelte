@@ -11,6 +11,7 @@
 	import type { PluginManifest } from '@racona/database';
 	import { toast } from 'svelte-sonner';
 	import { getClientAppRegistry } from '$lib/services/client/appRegistry';
+	import { refreshPluginHelp } from '$apps/help/utils/pluginHelp.svelte';
 	import { onDestroy } from 'svelte';
 
 	interface Props {
@@ -89,6 +90,7 @@
 				// Refresh app registry
 				const appRegistry = getClientAppRegistry();
 				await appRegistry.refresh();
+				void refreshPluginHelp();
 
 				// Clear action bar and navigate to plugin list
 				actionBar.clear();

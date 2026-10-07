@@ -31,6 +31,7 @@
 	import { toast } from 'svelte-sonner';
 	import type { LocaleConfig } from '../types.js';
 	import { getClientAppRegistry } from '$lib/services/client/appRegistry';
+	import { refreshPluginHelp } from '$apps/help/utils/pluginHelp.svelte';
 	import { getWindowManager } from '$lib/stores';
 	import { useI18n } from '../hooks.js';
 
@@ -101,6 +102,8 @@
 
 				// Töröljük az app registry cache-t, hogy a start menü az új nyelven töltse be az appokat
 				appRegistry.clearCache();
+				// A plugin súgók címe (a plugin neve) is nyelvfüggő
+				void refreshPluginHelp();
 
 				// Frissítjük a nyitott ablakok fejléc neveit az új locale alapján
 				const openWindows = windowManager.windows;

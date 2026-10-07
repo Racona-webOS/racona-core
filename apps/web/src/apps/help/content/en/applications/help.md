@@ -15,7 +15,7 @@ The Help application displays the Racona user documentation right inside the sys
 
 ## Application Layout
 
-- **Table of contents**: The left panel lists the pages grouped by topic (Using the Interface, UI Components, Applications, Troubleshooting, FAQ)
+- **Table of contents**: The left panel lists the pages grouped by topic (Using the Interface, UI Components, Applications, Troubleshooting, FAQ). After Applications come the help pages of installed plugins, if the plugin ships them and you can access the plugin
 - **Search**: The search field above the table of contents filters the page titles
 - **Content**: The selected page is displayed on the right, including its images
 - **Links**: Links in the text open the related page inside Help, external links open in a new browser tab
@@ -28,7 +28,7 @@ You can open the Help application in the following ways:
 
 - **Start Menu**: Clicking the Help application icon from the Start Menu
 - **Desktop icon**: If the Help application icon is placed on the desktop, clicking it
-- **Help button**: With the **?** button in an application window's title bar. Help then opens directly on that application's page
+- **Help button**: With the **?** button in an application window's title bar. Help then opens directly on that application's page (for a plugin, on the main page of its help)
 - **Application opener**: With the **?** icon in the taskbar's application opener
 
 ## Multi-Instance Operation
