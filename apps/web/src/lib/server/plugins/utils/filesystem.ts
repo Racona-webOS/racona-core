@@ -199,7 +199,8 @@ export async function cleanupTempFiles(maxAgeMs: number = 7 * 24 * 60 * 60 * 100
 			}
 		}
 	} catch (error) {
-		// Ignore errors (directory might not exist yet)
+		// A könyvtár az első feltöltésig nem létezik — ez nem hiba
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
 		console.error('Error cleaning temp files:', error);
 	}
 }
@@ -224,6 +225,8 @@ export async function cleanupOldBackups(maxAgeMs: number = 7 * 24 * 60 * 60 * 10
 			}
 		}
 	} catch (error) {
+		// A könyvtár az első frissítésig nem létezik — ez nem hiba
+		if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
 		console.error('Error cleaning old backups:', error);
 	}
 }

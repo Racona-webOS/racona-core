@@ -9,6 +9,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Javítva
+
+- A plugin ideiglenes és mentés mappáinak takarítása nem ír hibát a konzolra, ha a mappa még nem létezik (az első feltöltés, illetve frissítés előtt).
+
 ## [0.7.1] - 2026-10-07
 
 ### Javítva
