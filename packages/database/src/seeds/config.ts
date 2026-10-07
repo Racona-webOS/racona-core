@@ -205,6 +205,11 @@ export const seedConfig: Record<string, SeedDefinition> = {
 		file: 'platform/ai_provider_configs.sql',
 		dependsOn: ['ai_providers'],
 		description: 'AI provider configuration values (models, URLs, defaults)'
+	},
+	ai_provider_models: {
+		file: 'platform/ai_provider_models.sql',
+		dependsOn: ['ai_providers'],
+		description: 'Selectable AI models per provider (built-in list, admin can extend)'
 	}
 };
 
@@ -245,8 +250,9 @@ export const truncateOrder = [
 	// Platform - AI avatar user configs (depends on ai_avatars)
 	'platform.user_avatar_configs',
 	'platform.ai_agent_configs',
-	// Platform - AI provider configs (depends on ai_providers)
+	// Platform - AI provider configs and models (depend on ai_providers)
 	'platform.ai_provider_configs',
+	'platform.ai_provider_models',
 	'platform.ai_providers',
 	// Platform - seed data
 	'auth.role_app_access',

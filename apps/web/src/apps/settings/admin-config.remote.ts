@@ -7,9 +7,15 @@
 
 import { command, query, getRequestEvent } from '$app/server';
 import * as v from 'valibot';
-import { adminConfigRepository, permissionRepository } from '$lib/server/database/repositories';
+import {
+	adminConfigRepository,
+	aiProviderRepository,
+	permissionRepository,
+	type ProviderWithModels
+} from '$lib/server/database/repositories';
 import { encrypt, decrypt, maskApiKey } from '$lib/server/utils/encryption';
 import type { AIAssistantConfig } from '@racona/database/schemas';
+import { callChatProvider } from '$lib/server/ai-assistant/providers';
 
 // ============================================================================
 // Validation Schemas
@@ -366,6 +372,136 @@ export const deleteAIAssistantConfig = command(
 );
 
 // ============================================================================
+// 3.1b AI provider modellek (választható modellek listája)
+// ============================================================================
+
+const modelIdSchema = v.pipe(v.number(), v.integer(), v.minValue(1));
+
+const addAIProviderModelSchema = v.object({
+	provider: v.pipe(v.string(), v.minLength(1)),
+	modelId: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(150), v.regex(/^\S+$/)),
+	displayName: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(150))
+});
+
+const updateAIProviderModelSchema = v.object({
+	id: modelIdSchema,
+	displayName: v.optional(v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(150))),
+	isEnabled: v.optional(v.boolean())
+});
+
+/** Hibakódok — a panel fordítja le őket */
+type ModelErrorCode = 'UNAUTHORIZED' | 'DUPLICATE' | 'NOT_FOUND' | 'BUILTIN' | 'FAILED';
+
+export interface AIProviderModelResult {
+	success: boolean;
+	error?: ModelErrorCode;
+}
+
+/**
+ * Az engedélyezett providerek a modelljeikkel (a letiltott modellekkel együtt)
+ */
+export const getAIProviderCatalog = command(
+	v.object({}),
+	async (): Promise<{ success: boolean; providers?: ProviderWithModels[]; error?: string }> => {
+		const { hasPermission } = await checkAdminPermission();
+		if (!hasPermission) {
+			return { success: false, error: 'UNAUTHORIZED' };
+		}
+
+		try {
+			return { success: true, providers: await aiProviderRepository.getProvidersWithModels() };
+		} catch (error) {
+			console.error('Error loading AI provider catalog:', error);
+			return { success: false, error: 'FAILED' };
+		}
+	}
+);
+
+/**
+ * Új modell felvétele egy providerhez
+ */
+export const addAIProviderModel = command(
+	addAIProviderModelSchema,
+	async (data): Promise<AIProviderModelResult> => {
+		const { hasPermission } = await checkAdminPermission();
+		if (!hasPermission) return { success: false, error: 'UNAUTHORIZED' };
+
+		try {
+			await aiProviderRepository.addModel(data.provider, data.modelId, data.displayName);
+			return { success: true };
+		} catch (error) {
+			// 23505: unique_violation — a modell már szerepel a listában
+			if (
+				(error as { cause?: { code?: string }; code?: string })?.cause?.code === '23505' ||
+				(error as { code?: string })?.code === '23505'
+			) {
+				return { success: false, error: 'DUPLICATE' };
+			}
+			console.error('Error adding AI provider model:', error);
+			return { success: false, error: 'FAILED' };
+		}
+	}
+);
+
+/**
+ * Modell nevének vagy engedélyezésének módosítása
+ */
+export const updateAIProviderModel = command(
+	updateAIProviderModelSchema,
+	async ({ id, ...data }): Promise<AIProviderModelResult> => {
+		const { hasPermission } = await checkAdminPermission();
+		if (!hasPermission) return { success: false, error: 'UNAUTHORIZED' };
+
+		try {
+			const model = await aiProviderRepository.updateModel(id, data);
+			return model ? { success: true } : { success: false, error: 'NOT_FOUND' };
+		} catch (error) {
+			console.error('Error updating AI provider model:', error);
+			return { success: false, error: 'FAILED' };
+		}
+	}
+);
+
+/**
+ * Modell beállítása a provider alapértelmezettjének
+ */
+export const setDefaultAIProviderModel = command(
+	v.object({ id: modelIdSchema }),
+	async ({ id }): Promise<AIProviderModelResult> => {
+		const { hasPermission } = await checkAdminPermission();
+		if (!hasPermission) return { success: false, error: 'UNAUTHORIZED' };
+
+		try {
+			const model = await aiProviderRepository.setDefaultModel(id);
+			return model ? { success: true } : { success: false, error: 'NOT_FOUND' };
+		} catch (error) {
+			console.error('Error setting default AI provider model:', error);
+			return { success: false, error: 'FAILED' };
+		}
+	}
+);
+
+/**
+ * Admin által felvett modell törlése (a beépítettek csak letilthatók)
+ */
+export const deleteAIProviderModel = command(
+	v.object({ id: modelIdSchema }),
+	async ({ id }): Promise<AIProviderModelResult> => {
+		const { hasPermission } = await checkAdminPermission();
+		if (!hasPermission) return { success: false, error: 'UNAUTHORIZED' };
+
+		try {
+			const result = await aiProviderRepository.deleteModel(id);
+			if (result === 'deleted') return { success: true };
+			return { success: false, error: result === 'builtin' ? 'BUILTIN' : 'NOT_FOUND' };
+		} catch (error) {
+			console.error('Error deleting AI provider model:', error);
+			return { success: false, error: 'FAILED' };
+		}
+	}
+);
+
+// ============================================================================
 // 3.2 Connection Testing Routes
 // ============================================================================
 
@@ -472,6 +608,58 @@ export const testAIAgentConnection = command(
 				}
 
 				return { success: true, message: 'Connection successful' };
+			} else if (provider === 'groq') {
+				// Groq (OpenAI-kompatibilis) — a modell lekérdezése ellenőrzi a kulcsot és a nevet
+				const response = await fetch(
+					`https://api.groq.com/openai/v1/models/${encodeURIComponent(model)}`,
+					{ method: 'GET', headers: { Authorization: `Bearer ${apiKey}` } }
+				);
+
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
+					return {
+						success: false,
+						error: `Groq API error: ${errorData.error?.message || response.statusText}`
+					};
+				}
+
+				return { success: true, message: 'Connection successful' };
+			} else if (provider === 'huggingface') {
+				// Hugging Face — a token érvényességének ellenőrzése
+				const response = await fetch('https://huggingface.co/api/whoami-v2', {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${apiKey}` }
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
+					return {
+						success: false,
+						error: `Hugging Face API error: ${errorData.error || response.statusText}`
+					};
+				}
+
+				return { success: true, message: 'Connection successful' };
+			} else if (provider === 'custom') {
+				// Egyéni endpoint — egy rövid próbaüzenet (nincs szabványos ellenőrző végpont)
+				if (!baseUrl) {
+					return { success: false, error: 'Custom endpoint requires a base URL' };
+				}
+
+				const result = await callChatProvider({
+					provider: 'custom',
+					apiKey,
+					model,
+					url: baseUrl,
+					params: { maxTokens: 16, temperature: 0, topP: 1 },
+					system: 'Reply with OK.',
+					history: [],
+					userMessage: 'ping'
+				});
+
+				return result.success
+					? { success: true, message: 'Connection successful' }
+					: { success: false, error: result.error };
 			}
 
 			return { success: false, error: `Unsupported provider: ${provider}` };

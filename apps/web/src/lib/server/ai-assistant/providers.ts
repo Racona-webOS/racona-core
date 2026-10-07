@@ -40,19 +40,19 @@ export const PROVIDER_DEFAULTS: Record<
 	gemini: {
 		label: 'Gemini',
 		url: 'https://generativelanguage.googleapis.com/v1beta/models',
-		model: 'gemini-2.5-flash',
+		model: 'gemini-3.8-flash',
 		modelEnvKey: 'AI_GEMINI_DEFAULT_MODEL'
 	},
 	groq: {
 		label: 'Groq',
 		url: 'https://api.groq.com/openai/v1/chat/completions',
-		model: 'llama-3.3-70b-versatile',
+		model: 'openai/gpt-oss-120b',
 		modelEnvKey: 'AI_GROQ_DEFAULT_MODEL'
 	},
 	openai: {
 		label: 'OpenAI',
 		url: 'https://api.openai.com/v1/chat/completions',
-		model: 'gpt-4o-mini',
+		model: 'gpt-6-luna',
 		modelEnvKey: 'AI_OPENAI_DEFAULT_MODEL'
 	},
 	anthropic: {
@@ -100,6 +100,15 @@ function errorMessage(json: unknown): string | undefined {
 // OpenAI-kompatibilis (OpenAI, Groq, egyéni endpoint)
 // ============================================================================
 
+function buildOpenAIMessages(req: ChatProviderRequest) {
+	return [
+		{ role: 'system', content: req.system },
+		...req.history,
+		{ role: 'user', content: req.userMessage }
+	];
+}
+
+/** Groq és egyéni endpoint: a klasszikus OpenAI-kompatibilis paraméterek */
 const openAICompatible: ProviderAdapter = {
 	buildRequest(req) {
 		return {
@@ -111,11 +120,7 @@ const openAICompatible: ProviderAdapter = {
 				},
 				body: JSON.stringify({
 					model: req.model,
-					messages: [
-						{ role: 'system', content: req.system },
-						...req.history,
-						{ role: 'user', content: req.userMessage }
-					],
+					messages: buildOpenAIMessages(req),
 					max_tokens: req.params.maxTokens,
 					temperature: req.params.temperature,
 					top_p: req.params.topP
@@ -128,6 +133,44 @@ const openAICompatible: ProviderAdapter = {
 		return { text: data.choices?.[0]?.message?.content };
 	},
 	parseError: errorMessage
+};
+
+/**
+ * Az OpenAI érvelő modelljei (o-sorozat, gpt-5, gpt-6) nem fogadnak
+ * temperature / top_p értéket
+ */
+function openAISupportsSampling(model: string): boolean {
+	return !/^(o\d|gpt-[5-9])/.test(model);
+}
+
+/**
+ * OpenAI: a max_tokens elavult, az érvelő modellek csak a max_completion_tokens-t fogadják
+ * (ez a gondolkodás tokenjeit is beleszámolja)
+ */
+const openAI: ProviderAdapter = {
+	...openAICompatible,
+	buildRequest(req) {
+		const body: Record<string, unknown> = {
+			model: req.model,
+			messages: buildOpenAIMessages(req),
+			max_completion_tokens: req.params.maxTokens
+		};
+		if (openAISupportsSampling(req.model)) {
+			body.temperature = req.params.temperature;
+			body.top_p = req.params.topP;
+		}
+
+		return {
+			url: req.url,
+			init: {
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${req.apiKey}`
+				},
+				body: JSON.stringify(body)
+			}
+		};
+	}
 };
 
 // ============================================================================
@@ -293,7 +336,7 @@ const huggingface: ProviderAdapter = {
 };
 
 const ADAPTERS: Record<string, ProviderAdapter> = {
-	openai: openAICompatible,
+	openai: openAI,
 	groq: openAICompatible,
 	custom: openAICompatible,
 	gemini,

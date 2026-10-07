@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **AI models from a list**: on the Settings → AI Assistant panel the model is picked from the selected provider's list (switching providers selects its default model); a model not in the list can be entered as "Custom model…". The providers (all six) come from the database.
+  - New table: `platform.ai_provider_models` (`0013_ai_provider_models` migration, `ai_provider_models` seed). At the bottom of the panel models can be turned off, marked as default, and custom models can be added; built-in ones cannot be deleted. Re-running the seed keeps the admin's choices.
+  - When the admin sets no model, chat uses the list's default model.
+  - The connection test also works for Groq, Hugging Face and custom endpoints.
+
+### Changed
+
+- New default models: Gemini `gemini-3.8-flash` (`gemini-2.5-flash` is retired on October 20, 2026), Groq `openai/gpt-oss-120b` (`llama-3.3-70b-versatile` is enterprise-only now), OpenAI `gpt-6-luna`.
+- When upgrading: `db:migrate` (or Docker `db:init`) for the new table, then `db:init` to load the models and labels (`translations_settings`). The saved model does not change; if it is not in the list, it shows as a custom model.
+
+### Fixed
+
+- OpenAI: requests send `max_completion_tokens` instead of `max_tokens`, and reasoning models (gpt-5, gpt-6, o-series) get no `temperature`/`top_p`, which they reject.
+
 ## [0.7.2] - 2026-10-07
 
 ### Fixed

@@ -9,6 +9,22 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Hozzáadva
+
+- **AI modellek listából**: a Beállítások → AI asszisztens panelen a modell a kiválasztott szolgáltató listájából választható (szolgáltatóváltáskor az alapértelmezett modell kerül be), a listán nem szereplő modell „Egyéni modell…”-ként adható meg. A szolgáltatók (mind a hat) az adatbázisból jönnek.
+  - Új tábla: `platform.ai_provider_models` (`0013_ai_provider_models` migráció, `ai_provider_models` seed). A panel alján a modellek kikapcsolhatók, alapértelmezettnek jelölhetők, és saját modell vehető fel; a beépítettek nem törölhetők. A seed újrafuttatása nem írja felül az admin döntéseit.
+  - Ha az admin nem adott meg modellt, a chat a lista alapértelmezett modelljét használja.
+  - A kapcsolatteszt a Groq, a Hugging Face és az egyéni endpoint esetén is működik.
+
+### Változott
+
+- Új alapértelmezett modellek: Gemini `gemini-3.8-flash` (a `gemini-2.5-flash` 2026. október 20-án megszűnik), Groq `openai/gpt-oss-120b` (a `llama-3.3-70b-versatile` már csak vállalati csomagban), OpenAI `gpt-6-luna`.
+- Frissítéskor: `db:migrate` (vagy Docker `db:init`) az új táblához, majd `db:init` a modellek és a feliratok (`translations_settings`) betöltéséhez. A mentett modell nem változik; ha nincs a listában, egyéni modellként jelenik meg.
+
+### Javítva
+
+- OpenAI: a kérés `max_completion_tokens`-t küld a `max_tokens` helyett, és az érvelő modelleknek (gpt-5, gpt-6, o-sorozat) nem küld `temperature`/`top_p` értéket, amit azok hibával elutasítanak.
+
 ## [0.7.2] - 2026-10-07
 
 ### Javítva

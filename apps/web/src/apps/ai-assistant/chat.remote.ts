@@ -57,7 +57,8 @@ function extractAppSuggestion(text: string): {
 
 /**
  * Modell és endpoint feloldása.
- * Precedencia: admin konfiguráció → adatbázis (provider config) → environment változó → beépített alapérték
+ * Modell: admin konfiguráció → a modellista alapértelmezettje → provider config → environment
+ * változó → beépített alapérték. Endpoint: admin konfiguráció → provider config → beépített.
  */
 async function resolveProviderTarget(
 	provider: string,
@@ -75,8 +76,18 @@ async function resolveProviderTarget(
 		}
 	}
 
+	let defaultModel: string | null = null;
+	if (!configModel) {
+		try {
+			defaultModel = await aiProviderRepository.getDefaultModel(provider);
+		} catch (err) {
+			console.error(`[AiChat] Alapértelmezett modell lekérési hiba (${provider}):`, err);
+		}
+	}
+
 	const model =
 		configModel ||
+		defaultModel ||
 		dbConfig.default_model ||
 		(defaults && process.env[defaults.modelEnvKey]) ||
 		defaults?.model ||

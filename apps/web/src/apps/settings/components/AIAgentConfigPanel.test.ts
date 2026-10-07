@@ -28,18 +28,91 @@ vi.mock('$lib/i18n/hooks', () => ({
 // A vi.mock factory a fájl tetejére hoistolódik, ezért a mockokat is
 // vi.hoisted()-ben kell létrehozni — különben a factory olyan változóra
 // hivatkozna, ami még nincs inicializálva.
-const { mockGetAIAssistantConfig, mockUpdateAIAssistantConfig, mockTestAIAgentConnection } =
-	vi.hoisted(() => ({
-		mockGetAIAssistantConfig: vi.fn(),
-		mockUpdateAIAssistantConfig: vi.fn(),
-		mockTestAIAgentConnection: vi.fn()
-	}));
+const {
+	mockGetAIAssistantConfig,
+	mockUpdateAIAssistantConfig,
+	mockTestAIAgentConnection,
+	mockGetAIProviderCatalog,
+	mockAddAIProviderModel,
+	mockUpdateAIProviderModel,
+	mockSetDefaultAIProviderModel,
+	mockDeleteAIProviderModel
+} = vi.hoisted(() => ({
+	mockGetAIAssistantConfig: vi.fn(),
+	mockUpdateAIAssistantConfig: vi.fn(),
+	mockTestAIAgentConnection: vi.fn(),
+	mockGetAIProviderCatalog: vi.fn(),
+	mockAddAIProviderModel: vi.fn(),
+	mockUpdateAIProviderModel: vi.fn(),
+	mockSetDefaultAIProviderModel: vi.fn(),
+	mockDeleteAIProviderModel: vi.fn()
+}));
 
 vi.mock('../admin-config.remote', () => ({
 	getAIAssistantConfig: mockGetAIAssistantConfig,
 	updateAIAssistantConfig: mockUpdateAIAssistantConfig,
-	testAIAgentConnection: mockTestAIAgentConnection
+	testAIAgentConnection: mockTestAIAgentConnection,
+	getAIProviderCatalog: mockGetAIProviderCatalog,
+	addAIProviderModel: mockAddAIProviderModel,
+	updateAIProviderModel: mockUpdateAIProviderModel,
+	setDefaultAIProviderModel: mockSetDefaultAIProviderModel,
+	deleteAIProviderModel: mockDeleteAIProviderModel
 }));
+
+/** Egy modell a katalógusban */
+function catalogModel(id: number, modelId: string, extra: Record<string, unknown> = {}) {
+	return {
+		id,
+		providerId: 1,
+		modelId,
+		displayName: modelId.toUpperCase(),
+		isDefault: false,
+		isEnabled: true,
+		isBuiltin: true,
+		sortOrder: id * 10,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		...extra
+	};
+}
+
+/** Két provider modellistával és egy lista nélküli (egyéni endpoint) */
+function catalog() {
+	return {
+		success: true,
+		providers: [
+			{
+				name: 'openai',
+				displayName: 'OpenAI',
+				description: null,
+				isRecommended: true,
+				models: [
+					catalogModel(1, 'gpt-6-luna', { isDefault: true }),
+					catalogModel(2, 'gpt-6.1-sol'),
+					catalogModel(3, 'gpt-old', { isEnabled: false }),
+					catalogModel(4, 'my-model', { isBuiltin: false })
+				]
+			},
+			{
+				name: 'anthropic',
+				displayName: 'Anthropic',
+				description: null,
+				isRecommended: false,
+				models: [
+					catalogModel(11, 'claude-sonnet-5-5'),
+					catalogModel(12, 'claude-opus-5-5', { isDefault: true })
+				]
+			},
+			{
+				name: 'custom',
+				displayName: 'Egyéni endpoint',
+				description: null,
+				isRecommended: false,
+				models: []
+			}
+		]
+	};
+}
 
 /**
  * Alapértelmezett konfiguráció a tesztekhez: engedélyezett AI Agent, üres
@@ -88,6 +161,8 @@ describe('AIAgentConfigPanel', () => {
 
 		// Default: engedélyezett, még kitöltetlen konfiguráció
 		mockGetAIAssistantConfig.mockResolvedValue(enabledConfig());
+		// Default: nincs modellkatalógus → szabad szöveges modellmező (a régi viselkedés)
+		mockGetAIProviderCatalog.mockResolvedValue({ success: false });
 	});
 
 	afterEach(() => {
@@ -363,5 +438,96 @@ describe('AIAgentConfigPanel', () => {
 		// Buttons should be disabled during testing
 		expect(testButton).toBeDisabled();
 		expect(saveButton).toBeDisabled();
+	});
+
+	describe('modellista', () => {
+		beforeEach(() => {
+			mockGetAIProviderCatalog.mockResolvedValue(catalog());
+		});
+
+		async function modelSelect() {
+			return (await screen.findByLabelText('settings.admin.aiAgent.model')) as HTMLSelectElement;
+		}
+
+		it('a modellválasztóban a provider engedélyezett modelljei és az egyéni lehetőség szerepel', async () => {
+			render(AIAgentConfigPanelHost);
+
+			const select = await modelSelect();
+			await waitFor(() => expect(select.tagName).toBe('SELECT'));
+			const options = [...select.options].map((o) => o.value);
+			expect(options).toEqual(['gpt-6-luna', 'gpt-6.1-sol', 'my-model', '__custom__']);
+		});
+
+		it('üres modellnél a provider alapértelmezett modelljét választja', async () => {
+			render(AIAgentConfigPanelHost);
+
+			const select = await modelSelect();
+			await waitFor(() => expect(select.value).toBe('gpt-6-luna'));
+		});
+
+		it('providerváltáskor az új provider alapértelmezett modellje lesz kiválasztva', async () => {
+			render(AIAgentConfigPanelHost);
+
+			const providerSelect = (await screen.findByLabelText(
+				'settings.admin.aiAgent.provider'
+			)) as HTMLSelectElement;
+			await waitFor(() => expect(providerSelect.options.length).toBe(3));
+
+			await fireEvent.change(providerSelect, { target: { value: 'anthropic' } });
+
+			await waitFor(async () => expect((await modelSelect()).value).toBe('claude-opus-5-5'));
+		});
+
+		it('a listában nem szereplő mentett modell egyéni modellként jelenik meg', async () => {
+			mockGetAIAssistantConfig.mockResolvedValue({
+				...enabledConfig({ model: 'gemini-2.5-flash' }),
+				config: { ...enabledConfig({ model: 'gemini-2.5-flash' }).config, enabled: true }
+			});
+			render(AIAgentConfigPanelHost);
+
+			const customInput = (await screen.findByLabelText(
+				'settings.admin.aiAgent.customModelId'
+			)) as HTMLInputElement;
+			expect(customInput.value).toBe('gemini-2.5-flash');
+			expect((await modelSelect()).value).toBe('__custom__');
+		});
+
+		it('lista nélküli providernél szabad szöveges mező marad', async () => {
+			render(AIAgentConfigPanelHost);
+
+			const providerSelect = (await screen.findByLabelText(
+				'settings.admin.aiAgent.provider'
+			)) as HTMLSelectElement;
+			await waitFor(() => expect(providerSelect.options.length).toBe(3));
+			await fireEvent.change(providerSelect, { target: { value: 'custom' } });
+
+			await waitFor(async () => expect((await modelSelect()).tagName).toBe('INPUT'));
+		});
+
+		it('új modellt vesz fel a kiválasztott providerhez', async () => {
+			mockAddAIProviderModel.mockResolvedValue({ success: true });
+			render(AIAgentConfigPanelHost);
+
+			const idInput = await screen.findByLabelText('settings.admin.aiAgent.models.newModelId');
+			await fireEvent.input(idInput, { target: { value: 'gpt-6-astra' } });
+			await fireEvent.click(screen.getByText('settings.admin.aiAgent.models.add'));
+
+			await waitFor(() =>
+				expect(mockAddAIProviderModel).toHaveBeenCalledWith({
+					provider: 'openai',
+					modelId: 'gpt-6-astra',
+					displayName: 'gpt-6-astra'
+				})
+			);
+			expect(toast.success).toHaveBeenCalledWith('settings.admin.aiAgent.models.addSuccess');
+		});
+
+		it('csak a saját modell törölhető', async () => {
+			render(AIAgentConfigPanelHost);
+
+			await screen.findAllByText('MY-MODEL');
+			const deleteButtons = screen.getAllByLabelText('settings.admin.aiAgent.models.delete');
+			expect(deleteButtons).toHaveLength(1);
+		});
 	});
 });

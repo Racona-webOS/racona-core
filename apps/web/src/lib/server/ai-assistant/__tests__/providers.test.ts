@@ -155,6 +155,38 @@ describe('OpenAI-kompatibilis', () => {
 		expect(body.messages).toHaveLength(4);
 	});
 
+	it('OpenAI: max_completion_tokens, az érvelő modelleknek sampling nélkül', async () => {
+		const fetchMock = mockFetch({ choices: [{ message: { content: 'ok' } }] });
+
+		await callChatProvider(baseRequest({ provider: 'openai', model: 'gpt-6-luna' }));
+
+		const { body } = sentRequest(fetchMock);
+		expect(body.max_completion_tokens).toBe(1000);
+		expect(body.max_tokens).toBeUndefined();
+		expect(body.temperature).toBeUndefined();
+		expect(body.top_p).toBeUndefined();
+	});
+
+	it('OpenAI régebbi (nem érvelő) modellnél küld temperature-t', async () => {
+		const fetchMock = mockFetch({ choices: [{ message: { content: 'ok' } }] });
+
+		await callChatProvider(baseRequest({ provider: 'openai', model: 'gpt-4o-mini' }));
+
+		const { body } = sentRequest(fetchMock);
+		expect(body.max_completion_tokens).toBe(1000);
+		expect(body.temperature).toBe(0.7);
+	});
+
+	it('Groq és egyéni endpoint: a klasszikus max_tokens és temperature', async () => {
+		const fetchMock = mockFetch({ choices: [{ message: { content: 'ok' } }] });
+
+		await callChatProvider(baseRequest({ provider: 'groq', model: 'openai/gpt-oss-120b' }));
+
+		const { body } = sentRequest(fetchMock);
+		expect(body.max_tokens).toBe(1000);
+		expect(body.temperature).toBe(0.7);
+	});
+
 	it('API hibánál a provider üzenetét adja vissza', async () => {
 		mockFetch({ error: { message: 'Invalid API key' } }, 401);
 

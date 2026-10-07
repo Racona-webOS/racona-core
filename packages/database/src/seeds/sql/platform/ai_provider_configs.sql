@@ -4,19 +4,19 @@
 
 -- Gemini provider konfigurációk
 INSERT INTO platform.ai_provider_configs (provider_id, config_key, config_value, config_type, is_required) VALUES
-((SELECT id FROM platform.ai_providers WHERE name = 'gemini'), 'default_model', 'gemini-2.5-flash', 'string', false),
+((SELECT id FROM platform.ai_providers WHERE name = 'gemini'), 'default_model', 'gemini-3.8-flash', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'gemini'), 'base_url', 'https://generativelanguage.googleapis.com/v1beta/models', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'gemini'), 'max_tokens', '1000', 'number', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'gemini'), 'temperature', '0.70', 'string', false),
 
 -- Groq provider konfigurációk
-((SELECT id FROM platform.ai_providers WHERE name = 'groq'), 'default_model', 'llama-3.3-70b-versatile', 'string', false),
+((SELECT id FROM platform.ai_providers WHERE name = 'groq'), 'default_model', 'openai/gpt-oss-120b', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'groq'), 'base_url', 'https://api.groq.com/openai/v1/chat/completions', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'groq'), 'max_tokens', '1000', 'number', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'groq'), 'temperature', '0.70', 'string', false),
 
 -- OpenAI provider konfigurációk
-((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'default_model', 'gpt-4o-mini', 'string', false),
+((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'default_model', 'gpt-6-luna', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'base_url', 'https://api.openai.com/v1/chat/completions', 'string', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'max_tokens', '1000', 'number', false),
 ((SELECT id FROM platform.ai_providers WHERE name = 'openai'), 'temperature', '0.70', 'string', false),

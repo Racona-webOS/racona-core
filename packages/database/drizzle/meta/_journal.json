@@ -92,6 +92,13 @@
       "when": 1791306393374,
       "tag": "0012_app_mobile",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791369972204,
+      "tag": "0013_ai_provider_models",
+      "breakpoints": true
     }
   ]
 }
