@@ -116,5 +116,5 @@ The Map application uses open-source data and services:
 
 ## Related Topics
 
-- [Notifications](./notifications) – Managing system notifications
-- [Settings](./settings) – Customizing system settings
+- [Notifications](/en/user/applications/notifications/) – Managing system notifications
+- [Settings](/en/user/applications/settings/) – Customizing system settings

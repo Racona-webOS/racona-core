@@ -80,4 +80,4 @@ Ismerje meg részletesen az egyes funkciókat:
 ## Kapcsolódó Témák
 
 - [Alkalmazások](../applications/) - Beépített alkalmazások használata
-- [Rendszer testreszabása](../customization/) - Felület személyre szabása
+- [Rendszer testreszabása](/hu/user/applications/settings/#megjelenés) - Felület személyre szabása

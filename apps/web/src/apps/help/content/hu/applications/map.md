@@ -116,5 +116,5 @@ A Térkép alkalmazás nyílt forrású adatokat és szolgáltatásokat használ
 
 ## Kapcsolódó témák
 
-- [Értesítések](./notifications) – Rendszerértesítések kezelése
-- [Beállítások](./settings) – Rendszerbeállítások testreszabása
+- [Értesítések](/hu/user/applications/notifications/) – Rendszerértesítések kezelése
+- [Beállítások](/hu/user/applications/settings/) – Rendszerbeállítások testreszabása

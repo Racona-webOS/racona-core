@@ -62,7 +62,7 @@ Creating a desktop shortcut from the Start Menu:
 3. Drag the application icon to the desktop
 4. The shortcut is automatically created on the desktop
 
-More information: [Desktop Shortcuts](./desktop-icons/)
+More information: [Desktop Shortcuts](/en/user/desktop-basics/desktop-icons/)
 
 ## Customizing the Start Menu
 
@@ -71,10 +71,10 @@ You can customize the Start Menu appearance in the Settings application:
 - **View**: Grid or list
 - **Search settings**: Search behavior
 
-[Start Menu settings →](../applications/settings/)
+[Start Menu settings →](/en/user/applications/settings/)
 
 ## Related Topics
 
-- [Applications](../applications/) - Using applications
-- [Desktop Shortcuts](./desktop-icons/) - Creating shortcuts
-- [Settings](../applications/settings/) - Customizing the Start Menu
+- [Applications](/en/user/applications/) - Using applications
+- [Desktop Shortcuts](/en/user/desktop-basics/desktop-icons/) - Creating shortcuts
+- [Settings](/en/user/applications/settings/) - Customizing the Start Menu

@@ -55,7 +55,7 @@ Application access is flexibly controlled:
 
 By default, the Users and App Store applications are assigned to the administrator group and role. Users only see applications they have permission to access.
 
-More information on permission management: [Users Application - Permissions](./applications/users.md#permissions)
+More information on permission management: [Users Application - Permissions](/en/user/applications/users/#permissions)
 
 ## System Applications
 
@@ -80,7 +80,7 @@ The Settings application is the system's central configuration hub. Here you can
 - **Authentication**: Registration, social login, AI Agent and TTS Provider configuration (admin only)
 - **System Information**: Version and system data
 
-[Detailed usage guide →](./applications/settings.md)
+[Detailed usage guide →](/en/user/applications/settings/)
 
 ### Users
 
@@ -98,7 +98,7 @@ The Users application allows management and administration of user accounts and 
 
 **Note**: This application is only available to users with administrator privileges.
 
-[Detailed usage guide →](./applications/users.md)
+[Detailed usage guide →](/en/user/applications/users/)
 
 ### Log
 
@@ -116,7 +116,7 @@ The Log application displays system logs and error messages.
 
 **Tip**: If you experience problems with the system, first check the Log application for detailed error messages.
 
-[Detailed usage guide →](./applications/log.md)
+[Detailed usage guide →](/en/user/applications/log/)
 
 ### App Store
 
@@ -149,7 +149,7 @@ The Messages application is an internal messaging system that enables communicat
 
 **Tip**: The Messages application is ideal for quick teamwork and collaboration.
 
-[Detailed usage guide →](./applications/chat.md)
+[Detailed usage guide →](/en/user/applications/chat/)
 
 ## Utility Applications
 
@@ -169,7 +169,7 @@ The AI Assistant is an intelligent virtual assistant that helps with daily tasks
 
 **Tip**: The AI Assistant chat panel can be opened by clicking the icon on the taskbar for quick access.
 
-[Detailed usage guide →](./applications/ai-assistant.md)
+[Detailed usage guide →](/en/user/applications/ai-assistant/)
 
 ### Map
 
@@ -185,7 +185,7 @@ The Map application is an interactive map viewer and route planner based on Open
 - Avoid toll roads, highways, and ferries
 - Display distance and travel time
 
-[Detailed usage guide →](./applications/map.md)
+[Detailed usage guide →](/en/user/applications/map/)
 
 ### Help
 
@@ -201,7 +201,7 @@ The Help application contains system documentation and user guides.
 - Search function
 - Context-sensitive help
 
-[Detailed usage guide →](./applications/help.md)
+[Detailed usage guide →](/en/user/applications/help/)
 
 ### Notifications
 
@@ -217,7 +217,7 @@ The Notifications application displays all your notifications in one place.
 - Notification history
 - Quick access to notification settings
 
-[Detailed usage guide →](./applications/notifications.md)
+[Detailed usage guide →](/en/user/applications/notifications/)
 
 ## Application Sharing
 
@@ -229,7 +229,7 @@ Racona allows sharing applications with other users using GUID links:
 4. Send the link to another user
 5. The other user can open the application in the same state using the Application Opener function (bottom right corner of taskbar)
 
-More information: [Using the Interface - Link Button](./desktop-basics.md#link-button-application-sharing)
+More information: [Using the Interface - Link Button](/en/user/desktop-basics/windows/#link-button-application-sharing)
 
 ## Application Help
 
@@ -237,6 +237,6 @@ Some applications have built-in help functionality. If you see the help button i
 
 ## Next Steps
 
-- [Using the Interface](./desktop-basics.md) - Window management, taskbar, start menu
-- [System Customization](./customization.md) - Themes, background, language settings
-- [FAQ](./faq.md) - Answers to frequently asked questions
+- [Using the Interface](/en/user/desktop-basics/) - Window management, taskbar, start menu
+- [System Customization](/en/user/applications/settings/#appearance) - Themes, background, language settings
+- [FAQ](/en/user/faq/) - Answers to frequently asked questions

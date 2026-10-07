@@ -55,7 +55,7 @@ Az alkalmazások hozzáférése rugalmasan szabályozható:
 
 Az alapértelmezett beállítások szerint a Felhasználók és az Alkalmazásbolt alkalmazások adminisztrátor csoporthoz és szerepkörhöz vannak rendelve. A felhasználók csak azokat az alkalmazásokat látják, amelyekhez jogosultsággal rendelkeznek.
 
-További információ a jogosultságkezelésről: [Felhasználók alkalmazás - Jogosultságok](./applications/users.md#jogosultságok)
+További információ a jogosultságkezelésről: [Felhasználók alkalmazás - Jogosultságok](/hu/user/applications/users/#jogosultságok)
 
 ## Rendszer alkalmazások
 
@@ -80,7 +80,7 @@ A Beállítások alkalmazás a rendszer központi konfigurációs központja. It
 - **Hitelesítés**: Regisztráció, social login, AI Agent és TTS Provider konfiguráció (csak admin)
 - **Rendszerinformáció**: Verzió és rendszer adatok
 
-[Részletes használati útmutató →](./applications/settings.md)
+[Részletes használati útmutató →](/hu/user/applications/settings/)
 
 ### Felhasználók
 
@@ -98,7 +98,7 @@ A Felhasználók alkalmazás lehetővé teszi a felhasználói fiókok kezelés�
 
 **Megjegyzés**: Ez az alkalmazás csak adminisztrátor jogosultsággal rendelkező felhasználók számára érhető el.
 
-[Részletes használati útmutató →](./applications/users.md)
+[Részletes használati útmutató →](/hu/user/applications/users/)
 
 ### Napló
 
@@ -116,7 +116,7 @@ A Napló alkalmazás megjeleníti a rendszer naplóit és hibaüzeneteket.
 
 **Tipp**: Ha problémát tapasztal a rendszerben, először nézze meg a Napló alkalmazást a részletes hibaüzenetekért.
 
-[Részletes használati útmutató →](./applications/log.md)
+[Részletes használati útmutató →](/hu/user/applications/log/)
 
 ### Alkalmazásbolt
 
@@ -149,7 +149,7 @@ Az Üzenetek alkalmazás egy belső üzenetküldő rendszer, amely lehetővé te
 
 **Tipp**: Az Üzenetek alkalmazás ideális a gyors csapatmunkához és kollaborációhoz.
 
-[Részletes használati útmutató →](./applications/chat.md)
+[Részletes használati útmutató →](/hu/user/applications/chat/)
 
 ## Segédprogram alkalmazások
 
@@ -169,7 +169,7 @@ Az AI Asszisztens egy intelligens virtuális asszisztens, amely segít a mindenn
 
 **Tipp**: Az AI Asszisztens chat panel a tálcán található ikonra kattintva nyitható meg gyors hozzáféréshez.
 
-[Részletes használati útmutató →](./applications/ai-assistant.md)
+[Részletes használati útmutató →](/hu/user/applications/ai-assistant/)
 
 ### Térkép
 
@@ -185,7 +185,7 @@ A Térkép alkalmazás egy interaktív térképnézegető és útvonaltervező, 
 - Fizetős utak, autópályák és kompok kerülése
 - Távolság és menetidő megjelenítése
 
-[Részletes használati útmutató →](./applications/map.md)
+[Részletes használati útmutató →](/hu/user/applications/map/)
 
 ### Súgó
 
@@ -201,7 +201,7 @@ A Súgó alkalmazás a rendszer dokumentációját és felhasználói útmutató
 - Keresési funkció
 - Kontextusfüggő segítség
 
-[Részletes használati útmutató →](./applications/help.md)
+[Részletes használati útmutató →](/hu/user/applications/help/)
 
 ### Értesítések
 
@@ -217,7 +217,7 @@ Az Értesítések alkalmazás az összes értesítését egy helyen jeleníti me
 - Értesítési előzmények
 - Értesítési beállítások gyors elérése
 
-[Részletes használati útmutató →](./applications/notifications.md)
+[Részletes használati útmutató →](/hu/user/applications/notifications/)
 
 ## Alkalmazás megosztás
 
@@ -229,7 +229,7 @@ A Racona lehetővé teszi alkalmazások megosztását más felhasználókkal GUI
 4. Küldd el a hivatkozást a másik felhasználónak
 5. A másik felhasználó az Alkalmazás Megnyitó funkcióval (tálca jobb alsó sarka) megnyithatja az alkalmazást ugyanabban az állapotban
 
-További információ: [A felület használata - Link Gomb](./desktop-basics.md#link-gomb-alkalmazás-megosztás)
+További információ: [A felület használata - Link Gomb](/hu/user/desktop-basics/windows/#link-gomb-alkalmazás-megosztás)
 
 ## Alkalmazás súgó
 
@@ -237,6 +237,6 @@ Egyes alkalmazások rendelkeznek beépített súgó funkcióval. Ha látja a sú
 
 ## Következő lépések
 
-- [A felület használata](./desktop-basics.md) - Ablakkezelés, tálca, indító panel
-- [Rendszer testreszabása](./customization.md) - Témák, háttér, nyelv beállítások
-- [Gyakori kérdések](./faq.md) - Válaszok a gyakori kérdésekre
+- [A felület használata](/hu/user/desktop-basics/) - Ablakkezelés, tálca, indító panel
+- [Rendszer testreszabása](/hu/user/applications/settings/#megjelenés) - Témák, háttér, nyelv beállítások
+- [Gyakori kérdések](/hu/user/faq/) - Válaszok a gyakori kérdésekre

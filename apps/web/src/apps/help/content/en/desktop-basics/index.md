@@ -80,4 +80,4 @@ Learn about each function in detail:
 ## Related Topics
 
 - [Applications](../applications/) - Using built-in applications
-- [System Customization](../customization/) - Personalizing the interface
+- [System Customization](/en/user/applications/settings/#appearance) - Personalizing the interface

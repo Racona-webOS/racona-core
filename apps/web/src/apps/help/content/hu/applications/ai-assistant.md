@@ -107,6 +107,6 @@ Az avatar csomagnak `.raconapkg` formátumban kell lennie. Ez egy speciális cso
 
 ## Kapcsolódó Témák
 
-- [Beállítások - AI Asszisztens](./settings.md#ai-asszisztens) - AI Asszisztens beállítások részletesen
-- [Beállítások - Hitelesítés](./settings.md#hitelesítés) - Adminisztrátori AI beállítások
-- [A felület használata](../desktop-basics.md) - A Racona felületének alapjai
+- [Beállítások - AI Asszisztens](/hu/user/applications/settings/#ai-asszisztens) - AI Asszisztens beállítások részletesen
+- [Beállítások - Hitelesítés](/hu/user/applications/settings/#hitelesítés) - Adminisztrátori AI beállítások
+- [A felület használata](/hu/user/desktop-basics/) - A Racona felületének alapjai

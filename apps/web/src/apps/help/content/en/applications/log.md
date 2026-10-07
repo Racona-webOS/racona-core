@@ -49,7 +49,7 @@ The error log displays logged errors in tabular format:
 - **Pagination**: 20 errors per page
 - **Striped display**: For better readability
 
-More information on using tables: [Using Tables](../components/tables.md) _(TODO: This documentation is not yet created)_
+More information on using tables: [Using Tables](/en/user/ui-components/data-tables/) _(TODO: This documentation is not yet created)_
 
 ### Filtering
 

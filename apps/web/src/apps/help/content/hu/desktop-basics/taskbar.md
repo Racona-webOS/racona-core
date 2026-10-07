@@ -49,7 +49,7 @@ A témaváltó gomb lehetővé teszi a gyors váltást világos és sötét mód
 2. A téma azonnal vált
 3. A beállítás automatikusan mentésre kerül
 
-További testreszabási lehetőségekért lásd: [Rendszer testreszabása](../customization/)
+További testreszabási lehetőségekért lásd: [Rendszer testreszabása](/hu/user/applications/settings/#megjelenés)
 
 ## Értesítési ikon
 
@@ -67,7 +67,7 @@ _Értesítési ikon különböző állapotokban_
 
 > **Megjegyzés:** Ha egyszerre van kritikus és normál olvasatlan értesítés is, mindkét jelzés megjelenik az ikonon.
 
-További információ: [Értesítések alkalmazás](../applications/notifications/)
+További információ: [Értesítések alkalmazás](/hu/user/applications/notifications/)
 
 ## Alkalmazás megnyitó (GUID hivatkozás)
 
@@ -85,7 +85,7 @@ _GUID hivatkozás alapú alkalmazás megnyitás a tálcáról_
 
 ### GUID hivatkozás generálása
 
-A GUID hivatkozást az ablak [Link gombjával](./windows/#link-gomb-alkalmazás-megosztás) generálhatod, amely automatikusan a vágólapra másolja a hivatkozást.
+A GUID hivatkozást az ablak [Link gombjával](/hu/user/desktop-basics/windows/#link-gomb-alkalmazás-megosztás) generálhatod, amely automatikusan a vágólapra másolja a hivatkozást.
 
 ### Fontos tudnivalók
 
@@ -102,10 +102,10 @@ A tálca megjelenését és viselkedését testreszabhatja a Beállítások alka
 - **Óra megjelenítése**: Ki/be kapcsolás
 - **Alkalmazás gombok**: Stílus és viselkedés
 
-[Tálca beállítások →](../applications/settings/)
+[Tálca beállítások →](/hu/user/applications/settings/)
 
 ## Kapcsolódó Témák
 
-- [Ablakkezelés](./windows/) - Ablakok kezelése
-- [Értesítések](../applications/notifications/) - Értesítések kezelése
-- [Beállítások](../applications/settings/) - Tálca testreszabása
+- [Ablakkezelés](/hu/user/desktop-basics/windows/) - Ablakok kezelése
+- [Értesítések](/hu/user/applications/notifications/) - Értesítések kezelése
+- [Beállítások](/hu/user/applications/settings/) - Tálca testreszabása

@@ -443,7 +443,7 @@ Users can set voice speed and volume at Settings > AI Assistant > TTS Settings. 
 
 ## Related Topics
 
-- [System customization](../customization.md) - Additional customization options
-- [Using the interface](../desktop-basics.md) - Basics of the Racona interface
-- [Users](./users.md) - Managing users and permissions
-- [AI Assistant](./ai-assistant.md) - Using and configuring the AI Assistant
+- [System customization](/en/user/applications/settings/#appearance) - Additional customization options
+- [Using the interface](/en/user/desktop-basics/) - Basics of the Racona interface
+- [Users](/en/user/applications/users/) - Managing users and permissions
+- [AI Assistant](/en/user/applications/ai-assistant/) - Using and configuring the AI Assistant

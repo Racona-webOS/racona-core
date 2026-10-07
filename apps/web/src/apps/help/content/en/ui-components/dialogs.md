@@ -101,6 +101,6 @@ You can close modal windows in several ways:
 
 ## Related Topics
 
-- [Toast Messages](./notifications) - Feedback on actions performed in modal windows
-- [Data Tables](./data-tables) - Modal windows often open from data tables
-- [Users Application](../applications/users) - Example of modal window usage
+- [Toast Messages](/en/user/ui-components/notifications/) - Feedback on actions performed in modal windows
+- [Data Tables](/en/user/ui-components/data-tables/) - Modal windows often open from data tables
+- [Users Application](/en/user/applications/users/) - Example of modal window usage

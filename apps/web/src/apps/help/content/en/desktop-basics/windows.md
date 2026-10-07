@@ -145,7 +145,7 @@ The Link button allows you to share an application with its current state with o
 - Educational purposes - quickly navigate others to a specific function
 - Team collaboration support - simplifies communication about application usage
 
-> **Note:** The GUID link stores information in compressed format, so it's safe to share and doesn't contain sensitive data. For more about opening links, see [Taskbar - Application Opener](./taskbar/#application-opener-guid-link).
+> **Note:** The GUID link stores information in compressed format, so it's safe to share and doesn't contain sensitive data. For more about opening links, see [Taskbar - Application Opener](/en/user/desktop-basics/taskbar/#application-opener-guid-link).
 
 ## Window Previews
 
@@ -166,6 +166,6 @@ _Window preview image displayed on the taskbar_
 
 ## Related Topics
 
-- [Taskbar](./taskbar/) - Application buttons and system functions
-- [Applications](../applications/) - Using applications
-- [Settings](../applications/settings/) - Configuring window previews
+- [Taskbar](/en/user/desktop-basics/taskbar/) - Application buttons and system functions
+- [Applications](/en/user/applications/) - Using applications
+- [Settings](/en/user/applications/settings/) - Configuring window previews

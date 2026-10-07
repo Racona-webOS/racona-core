@@ -50,7 +50,7 @@ Right-clicking on the Start Menu button:
 
 ## Related Topics
 
-- [Desktop Shortcuts](./desktop-icons/) - Managing shortcuts
-- [Taskbar](./taskbar/) - Taskbar functions
-- [Start Menu](./start-menu/) - Using the Start Menu
-- [Settings](../applications/settings/) - System customization
+- [Desktop Shortcuts](/en/user/desktop-basics/desktop-icons/) - Managing shortcuts
+- [Taskbar](/en/user/desktop-basics/taskbar/) - Taskbar functions
+- [Start Menu](/en/user/desktop-basics/start-menu/) - Using the Start Menu
+- [Settings](/en/user/applications/settings/) - System customization

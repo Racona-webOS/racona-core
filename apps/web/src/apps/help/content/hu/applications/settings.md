@@ -449,7 +449,7 @@ Az új avatarok telepítése adminisztrátori jogosultságot igényel. Az admini
 
 ## Kapcsolódó Témák
 
-- [Rendszer testreszabása](../customization.md) - További testreszabási lehetőségek
-- [A felület használata](../desktop-basics.md) - A Racona felületének alapjai
-- [Felhasználók](./users.md) - Felhasználók és jogosultságok kezelése
-- [AI Asszisztens](./ai-assistant.md) - AI Asszisztens használata és beállításai
+- [Rendszer testreszabása](/hu/user/applications/settings/#megjelenés) - További testreszabási lehetőségek
+- [A felület használata](/hu/user/desktop-basics/) - A Racona felületének alapjai
+- [Felhasználók](/hu/user/applications/users/) - Felhasználók és jogosultságok kezelése
+- [AI Asszisztens](/hu/user/applications/ai-assistant/) - AI Asszisztens használata és beállításai

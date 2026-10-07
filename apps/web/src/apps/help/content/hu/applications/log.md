@@ -49,7 +49,7 @@ A hiba napló táblázatos formában jeleníti meg a naplózott hibákat:
 - **Lapozás**: 20 hiba oldalanként
 - **Csíkozott megjelenítés**: Jobb olvashatóság érdekében
 
-További információ a táblázatok kezeléséről: [Táblázatok használata](../components/tables.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázatok kezeléséről: [Táblázatok használata](/hu/user/ui-components/data-tables/) _(TODO: Ez a dokumentáció még nem készült el)_
 
 ### Szűrés
 

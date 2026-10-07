@@ -88,7 +88,7 @@ Ismerkedj meg a beépített alkalmazásokkal és azok funkcióival.
 
 Alakítsd személyre a Racona-t a saját igényeid szerint.
 
-[Testreszabási lehetőségek →](./customization/)
+[Testreszabási lehetőségek →](/hu/user/applications/settings/#megjelenés)
 
 ## Segítségre van szükséged?
 
@@ -105,4 +105,4 @@ Most, hogy áttekintettük a Racona alapjait, kezdd el a rendszer használatát:
 1. [Jelentkezz be a rendszerbe](./authentication/)
 2. [Ismerkedj meg a felülettel](./desktop-basics/)
 3. [Fedezd fel az alkalmazásokat](./applications/)
-4. [Szabd személyre a rendszert](./customization/)
+4. [Szabd személyre a rendszert](/hu/user/applications/settings/#megjelenés)

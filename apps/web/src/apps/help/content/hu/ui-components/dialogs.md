@@ -101,6 +101,6 @@ A modal ablakokat többféleképpen bezárhatod:
 
 ## Kapcsolódó témák
 
-- [Toast üzenetek](./notifications) - Visszajelzések a modal ablakban végrehajtott műveletekről
-- [Adattáblák](./data-tables) - Modal ablakok gyakran adattáblákból nyílnak meg
-- [Felhasználók alkalmazás](../applications/users) - Példa modal ablakok használatára
+- [Toast üzenetek](/hu/user/ui-components/notifications/) - Visszajelzések a modal ablakban végrehajtott műveletekről
+- [Adattáblák](/hu/user/ui-components/data-tables/) - Modal ablakok gyakran adattáblákból nyílnak meg
+- [Felhasználók alkalmazás](/hu/user/applications/users/) - Példa modal ablakok használatára

@@ -41,7 +41,7 @@ Gyorsan megtalálhatod a kívánt felhasználót:
 - **Szűrés állapot szerint**: Szűrd a listát aktív vagy inaktív felhasználókra
 - **Szűrők törlése**: Állítsd vissza az összes szűrőt az alapértelmezett állapotra
 
-További információ a táblázatok kezeléséről: [Táblázatok használata](../components/tables.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázatok kezeléséről: [Táblázatok használata](/hu/user/ui-components/data-tables/) _(TODO: Ez a dokumentáció még nem készült el)_
 
 ### Felhasználó részletei
 
@@ -56,7 +56,7 @@ Kattintson a "Részletek" gombra a felhasználó sorának végén a részletes i
 - Hozzárendelt csoportok
 - Hozzárendelt szerepkörök
 
-**Szerkesztési mód**: Az adatok szerkesztéséhez kattintson a "Szerkesztés" gombra az alsó funkciósávban. További információ az alkalmazások felépítéséről: [Alkalmazások felépítése](../app-structure.md) _(TODO: Ez a dokumentáció még nem készült el)_
+**Szerkesztési mód**: Az adatok szerkesztéséhez kattintson a "Szerkesztés" gombra az alsó funkciósávban. További információ az alkalmazások felépítéséről: [Alkalmazások felépítése](/hu/user/applications/structure/) _(TODO: Ez a dokumentáció még nem készült el)_
 
 ### Csoportok kezelése
 
@@ -96,7 +96,7 @@ A csoportok listája táblázatos formában jeleníti meg az összes definiált 
 - **Leírás**: A csoport rövid leírása
 - **Létrehozás dátuma**: Mikor hozták létre a csoportot
 
-További információ a táblázatok kezeléséről: [Táblázatok használata](../components/tables.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázatok kezeléséről: [Táblázatok használata](/hu/user/ui-components/data-tables/) _(TODO: Ez a dokumentáció még nem készült el)_
 
 ### Új csoport létrehozása
 
@@ -148,7 +148,7 @@ A csoport részletek oldalon kezelheti a csoport számára elérhető alkalmazá
 - **Alkalmazás eltávolítása**: Kattintson az alkalmazás melletti "Eltávolítás a csoportból" gombra a táblázatban
 - **Alkalmazás megnyitása**: Kattintson a 3 függőleges pötty ikonra a sor végén, majd válassza a "Megnyitás" opciót az alkalmazás indításához
 
-További információ a táblázat műveleti gombokról: [Táblázat műveletek](../components/table-actions.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázat műveleti gombokról: [Táblázat műveletek](/hu/user/ui-components/data-tables/#3-műveleti-oszlop) _(TODO: Ez a dokumentáció még nem készült el)_
 
 Az alkalmazások táblázatban láthatja a csoport számára elérhető összes alkalmazást. Csak azok az alkalmazások jelennek meg a csoport tagjai számára az Indító Panelben, amelyek hozzá vannak rendelve a csoportjukhoz vagy szerepköreikhez.
 
@@ -166,7 +166,7 @@ A szerepkörök listája táblázatos formában jeleníti meg az összes defini�
 - **Leírás**: A szerepkör rövid leírása
 - **Létrehozás dátuma**: Mikor hozták létre a szerepkört
 
-További információ a táblázatok kezeléséről: [Táblázatok használata](../components/tables.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázatok kezeléséről: [Táblázatok használata](/hu/user/ui-components/data-tables/) _(TODO: Ez a dokumentáció még nem készült el)_
 
 ### Új szerepkör létrehozása
 
@@ -218,7 +218,7 @@ A szerepkör részletek oldalon kezelheti a szerepkör számára elérhető alka
 - **Alkalmazás eltávolítása**: Kattintson az alkalmazás melletti "Eltávolítás a szerepkörből" gombra a táblázatban
 - **Alkalmazás megnyitása**: Kattintson a 3 függőleges pötty ikonra a sor végén, majd válassza a "Megnyitás" opciót az alkalmazás indításához
 
-További információ a táblázat műveleti gombokról: [Táblázat műveletek](../components/table-actions.md) _(TODO: Ez a dokumentáció még nem készült el)_
+További információ a táblázat műveleti gombokról: [Táblázat műveletek](/hu/user/ui-components/data-tables/#3-műveleti-oszlop) _(TODO: Ez a dokumentáció még nem készült el)_
 
 Az alkalmazások táblázatban láthatja a szerepkör számára elérhető összes alkalmazást. Csak azok az alkalmazások jelennek meg a szerepkörrel rendelkező felhasználók számára az Indító Panelben, amelyek hozzá vannak rendelve a csoportjaikhoz vagy szerepköreikhez.
 

@@ -39,7 +39,7 @@ A Racona modern biztonsági technológiákat használ az adataid védelmére.
 
 ### Fejleszthetek saját alkalmazást?
 
-Igen! Nézd meg a [fejlesztői dokumentációt](/developer/getting-started/).
+Igen! Nézd meg a [fejlesztői dokumentációt](https://docs-dev.racona.hu/hu/getting-started/).
 
 ### Milyen technológiákat használ a Racona?
 
@@ -49,5 +49,5 @@ A Racona modern webes technológiákra épül: TypeScript, Svelte, Node.js.
 
 Ha nem találod a választ a kérdésedre:
 
-- [Hibaelhárítás](/user/troubleshooting/)
-- [Fejlesztői dokumentáció](/developer/getting-started/)
+- [Hibaelhárítás](/hu/user/troubleshooting/)
+- [Fejlesztői dokumentáció](https://docs-dev.racona.hu/hu/getting-started/)

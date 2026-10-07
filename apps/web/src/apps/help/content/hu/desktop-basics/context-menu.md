@@ -50,7 +50,7 @@ Az Indító Panel gombján jobb klikkelve:
 
 ## Kapcsolódó témák
 
-- [Asztali parancsikonok](./desktop-icons/) - Parancsikonok kezelése
-- [Tálca](./taskbar/) - Tálca funkciók
-- [Indító panel](./start-menu/) - Indító Panel használata
-- [Beállítások](../applications/settings/) - Rendszer testreszabása
+- [Asztali parancsikonok](/hu/user/desktop-basics/desktop-icons/) - Parancsikonok kezelése
+- [Tálca](/hu/user/desktop-basics/taskbar/) - Tálca funkciók
+- [Indító panel](/hu/user/desktop-basics/start-menu/) - Indító Panel használata
+- [Beállítások](/hu/user/applications/settings/) - Rendszer testreszabása

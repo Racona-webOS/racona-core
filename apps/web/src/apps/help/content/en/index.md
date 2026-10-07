@@ -88,7 +88,7 @@ Learn about built-in applications and their features.
 
 Personalize Racona to your needs.
 
-[Customization options →](./customization/)
+[Customization options →](/en/user/applications/settings/#appearance)
 
 ## Need Help?
 
@@ -105,4 +105,4 @@ Now that you've reviewed the Racona basics, start using the system:
 1. [Log in to the system](./authentication/)
 2. [Learn the interface](./desktop-basics/)
 3. [Explore applications](./applications/)
-4. [Personalize the system](./customization/)
+4. [Personalize the system](/en/user/applications/settings/#appearance)

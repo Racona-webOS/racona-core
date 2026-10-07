@@ -39,7 +39,7 @@ Racona uses modern security technologies to protect your data.
 
 ### Can I develop my own application?
 
-Yes! Check out the [developer documentation](/developer/getting-started/).
+Yes! Check out the [developer documentation](https://docs-dev.racona.hu/en/getting-started/).
 
 ### What technologies does Racona use?
 
@@ -50,4 +50,4 @@ Racona is built on modern web technologies: TypeScript, Svelte, Node.js.
 If you can't find the answer to your question:
 
 - [Troubleshooting](/en/user/troubleshooting/)
-- [Developer Documentation](/developer/getting-started/)
+- [Developer Documentation](https://docs-dev.racona.hu/en/getting-started/)

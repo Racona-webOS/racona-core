@@ -107,6 +107,6 @@ The avatar package must be in `.raconapkg` format. This is a special package for
 
 ## Related Topics
 
-- [Settings - AI Assistant](./settings.md#ai-assistant) - AI Assistant settings in detail
-- [Settings - Authentication](./settings.md#authentication) - Administrator AI settings
-- [Using the Interface](../desktop-basics.md) - Basics of the Racona interface
+- [Settings - AI Assistant](/en/user/applications/settings/#ai-assistant) - AI Assistant settings in detail
+- [Settings - Authentication](/en/user/applications/settings/#authentication) - Administrator AI settings
+- [Using the Interface](/en/user/desktop-basics/) - Basics of the Racona interface

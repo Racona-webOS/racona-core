@@ -146,3 +146,22 @@ describe('loadHelpPage', () => {
 		expect(await loadHelpPage('nincs-ilyen', 'hu')).toBeNull();
 	});
 });
+
+describe('szinkronizált tartalom', () => {
+	it('egyik oldalon sincs feloldhatatlan hivatkozás', async () => {
+		const broken: string[] = [];
+		for (const locale of ['hu', 'en']) {
+			const slugs = (buildHelpMenu(locale) ?? []).flatMap((item) =>
+				item.children ? item.children.map((c) => c.props?.slug) : [item.props?.slug]
+			) as string[];
+			for (const slug of slugs) {
+				const page = await loadHelpPage(slug, locale);
+				for (const m of page?.html.matchAll(/<span class="help-broken-link">(.*?)<\/span>/g) ??
+					[]) {
+					broken.push(`${locale}/${slug}: ${m[1]}`);
+				}
+			}
+		}
+		expect(broken).toEqual([]);
+	});
+});

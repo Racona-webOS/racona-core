@@ -99,6 +99,6 @@ Switching the opening mode:
 
 ## Related Topics
 
-- [Start Menu](./start-menu/) - Launching applications
-- [Context Menu](./context-menu/) - Right-click functions
-- [Settings](../applications/settings/) - Configuring shortcuts
+- [Start Menu](/en/user/desktop-basics/start-menu/) - Launching applications
+- [Context Menu](/en/user/desktop-basics/context-menu/) - Right-click functions
+- [Settings](/en/user/applications/settings/) - Configuring shortcuts

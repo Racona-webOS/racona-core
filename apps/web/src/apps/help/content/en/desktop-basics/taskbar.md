@@ -49,7 +49,7 @@ The theme switcher button allows quick switching between light and dark modes:
 2. The theme switches immediately
 3. The setting is automatically saved
 
-For more customization options, see: [System Customization](../customization/)
+For more customization options, see: [System Customization](/en/user/applications/settings/#appearance)
 
 ## Notification Icon
 
@@ -67,7 +67,7 @@ _Notification icon in different states_
 
 > **Note:** If there are both critical and normal unread notifications, both indicators appear on the icon.
 
-More information: [Notifications Application](../applications/notifications/)
+More information: [Notifications Application](/en/user/applications/notifications/)
 
 ## Application Opener (GUID Link)
 
@@ -85,7 +85,7 @@ _GUID link-based application opening from the taskbar_
 
 ### Generating GUID Links
 
-GUID links are generated with the window's [Link button](./windows/#link-button-application-sharing), which automatically copies the link to the clipboard.
+GUID links are generated with the window's [Link button](/en/user/desktop-basics/windows/#link-button-application-sharing), which automatically copies the link to the clipboard.
 
 ### Important Information
 
@@ -102,10 +102,10 @@ You can customize the taskbar's appearance and behavior in the Settings applicat
 - **Show clock**: Toggle on/off
 - **Application buttons**: Style and behavior
 
-[Taskbar settings →](../applications/settings/)
+[Taskbar settings →](/en/user/applications/settings/)
 
 ## Related Topics
 
-- [Window Management](./windows/) - Managing windows
-- [Notifications](../applications/notifications/) - Managing notifications
-- [Settings](../applications/settings/) - Customizing the taskbar
+- [Window Management](/en/user/desktop-basics/windows/) - Managing windows
+- [Notifications](/en/user/applications/notifications/) - Managing notifications
+- [Settings](/en/user/applications/settings/) - Customizing the taskbar

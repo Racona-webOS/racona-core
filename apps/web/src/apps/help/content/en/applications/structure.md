@@ -209,7 +209,7 @@ Applications and menu items are permission-based.
 
 ## Related Topics
 
-- [Applications overview](./index) - Racona built-in applications
-- [Users](./users) - Managing users
-- [Settings](./settings) - System settings
-- [Log](./log) - System logs
+- [Applications overview](/en/user/applications/) - Racona built-in applications
+- [Users](/en/user/applications/users/) - Managing users
+- [Settings](/en/user/applications/settings/) - System settings
+- [Log](/en/user/applications/log/) - System logs

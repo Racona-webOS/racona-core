@@ -62,7 +62,7 @@ Asztali parancsikon létrehozása az Indító Panelből:
 3. Húzd az alkalmazás ikonját az asztalra
 4. A parancsikon automatikusan létrejön az asztalon
 
-További információ: [Asztali parancsikonok](./desktop-icons/)
+További információ: [Asztali parancsikonok](/hu/user/desktop-basics/desktop-icons/)
 
 ## Indító panel testreszabása
 
@@ -71,10 +71,10 @@ Az Indító Panel megjelenését testreszabhatja a Beállítások alkalmazásban
 - **Nézet**: Rács vagy lista
 - **Keresési beállítások**: Keresés viselkedése
 
-[Indító panel beállítások →](../applications/settings/)
+[Indító panel beállítások →](/hu/user/applications/settings/)
 
 ## Kapcsolódó témák
 
-- [Alkalmazások](../applications/) - Alkalmazások használata
-- [Asztali parancsikonok](./desktop-icons/) - Parancsikonok létrehozása
-- [Beállítások](../applications/settings/) - Indító Panel testreszabása
+- [Alkalmazások](/hu/user/applications/) - Alkalmazások használata
+- [Asztali parancsikonok](/hu/user/desktop-basics/desktop-icons/) - Parancsikonok létrehozása
+- [Beállítások](/hu/user/applications/settings/) - Indító Panel testreszabása

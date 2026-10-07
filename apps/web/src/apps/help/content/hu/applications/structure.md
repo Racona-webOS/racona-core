@@ -209,7 +209,7 @@ Az alkalmazások és menüpontok jogosultság-alapúak.
 
 ## Kapcsolódó témák
 
-- [Alkalmazások áttekintése](./index) - A Racona beépített alkalmazásai
-- [Felhasználók](./users) - Felhasználók kezelése
-- [Beállítások](./settings) - Rendszer beállítások
-- [Napló](./log) - Rendszer naplók
+- [Alkalmazások áttekintése](/hu/user/applications/) - A Racona beépített alkalmazásai
+- [Felhasználók](/hu/user/applications/users/) - Felhasználók kezelése
+- [Beállítások](/hu/user/applications/settings/) - Rendszer beállítások
+- [Napló](/hu/user/applications/log/) - Rendszer naplók

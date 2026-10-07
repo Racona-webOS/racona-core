@@ -99,6 +99,6 @@ A megnyitási mód váltása:
 
 ## Kapcsolódó témák
 
-- [Indító panel](./start-menu/) - Alkalmazások indítása
-- [Helyi menü](./context-menu/) - Jobb klikk funkciók
-- [Beállítások](../applications/settings/) - Parancsikonok beállítása
+- [Indító panel](/hu/user/desktop-basics/start-menu/) - Alkalmazások indítása
+- [Helyi menü](/hu/user/desktop-basics/context-menu/) - Jobb klikk funkciók
+- [Beállítások](/hu/user/applications/settings/) - Parancsikonok beállítása

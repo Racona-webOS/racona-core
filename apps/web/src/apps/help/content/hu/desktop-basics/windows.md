@@ -145,7 +145,7 @@ A Link gomb lehetővé teszi, hogy megossd egy alkalmazást annak aktuális áll
 - Oktatási célok - gyorsan navigálhatsz másokat egy adott funkcióhoz
 - Csapatmunka támogatása - egyszerűsíti a kommunikációt az alkalmazások használatáról
 
-> **Megjegyzés:** A GUID hivatkozás tömörített formátumban tárolja az információkat, így biztonságosan megosztható és nem tartalmaz érzékeny adatokat. A hivatkozás megnyitásáról bővebben a [Tálca - Alkalmazás Megnyitó](./taskbar/#alkalmazás-megnyitó-guid-hivatkozás) részben olvashatsz.
+> **Megjegyzés:** A GUID hivatkozás tömörített formátumban tárolja az információkat, így biztonságosan megosztható és nem tartalmaz érzékeny adatokat. A hivatkozás megnyitásáról bővebben a [Tálca - Alkalmazás Megnyitó](/hu/user/desktop-basics/taskbar/#alkalmazás-megnyitó-guid-hivatkozás) részben olvashatsz.
 
 ## Ablak előnézetek
 
@@ -166,6 +166,6 @@ _Ablak előnézeti kép megjelenítése a tálcán_
 
 ## Kapcsolódó témák
 
-- [Tálca](./taskbar/) - Alkalmazás gombok és rendszer funkciók
-- [Alkalmazások](../applications/) - Alkalmazások használata
-- [Beállítások](../applications/settings/) - Ablak előnézetek beállítása
+- [Tálca](/hu/user/desktop-basics/taskbar/) - Alkalmazás gombok és rendszer funkciók
+- [Alkalmazások](/hu/user/applications/) - Alkalmazások használata
+- [Beállítások](/hu/user/applications/settings/) - Ablak előnézetek beállítása

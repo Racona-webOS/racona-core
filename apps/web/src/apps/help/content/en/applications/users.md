@@ -41,7 +41,7 @@ Quickly find the desired user:
 - **Filter by status**: Filter the list to active or inactive users
 - **Clear filters**: Reset all filters to default state
 
-For more information on managing tables: [Using tables](../components/tables.md) _(TODO: This documentation has not been created yet)_
+For more information on managing tables: [Using tables](/en/user/ui-components/data-tables/) _(TODO: This documentation has not been created yet)_
 
 ### User Details
 
@@ -56,7 +56,7 @@ Click the "Details" button at the end of the user's row to view and edit detaile
 - Assigned groups
 - Assigned roles
 
-**Edit mode**: To edit data, click the "Edit" button on the bottom function bar. For more information on application structure: [Application structure](../app-structure.md) _(TODO: This documentation has not been created yet)_
+**Edit mode**: To edit data, click the "Edit" button on the bottom function bar. For more information on application structure: [Application structure](/en/user/applications/structure/) _(TODO: This documentation has not been created yet)_
 
 ### Managing Groups
 
@@ -96,7 +96,7 @@ The groups list displays all defined groups in table format:
 - **Description**: Brief description of the group
 - **Creation date**: When the group was created
 
-For more information on managing tables: [Using tables](../components/tables.md) _(TODO: This documentation has not been created yet)_
+For more information on managing tables: [Using tables](/en/user/ui-components/data-tables/) _(TODO: This documentation has not been created yet)_
 
 ### Create New Group
 
@@ -148,7 +148,7 @@ On the group details page, you can manage applications available to the group:
 - **Remove application**: Click the "Remove from group" button next to the application in the table
 - **Open application**: Click the 3 vertical dots icon at the end of the row, then select the "Open" option to launch the application
 
-For more information on table action buttons: [Table actions](../components/table-actions.md) _(TODO: This documentation has not been created yet)_
+For more information on table action buttons: [Table actions](/en/user/ui-components/data-tables/#3-actions-column) _(TODO: This documentation has not been created yet)_
 
 In the applications table, you can see all applications available to the group. Only applications that are assigned to their groups or roles appear in the Start Panel for group members.
 
@@ -166,7 +166,7 @@ The roles list displays all defined roles in table format:
 - **Description**: Brief description of the role
 - **Creation date**: When the role was created
 
-For more information on managing tables: [Using tables](../components/tables.md) _(TODO: This documentation has not been created yet)_
+For more information on managing tables: [Using tables](/en/user/ui-components/data-tables/) _(TODO: This documentation has not been created yet)_
 
 ### Create New Role
 
@@ -218,7 +218,7 @@ On the role details page, you can manage applications available to the role:
 - **Remove application**: Click the "Remove from role" button next to the application in the table
 - **Open application**: Click the 3 vertical dots icon at the end of the row, then select the "Open" option to launch the application
 
-For more information on table action buttons: [Table actions](../components/table-actions.md) _(TODO: This documentation has not been created yet)_
+For more information on table action buttons: [Table actions](/en/user/ui-components/data-tables/#3-actions-column) _(TODO: This documentation has not been created yet)_
 
 In the applications table, you can see all applications available to the role. Only applications that are assigned to their groups or roles appear in the Start Panel for users with the role.
 
