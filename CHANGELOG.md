@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Settings → About shows the actual Racona version (from the root `package.json`, at build time) instead of a hard-coded old number.
 - The knowledge base no longer logs a warning when a plugin ships documentation in one language only (e.g. only `knowledge-base/hu`).
 
 ## [0.7.0] - 2026-10-07

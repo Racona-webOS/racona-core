@@ -11,6 +11,7 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ### Javítva
 
+- A Beállítások → Névjegy a valódi Racona verziót mutatja (a gyökér `package.json`-ból, a build során), nem egy beégetett régi számot.
 - A tudásbázis nem ír figyelmeztetést a konzolra, ha egy plugin csak egy nyelven hoz dokumentációt (pl. csak `knowledge-base/hu`).
 
 ## [0.7.0] - 2026-10-07

@@ -6,7 +6,7 @@
 
 	const { t } = useI18n();
 
-	const version = '0.1.1';
+	const version = __RACONA_VERSION__;
 	const contactEmail = 'hello@racona.hu';
 	const website = 'https://racona.hu';
 	const year = new Date().getFullYear();

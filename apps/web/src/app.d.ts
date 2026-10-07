@@ -24,6 +24,9 @@ declare global {
 
 	// Global Socket.IO instance for production server
 	var io: SocketIOServer | undefined;
+
+	/** A Racona verziója (a gyökér package.json-ból, a vite.config.ts define-olja) */
+	const __RACONA_VERSION__: string;
 }
 
 export {};

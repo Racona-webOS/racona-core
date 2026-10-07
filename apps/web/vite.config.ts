@@ -5,6 +5,7 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import { config as dotenvConfig } from 'dotenv';
 import path from 'path';
+import { readFileSync } from 'fs';
 import { validateSchema } from './src/lib/secrets/schema.js';
 import { socketIOPlugin } from './vite-plugin-socketio';
 
@@ -30,7 +31,15 @@ function envSchemaValidatorPlugin() {
 	};
 }
 
+/** A Racona verziója a monorepo gyökér package.json-jából (a release commit ezt emeli) */
+const raconaVersion: string = JSON.parse(
+	readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8')
+).version;
+
 export default defineConfig({
+	define: {
+		__RACONA_VERSION__: JSON.stringify(raconaVersion)
+	},
 	plugins: [
 		envSchemaValidatorPlugin(),
 		devtoolsJson(),
