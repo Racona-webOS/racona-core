@@ -54,7 +54,7 @@ export class DocumentIndexer {
 		try {
 			await stat(localePath);
 		} catch {
-			console.warn(`[DocumentIndexer] Nyelvi mappa nem található: ${localePath}`);
+			// Nem hiba: egy tudásbázis (pl. egy plugin) lehet csak egy nyelven megírva
 			return documents;
 		}
 

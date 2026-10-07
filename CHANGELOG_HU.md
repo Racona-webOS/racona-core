@@ -9,6 +9,10 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+### Javítva
+
+- A tudásbázis nem ír figyelmeztetést a konzolra, ha egy plugin csak egy nyelven hoz dokumentációt (pl. csak `knowledge-base/hu`).
+
 ## [0.7.0] - 2026-10-07
 
 ### Hozzáadva
