@@ -9,12 +9,16 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-10-07
+
 ### Hozzáadva
 
 - **AI modellek listából**: a Beállítások → AI asszisztens panelen a modell a kiválasztott szolgáltató listájából választható (szolgáltatóváltáskor az alapértelmezett modell kerül be), a listán nem szereplő modell „Egyéni modell…”-ként adható meg. A szolgáltatók (mind a hat) az adatbázisból jönnek.
   - Új tábla: `platform.ai_provider_models` (`0013_ai_provider_models` migráció, `ai_provider_models` seed). A panel alján a modellek kikapcsolhatók, alapértelmezettnek jelölhetők, és saját modell vehető fel; a beépítettek nem törölhetők. A seed újrafuttatása nem írja felül az admin döntéseit.
   - Ha az admin nem adott meg modellt, a chat a lista alapértelmezett modelljét használja.
   - A kapcsolatteszt a Groq, a Hugging Face és az egyéni endpoint esetén is működik.
+- **Súgó tartalommal**: a Súgó alkalmazás a felhasználói dokumentációt jeleníti meg (tartalomjegyzék, keresés, képek, súgón belüli hivatkozások). A tartalom a `racona-docs-user` projektből jön, a `bun run help:sync` másolja át.
+- Az ablakok súgó gombja az alkalmazás saját súgó oldalát nyitja meg (beépített appoknál az `applications/<app>` oldalt).
 
 ### Változott
 
