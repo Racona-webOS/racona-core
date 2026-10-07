@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-07
+
 ### Fixed
 
 - The AI avatar card's back button uses the existing `common.buttons.back` translation (the `common.back` key did not exist).

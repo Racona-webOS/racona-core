@@ -9,6 +9,8 @@ A formátum a [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) alapján 
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-07
+
 ### Javítva
 
 - Az AI avatar kártya vissza gombja a létező `common.buttons.back` fordítást használja (a `common.back` kulcs nem létezett).
