@@ -1,12 +1,12 @@
-# ElyOS — Termékismertető
+# Racona — Termékismertető
 
-> Miért válassza az ElyOS platformot a következő belső rendszer alapjaként?
+> Miért válassza a Racona platformot a következő belső rendszer alapjaként?
 
 ---
 
-## Mi az ElyOS?
+## Mi a Racona?
 
-Az ElyOS egy modern, böngészőalapú operációs rendszer, amely teljes asztali élményt nyújt — telepítés nélkül, bármilyen eszközről, bármilyen böngészőből elérhető.
+A Racona egy modern, böngészőalapú operációs rendszer, amely teljes asztali élményt nyújt — telepítés nélkül, bármilyen eszközről, bármilyen böngészőből elérhető.
 
 Nem egy újabb webalkalmazás. Egy **platform**, amelyre bármilyen üzleti logika ráépíthető, és amelynek infrastrukturális alapjai (autentikáció, jogosultságkezelés, értesítések, chat, fájlkezelés, naplózás) már készen állnak.
 
@@ -27,10 +27,10 @@ Egy hagyományos belső vállalati rendszer felépítésekor az idő jelentős r
 - többnyelvűség (i18n)
 - deployment infrastruktúra
 
-Az ElyOS-ban mindez **kész**. A fejlesztő csak azt írja meg, ami az adott ügyfélnek specifikusan kell — egy plugint.
+A Raconában mindez **kész**. A fejlesztő csak azt írja meg, ami az adott ügyfélnek specifikusan kell — egy plugint.
 
 Egy hasonló platform nulláról: 3–6 hónap.
-Egy ElyOS plugin megírása: hetek.
+Egy Racona plugin megírása: hetek.
 
 ### Plugin alapú bővíthetőség
 
@@ -38,7 +38,7 @@ Minden ügyfélspecifikus funkció önálló pluginként épül a rendszerre. Ez
 
 - az alap rendszer stabil marad, nem kell minden projektnél újraírni
 - az ügyfél később bármikor kérhet új funkciókat, anélkül hogy az egész rendszert érintené
-- akár a megrendelő saját fejlesztői is bővíthetik a rendszert az `@elyos/sdk` segítségével
+- akár a megrendelő saját fejlesztői is bővíthetik a rendszert a `@racona/sdk` segítségével
 
 ### Egységes, karbantartható alap
 
@@ -105,7 +105,7 @@ Self-hosted megoldás — az adatok nem kerülnek harmadik fél szerverére. Tel
 
 ---
 
-## Mikor érdemes ElyOS-t választani?
+## Mikor érdemes Raconát választani?
 
 ✅ Belső vállalati platform, ahol a felhasználók egész nap a rendszerben dolgoznak
 ✅ Több különböző funkciót kell egyszerre elérhetővé tenni
@@ -136,7 +136,7 @@ Modern, aktívan fejlesztett technológiák — nem legacy stack.
 
 ## Összefoglalás
 
-Az ElyOS nem egy újabb webalkalmazás sablon. Egy kész platform, amely:
+A Racona nem egy újabb webalkalmazás sablon. Egy kész platform, amely:
 
 - **fejlesztőként** hónapokat spórol meg projektenként
 - **megrendelőként** egységes, biztonságos, bővíthető munkakörnyezetet ad

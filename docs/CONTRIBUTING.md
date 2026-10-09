@@ -1,6 +1,6 @@
-# Contributing to ElyOS
+# Contributing to Racona
 
-Thank you for your interest in contributing to ElyOS! This guide will help you get started with development, understand our conventions, and submit your first contribution.
+Thank you for your interest in contributing to Racona! This guide will help you get started with development, understand our conventions, and submit your first contribution.
 
 ## Table of Contents
 
@@ -99,7 +99,7 @@ bun db:init          # Generate migrations, run them, and seed data
 bun app:dev          # Starts the SvelteKit dev server
 ```
 
-ElyOS is now running at `http://localhost:5173`.
+Racona is now running at `http://localhost:5173`.
 
 ### Useful Commands
 
@@ -126,7 +126,7 @@ ElyOS is now running at `http://localhost:5173`.
 ## Project Structure
 
 ```
-elyos-core/
+racona-core/
 ├── apps/web/                  # Main SvelteKit application
 │   └── src/
 │       ├── apps/              # Built-in desktop applications
@@ -138,8 +138,8 @@ elyos-core/
 │       └── routes/            # SvelteKit file-based routing
 ├── packages/
 │   ├── database/              # Drizzle ORM schemas, migrations, seeds
-│   ├── sdk/                   # @elyos/sdk — Plugin SDK package
-│   └── create-elyos-plugin/   # CLI tool for scaffolding plugins
+│   ├── sdk/                   # @racona/sdk — Plugin SDK package
+│   └── cli/                   # CLI tool for scaffolding plugins
 ├── examples/plugins/          # Example plugin implementations
 ├── docker/                    # Dockerfile and docker-compose config
 ├── docs/                      # Project documentation
@@ -165,7 +165,7 @@ The codebase uses **Hungarian** for internal comments, variable names, and docum
 
 ### Svelte 5
 
-ElyOS uses **Svelte 5 with runes**. Key patterns:
+Racona uses **Svelte 5 with runes**. Key patterns:
 
 - Use `$state`, `$derived`, and `$effect` for reactivity (not the legacy `$:` syntax)
 - Class-based stores with `$state` properties, exported via `createX()` / `setX()` / `getX()` functions
@@ -252,7 +252,7 @@ Use the package or area name as scope:
 
 - `core` — main SvelteKit app (`apps/web`)
 - `sdk` — SDK package (`packages/sdk`)
-- `cli` — CLI tool (`packages/create-elyos-plugin`)
+- `cli` — CLI tool (`packages/cli`)
 - `db` — database package (`packages/database`)
 - `docker` — Docker configuration
 - `docs` — documentation
@@ -360,7 +360,7 @@ When reporting a bug, include:
 - **Steps to reproduce** — minimal steps to trigger the bug
 - **Environment** — OS, browser, Bun version, Node.js version
 - **Screenshots or logs** — if applicable
-- **ElyOS version** — commit hash or release tag
+- **Racona version** — commit hash or release tag
 
 ### Feature Requests
 
@@ -425,7 +425,7 @@ cd apps/web && bun test:pbt
 
 ### Versioning
 
-ElyOS follows **[Semantic Versioning](https://semver.org/)**:
+Racona follows **[Semantic Versioning](https://semver.org/)**:
 
 - `0.1.0` — initial development release
 - `0.2.0` — new features (minor version bump)
@@ -435,9 +435,9 @@ ElyOS follows **[Semantic Versioning](https://semver.org/)**:
 ### Creating a Release
 
 1. **Update version numbers** in all `package.json` files:
-   - Root: `elyos-core/package.json`
+   - Root: `racona-core/package.json`
    - App: `apps/web/package.json`
-   - Packages: `packages/database/package.json`, `packages/sdk/package.json`, `packages/create-elyos-plugin/package.json`
+   - Packages: `packages/database/package.json`, `packages/sdk/package.json`, `packages/cli/package.json`
 
 2. **Update CHANGELOG.md** and **CHANGELOG_HU.md**:
    - Add a new section for the version with the date
@@ -453,7 +453,7 @@ ElyOS follows **[Semantic Versioning](https://semver.org/)**:
 4. **Create a Git tag:**
 
    ```bash
-   git tag -a v0.2.0 -m "ElyOS v0.2.0 - New features"
+   git tag -a v0.2.0 -m "Racona v0.2.0 - New features"
    ```
 
 5. **Push the tag to GitHub:**
@@ -489,4 +489,4 @@ You can view the release on the [Releases page](https://github.com/szigetidev/ra
 - **Discussions** — use GitHub Discussions for questions and ideas
 - **Documentation** — check the `docs/` directory for guides
 
-Thank you for contributing to ElyOS! Every contribution, no matter how small, makes a difference. 🎉
+Thank you for contributing to Racona! Every contribution, no matter how small, makes a difference. 🎉

@@ -1,6 +1,6 @@
-# ElyOS Hibaelhárítási Útmutató
+# Racona Hibaelhárítási Útmutató
 
-Ez az útmutató az ElyOS telepítése és üzemeltetése során leggyakrabban előforduló problémákat foglalja össze.
+Ez az útmutató a Racona telepítése és üzemeltetése során leggyakrabban előforduló problémákat foglalja össze.
 
 ## Tartalomjegyzék
 
@@ -54,7 +54,7 @@ Ez az útmutató az ElyOS telepítése és üzemeltetése során leggyakrabban e
 **Megoldás:** Győződj meg róla, hogy a `.env` fájl legalább az alábbiakat tartalmazza:
 
 ```bash
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 BETTER_AUTH_SECRET=<generálás: openssl rand -base64 32>
 BETTER_AUTH_URL=http://localhost:3000
 ```
@@ -102,7 +102,7 @@ RACONA_PORT=3001
 **Megoldás (lokális):**
 
 ```bash
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 ```
 
 **Megoldás (Docker Compose):** Ne állítsd be a `DATABASE_URL`-t a `.env`-ben — a Docker Compose automatikusan összerakja a `POSTGRES_*` változókból, a belső `postgres` hostnévvel.
@@ -111,7 +111,7 @@ DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
 
 ### Hitelesítési hiba az adatbázis-kapcsolatnál
 
-**Tünet:** `password authentication failed for user "elyos"`
+**Tünet:** `password authentication failed for user "racona"`
 
 **Ok:** A `.env`-ben lévő `POSTGRES_USER` / `POSTGRES_PASSWORD` nem egyezik azzal, amivel az adatbázis inicializálva lett.
 
@@ -133,7 +133,7 @@ docker compose -f docker/docker-compose.yml up -d
 **Megoldás (Docker):** A `db-init` szolgáltatás automatikusan fut az első indításkor. Ha sikertelen volt, ellenőrizd a logjait:
 
 ```bash
-docker logs elyos-db-init
+docker logs racona-db-init
 ```
 
 **Megoldás (lokális):**
@@ -152,14 +152,14 @@ bun db:migrate
 
 ### A `db-init` konténer hibával lép ki
 
-**Tünet:** Az `elyos` konténer soha nem indul el, mert a `db-init` nem fejeződött be sikeresen.
+**Tünet:** A `racona` konténer soha nem indul el, mert a `db-init` nem fejeződött be sikeresen.
 
 **Ok:** A migráció vagy a seed szkript hibával állt le — általában rossz `DATABASE_URL` vagy a postgres konténer nem volt még kész.
 
 **Megoldás:** Ellenőrizd a logokat, és győződj meg róla, hogy a postgres szolgáltatás egészséges, mielőtt újrapróbálod:
 
 ```bash
-docker logs elyos-db-init
+docker logs racona-db-init
 docker compose -f docker/docker-compose.yml up -d
 ```
 
@@ -192,8 +192,8 @@ openssl rand -base64 32
 **Megoldás:** Mindkét értéknek azonosnak kell lennie:
 
 ```bash
-APP_URL=https://elyos.pelda.hu
-BETTER_AUTH_URL=https://elyos.pelda.hu
+APP_URL=https://racona.pelda.hu
+BETTER_AUTH_URL=https://racona.pelda.hu
 ```
 
 ---
@@ -319,7 +319,7 @@ A fordításbetöltő indításkor szerver-hívásokat intéz. Ha az `ORIGIN` ni
 **Megoldás:** Állítsd be az `ORIGIN`-t az alkalmazás pontos nyilvános URL-jére:
 
 ```bash
-ORIGIN=https://elyos.pelda.hu
+ORIGIN=https://racona.pelda.hu
 ```
 
 Ellenőrizd a böngésző Network fülét — ha a fordítás-lekérdezések `403`-at adnak vissza, ez az ok.
@@ -364,7 +364,7 @@ Ha az eredmény `0`, a seed nem futott le.
 **Megoldás:** Állítsd be az `ORIGIN`-t a pontos nyilvános URL-re:
 
 ```bash
-ORIGIN=https://elyos.pelda.hu
+ORIGIN=https://racona.pelda.hu
 ```
 
 Ennek egyeznie kell a böngésző címsorában látható URL-lel — beleértve a protokollt és a portot, ha az nem szabványos.
@@ -389,14 +389,14 @@ Ennek egyeznie kell a böngésző címsorában látható URL-lel — beleértve 
 
 ### A konténer folyamatosan újraindul
 
-**Tünet:** A `docker logs elyos-app` ismétlődő indítási hibákat mutat.
+**Tünet:** A `docker logs racona-app` ismétlődő indítási hibákat mutat.
 
 **Ok:** Általában hiányzó környezeti változó, sikertelen adatbázis-kapcsolat, vagy a `db-init` szolgáltatás nem fejeződött be.
 
 **Megoldás:**
 
-1. Ellenőrizd a `db-init` logjait: `docker logs elyos-db-init`
-2. Ellenőrizd az alkalmazás logjait: `docker logs elyos-app`
+1. Ellenőrizd a `db-init` logjait: `docker logs racona-db-init`
+2. Ellenőrizd az alkalmazás logjait: `docker logs racona-app`
 3. Győződj meg róla, hogy minden kötelező változó be van állítva a `.env`-ben
 
 ---
@@ -520,7 +520,7 @@ mkdir -p ./logs
 Vagy állíts be egyedi elérési utat:
 
 ```bash
-LOG_DIR=/var/log/elyos
+LOG_DIR=/var/log/racona
 ```
 
 ---

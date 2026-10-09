@@ -1,6 +1,6 @@
 #!/bin/sh
 # =============================================================================
-# ElyOS entrypoint — Infisical opcionális
+# Racona entrypoint — Infisical opcionális
 # Ha INFISICAL_CLIENT_ID és INFISICAL_CLIENT_SECRET meg van adva,
 # varlock-on keresztül indul (Infisical secrets betöltésével).
 # Ha nincs, simán bun-nal indul (env változók a Docker env-ből jönnek).

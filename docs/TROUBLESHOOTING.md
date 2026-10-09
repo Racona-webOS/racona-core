@@ -1,6 +1,6 @@
-# ElyOS Troubleshooting Guide
+# Racona Troubleshooting Guide
 
-This guide covers common issues encountered when setting up and running ElyOS.
+This guide covers common issues encountered when setting up and running Racona.
 
 ## Table of Contents
 
@@ -54,7 +54,7 @@ This guide covers common issues encountered when setting up and running ElyOS.
 **Fix:** Ensure your `.env` file contains at minimum:
 
 ```bash
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 BETTER_AUTH_SECRET=<generate with: openssl rand -base64 32>
 BETTER_AUTH_URL=http://localhost:3000
 ```
@@ -102,7 +102,7 @@ RACONA_PORT=3001
 **Fix (local):**
 
 ```bash
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 ```
 
 **Fix (Docker Compose):** Do not set `DATABASE_URL` in `.env` — Docker Compose constructs it automatically from `POSTGRES_*` variables using the internal `postgres` hostname.
@@ -111,7 +111,7 @@ DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
 
 ### Authentication error connecting to database
 
-**Symptom:** `password authentication failed for user "elyos"`
+**Symptom:** `password authentication failed for user "racona"`
 
 **Cause:** `POSTGRES_USER` / `POSTGRES_PASSWORD` in `.env` don't match what the database was initialized with.
 
@@ -133,7 +133,7 @@ docker compose -f docker/docker-compose.yml up -d
 **Fix (Docker):** The `db-init` service runs automatically on first start. If it failed, check its logs:
 
 ```bash
-docker logs elyos-db-init
+docker logs racona-db-init
 ```
 
 **Fix (local):**
@@ -152,14 +152,14 @@ bun db:migrate
 
 ### `db-init` container exits with error
 
-**Symptom:** The `elyos` container never starts because `db-init` didn't complete successfully.
+**Symptom:** The `racona` container never starts because `db-init` didn't complete successfully.
 
 **Cause:** Migration or seed script failed — usually due to a bad `DATABASE_URL` or the postgres container not being ready.
 
 **Fix:** Check the logs and verify the postgres service is healthy before retrying:
 
 ```bash
-docker logs elyos-db-init
+docker logs racona-db-init
 docker compose -f docker/docker-compose.yml up -d
 ```
 
@@ -192,8 +192,8 @@ openssl rand -base64 32
 **Fix:** Both values must be identical:
 
 ```bash
-APP_URL=https://elyos.example.com
-BETTER_AUTH_URL=https://elyos.example.com
+APP_URL=https://racona.example.com
+BETTER_AUTH_URL=https://racona.example.com
 ```
 
 ---
@@ -319,7 +319,7 @@ The translation loader makes server calls on startup. If `ORIGIN` is misconfigur
 **Fix:** Set `ORIGIN` to the exact public URL of the app:
 
 ```bash
-ORIGIN=https://elyos.example.com
+ORIGIN=https://racona.example.com
 ```
 
 Check the browser's Network tab — if translation requests return `403`, this is the cause.
@@ -364,7 +364,7 @@ If the result is `0`, the seed didn't run.
 **Fix:** Set `ORIGIN` to the exact public URL:
 
 ```bash
-ORIGIN=https://elyos.example.com
+ORIGIN=https://racona.example.com
 ```
 
 This must match the URL in the browser's address bar — including the protocol and port if non-standard.
@@ -389,14 +389,14 @@ This must match the URL in the browser's address bar — including the protocol 
 
 ### Container restarts in a loop
 
-**Symptom:** `docker logs elyos-app` shows repeated startup errors.
+**Symptom:** `docker logs racona-app` shows repeated startup errors.
 
 **Cause:** Usually a missing environment variable, failed database connection, or the `db-init` service didn't complete.
 
 **Fix:**
 
-1. Check `db-init` logs: `docker logs elyos-db-init`
-2. Check app logs: `docker logs elyos-app`
+1. Check `db-init` logs: `docker logs racona-db-init`
+2. Check app logs: `docker logs racona-app`
 3. Verify all required variables are set in `.env`
 
 ---
@@ -520,7 +520,7 @@ mkdir -p ./logs
 Or set a custom path:
 
 ```bash
-LOG_DIR=/var/log/elyos
+LOG_DIR=/var/log/racona
 ```
 
 ---

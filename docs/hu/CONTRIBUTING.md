@@ -1,6 +1,6 @@
-# Hozzájárulás az ElyOS-hoz
+# Hozzájárulás a Raconához
 
-Köszönjük, hogy érdeklődsz az ElyOS fejlesztése iránt! Ez az útmutató segít az indulásban, bemutatja a konvencióinkat, és végigvezet az első hozzájárulás beküldésén.
+Köszönjük, hogy érdeklődsz a Racona fejlesztése iránt! Ez az útmutató segít az indulásban, bemutatja a konvencióinkat, és végigvezet az első hozzájárulás beküldésén.
 
 ## Tartalomjegyzék
 
@@ -98,7 +98,7 @@ bun db:init          # Migrációk generálása, futtatása és adatbázis felt�
 bun app:dev          # SvelteKit fejlesztői szerver indítása
 ```
 
-Az ElyOS ezután elérhető a `http://localhost:5173` címen.
+A Racona ezután elérhető a `http://localhost:5173` címen.
 
 ### Hasznos parancsok
 
@@ -121,7 +121,7 @@ Az ElyOS ezután elérhető a `http://localhost:5173` címen.
 | `bun docker:rebuild`     | Konténerek újraépítése cache nélkül, majd indítása          |
 | `bun docker:down`        | Docker konténerek leállítása                                |
 | `bun docker:logs`        | Konténer naplók követése                                    |
-| `bun docker:build`       | Docker image buildelése (`elyos/core:latest`)               |
+| `bun docker:build`       | Docker image buildelése (`racona/core:latest`)              |
 | `bun docker:build:multi` | Multi-platform image buildelése (amd64 + arm64)             |
 | `bun docker:save`        | Docker image mentése `.tar` fájlba                          |
 
@@ -130,7 +130,7 @@ Az ElyOS ezután elérhető a `http://localhost:5173` címen.
 ## Projektstruktúra
 
 ```
-elyos-core/
+racona-core/
 ├── apps/web/                  # Fő SvelteKit alkalmazás
 │   └── src/
 │       ├── apps/              # Beépített asztali alkalmazások
@@ -142,8 +142,8 @@ elyos-core/
 │       └── routes/            # SvelteKit fájlalapú routing
 ├── packages/
 │   ├── database/              # Drizzle ORM sémák, migrációk, seed-ek
-│   ├── sdk/                   # @elyos/sdk — Plugin SDK csomag
-│   └── create-elyos-plugin/   # CLI eszköz pluginok létrehozásához
+│   ├── sdk/                   # @racona/sdk — Plugin SDK csomag
+│   └── cli/                   # CLI eszköz pluginok létrehozásához
 ├── examples/plugins/          # Példa plugin implementációk
 ├── docker/                    # Dockerfile és docker-compose konfiguráció
 ├── docs/                      # Projekt dokumentáció
@@ -169,7 +169,7 @@ A kódbázis belső megjegyzésekhez, változónevekhez és dokumentációhoz **
 
 ### Svelte 5
 
-Az ElyOS **Svelte 5-öt rune-okkal** használ. Főbb minták:
+A Racona **Svelte 5-öt rune-okkal** használ. Főbb minták:
 
 - Reaktivitáshoz használd a `$state`, `$derived` és `$effect` rune-okat (ne a régi `$:` szintaxist)
 - Osztályalapú store-ok `$state` tulajdonságokkal, `createX()` / `setX()` / `getX()` függvényeken keresztül exportálva
@@ -256,7 +256,7 @@ Használd a csomag vagy terület nevét hatókörként:
 
 - `core` — fő SvelteKit alkalmazás (`apps/web`)
 - `sdk` — SDK csomag (`packages/sdk`)
-- `cli` — CLI eszköz (`packages/create-elyos-plugin`)
+- `cli` — CLI eszköz (`packages/cli`)
 - `db` — adatbázis csomag (`packages/database`)
 - `docker` — Docker konfiguráció
 - `docs` — dokumentáció
@@ -364,7 +364,7 @@ Hiba bejelentésekor add meg a következőket:
 - **Reprodukálási lépések** — minimális lépések a hiba kiváltásához
 - **Környezet** — operációs rendszer, böngésző, Bun verzió, Node.js verzió
 - **Képernyőképek vagy naplók** — ha releváns
-- **ElyOS verzió** — commit hash vagy kiadási tag
+- **Racona verzió** — commit hash vagy kiadási tag
 
 ### Funkciókérések
 
@@ -431,4 +431,4 @@ cd apps/web && bun test:pbt
 - **Discussions** — használd a GitHub Discussions-t kérdésekhez és ötletekhez
 - **Dokumentáció** — nézd meg a `docs/` könyvtárat az útmutatókért
 
-Köszönjük, hogy hozzájárulsz az ElyOS-hoz! Minden hozzájárulás számít, legyen bármilyen kicsi. 🎉
+Köszönjük, hogy hozzájárulsz a Raconához! Minden hozzájárulás számít, legyen bármilyen kicsi. 🎉

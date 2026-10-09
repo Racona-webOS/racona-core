@@ -17,7 +17,7 @@ export const DEPENDENCY_WHITELIST = [
 	{ name: 'lucide-svelte', versionPattern: /^\^?0\.\d+\.\d+$/ },
 	{ name: '@lucide/svelte', versionPattern: /^\^?[01]\.\d+\.\d+$/ },
 
-	// Elyos packages (minden verzió engedélyezett)
+	// Racona packages (minden verzió engedélyezett)
 	{ name: '@racona/*', versionPattern: /.*/ }
 ] as const;
 

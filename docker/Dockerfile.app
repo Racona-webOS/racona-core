@@ -1,5 +1,5 @@
 # =============================================================================
-# ElyOS Core — App-only Docker image (adatbázis setup nélkül)
+# Racona Core — App-only Docker image (adatbázis setup nélkül)
 # =============================================================================
 # Ez az image csak az alkalmazást tartalmazza.
 # Az adatbázis migrációt és seed-et kézzel kell elvégezni.

@@ -1,5 +1,5 @@
 # =============================================================================
-# ElyOS Core — Optimalizált multi-stage Docker build
+# Racona Core — Optimalizált multi-stage Docker build
 # =============================================================================
 # Három fázis:
 #   1. deps    — függőségek telepítése (cache-elhető réteg)

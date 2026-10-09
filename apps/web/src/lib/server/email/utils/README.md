@@ -5,8 +5,8 @@ Ez a modul lehetővé teszi az alkalmazás branding információinak dinamikus k
 ## Környezeti változók
 
 ```bash
-# Alkalmazás neve (alapértelmezett: "Elyos")
-APP_NAME=Elyos
+# Alkalmazás neve (alapértelmezett: "Racona")
+APP_NAME=Racona
 
 # Alkalmazás URL-je (opcionális - automatikusan detektálódik)
 # Ha nincs megadva, a rendszer automatikusan használja a request URL-t
@@ -79,7 +79,7 @@ Látogasson el: {{appUrl}}
 **EMAIL_USE_LOGO=false esetén:**
 
 ```html
-<p>Üdvözöljük a Elyos alkalmazásban!</p>
+<p>Üdvözöljük a Racona alkalmazásban!</p>
 ```
 
 **EMAIL_USE_LOGO=true esetén:**
@@ -89,7 +89,7 @@ Látogasson el: {{appUrl}}
 	Üdvözöljük a
 	<img
 		src="https://yourdomain.com/logo-small.png"
-		alt="Elyos"
+		alt="Racona"
 		style="max-width: 150px; height: auto;"
 	/>
 	alkalmazásban!
@@ -132,7 +132,7 @@ const enrichedData = enrichTemplateDataWithBranding(
 // Eredmény: {
 //   name: 'John',
 //   email: '...',
-//   appName: 'Elyos',
+//   appName: 'Racona',
 //   appUrl: 'https://yourdomain.com',
 //   appBrandingHtml: '...',
 //   appBrandingText: '...'

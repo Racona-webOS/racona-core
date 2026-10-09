@@ -1,6 +1,6 @@
-# ElyOS Konfigurációs Útmutató
+# Racona Konfigurációs Útmutató
 
-Ez az útmutató az ElyOS saját üzemeltetéséhez szükséges összes környezeti változót és konfigurációs lehetőséget ismerteti.
+Ez az útmutató a Racona saját üzemeltetéséhez szükséges összes környezeti változót és konfigurációs lehetőséget ismerteti.
 
 ## Tartalomjegyzék
 
@@ -32,7 +32,7 @@ Ez az útmutató az ElyOS saját üzemeltetéséhez szükséges összes környez
 
 ## Környezeti Változók Kezelése
 
-Az ElyOS **Varlock**-ot használ a typesafe környezeti változók kezeléséhez. A Varlock az alkalmazás indításakor validálja az összes konfigurációt, így a hibás beállítások azonnal kiderülnek.
+A Racona **Varlock**-ot használ a typesafe környezeti változók kezeléséhez. A Varlock az alkalmazás indításakor validálja az összes konfigurációt, így a hibás beállítások azonnal kiderülnek.
 
 A részletes Varlock dokumentációért lásd a [fejlesztői dokumentációt](https://docs-dev.racona.hu/hu/environment/).
 
@@ -54,7 +54,7 @@ Offline fejlesztéshez vagy Infisical nélküli használathoz:
 ```dotenv
 VARLOCK_FALLBACK=local
 NODE_ENV=development
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 BETTER_AUTH_SECRET=lokalis-titok
 # ... összes többi változó
 ```
@@ -73,7 +73,7 @@ BETTER_AUTH_SECRET=lokalis-titok
 
    ```bash
    # Minimum szükséges a helyi fejlesztéshez
-   DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+   DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
    NODE_ENV=development
    BETTER_AUTH_SECRET=generálj-egy-véletlenszerű-titkot
    BETTER_AUTH_URL=http://localhost:3000
@@ -99,12 +99,12 @@ BETTER_AUTH_SECRET=lokalis-titok
 
 ### Szerver Konfiguráció
 
-| Változó           | Kötelező | Alapértelmezett | Leírás                                                         |
-| ----------------- | -------- | --------------- | -------------------------------------------------------------- |
-| `NODE_ENV`        | Igen     | —               | Alkalmazás környezet: `development`, `production` vagy `test`  |
-| `BODY_SIZE_LIMIT` | Nem      | `10485760`      | Maximális kérés méret bájtban (10 MB)                          |
-| `RACONA_PORT`      | Nem      | `3000`          | Az ElyOS alkalmazás portja (Docker host port leképezés)        |
-| `APP_URL`         | Éles     | —               | Az ElyOS példány alap URL-je (pl. `https://elyos.example.com`) |
+| Változó           | Kötelező | Alapértelmezett | Leírás                                                          |
+| ----------------- | -------- | --------------- | --------------------------------------------------------------- |
+| `NODE_ENV`        | Igen     | —               | Alkalmazás környezet: `development`, `production` vagy `test`   |
+| `BODY_SIZE_LIMIT` | Nem      | `10485760`      | Maximális kérés méret bájtban (10 MB)                           |
+| `RACONA_PORT`     | Nem      | `3000`          | A Racona alkalmazás portja (Docker host port leképezés)         |
+| `APP_URL`         | Éles     | —               | A Racona példány alap URL-je (pl. `https://racona.example.com`) |
 
 ### Adatbázis
 
@@ -123,21 +123,21 @@ BETTER_AUTH_SECRET=lokalis-titok
 
 | Változó          | Kötelező | Alapértelmezett | Leírás                                                               |
 | ---------------- | -------- | --------------- | -------------------------------------------------------------------- |
-| `APP_NAME`       | Nem      | `ElyOS`         | Az alkalmazás megjelenített neve a felületen és az e-mailekben       |
+| `APP_NAME`       | Nem      | `Racona`        | Az alkalmazás megjelenített neve a felületen és az e-mailekben       |
 | `APP_LOGO_URL`   | Nem      | —               | Logó URL — abszolút (`https://...`) vagy relatív (`/logo-small.png`) |
 | `EMAIL_USE_LOGO` | Nem      | `false`         | Logó kép használata az e-mailekben szöveg helyett                    |
 
 ### Hitelesítés
 
-| Változó                | Kötelező | Alapértelmezett | Leírás                                                                                                                                                                                                      |
-| ---------------------- | -------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | Éles     | —               | Titkos kulcs az auth tokenek aláírásához. Generálás: `openssl rand -base64 32`                                                                                                                              |
-| `BETTER_AUTH_URL`      | Igen     | —               | Alap URL az auth visszahívásokhoz. Meg kell egyeznie az `APP_URL`-lel                                                                                                                                       |
-| `ORIGIN`               | Éles     | —               | Az alkalmazás publikus URL-je — a SvelteKit CSRF védelméhez szükséges. Meg kell egyeznie az `APP_URL`-lel (pl. `https://elyos.example.com`). Nélküle a remote function hívások 403-as hibával meghiúsulnak. |
-| `REGISTRATION_ENABLED` | Nem      | `true`          | Új felhasználó regisztráció engedélyezése                                                                                                                                                                   |
-| `SOCIAL_LOGIN_ENABLED` | Nem      | `true`          | Közösségi bejelentkezési szolgáltatók engedélyezése (Google)                                                                                                                                                |
-| `GOOGLE_CLIENT_ID`     | Nem      | —               | Google OAuth 2.0 kliens azonosító                                                                                                                                                                           |
-| `GOOGLE_CLIENT_SECRET` | Nem      | —               | Google OAuth 2.0 kliens titok                                                                                                                                                                               |
+| Változó                | Kötelező | Alapértelmezett | Leírás                                                                                                                                                                                                       |
+| ---------------------- | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BETTER_AUTH_SECRET`   | Éles     | —               | Titkos kulcs az auth tokenek aláírásához. Generálás: `openssl rand -base64 32`                                                                                                                               |
+| `BETTER_AUTH_URL`      | Igen     | —               | Alap URL az auth visszahívásokhoz. Meg kell egyeznie az `APP_URL`-lel                                                                                                                                        |
+| `ORIGIN`               | Éles     | —               | Az alkalmazás publikus URL-je — a SvelteKit CSRF védelméhez szükséges. Meg kell egyeznie az `APP_URL`-lel (pl. `https://racona.example.com`). Nélküle a remote function hívások 403-as hibával meghiúsulnak. |
+| `REGISTRATION_ENABLED` | Nem      | `true`          | Új felhasználó regisztráció engedélyezése                                                                                                                                                                    |
+| `SOCIAL_LOGIN_ENABLED` | Nem      | `true`          | Közösségi bejelentkezési szolgáltatók engedélyezése (Google)                                                                                                                                                 |
+| `GOOGLE_CLIENT_ID`     | Nem      | —               | Google OAuth 2.0 kliens azonosító                                                                                                                                                                            |
+| `GOOGLE_CLIENT_SECRET` | Nem      | —               | Google OAuth 2.0 kliens titok                                                                                                                                                                                |
 
 ### E-mail
 
@@ -242,12 +242,12 @@ BETTER_AUTH_SECRET=lokalis-titok
 
 ### Bővítményrendszer
 
-| Változó                    | Kötelező | Alapértelmezett      | Leírás                                                          |
-| -------------------------- | -------- | -------------------- | --------------------------------------------------------------- |
-| `PLUGIN_PACKAGE_EXTENSION` | Nem      | `elyospkg`           | Bővítménycsomag fájlkiterjesztés (pont nélkül)                  |
-| `PLUGIN_MAX_SIZE`          | Nem      | `10485760`           | Maximális bővítménycsomag méret bájtban (max: 100 MB)           |
-| `PLUGIN_STORAGE_DIR`       | Nem      | `/var/webos/plugins` | Telepített bővítményfájlok könyvtára                            |
-| `PLUGIN_TEMP_DIR`          | Nem      | `/tmp/webos-plugins` | Ideiglenes könyvtár bővítmény feltöltésekhez és kicsomagoláshoz |
+| Változó                    | Kötelező | Alapértelmezett      | Leírás                                                                                                           |
+| -------------------------- | -------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `PLUGIN_PACKAGE_EXTENSION` | Nem      | `raconapkg`          | Bővítménycsomag fájlkiterjesztés (pont nélkül)                                                                   |
+| `PLUGIN_MAX_SIZE`          | Nem      | `10485760`           | Maximális bővítménycsomag méret bájtban (max: 100 MB)                                                            |
+| `PLUGIN_STORAGE_DIR`       | Nem      | `/var/webos/plugins` | Telepített bővítményfájlok könyvtára                                                                             |
+| `PLUGIN_TEMP_DIR`          | Nem      | `/tmp/webos-plugins` | Ideiglenes könyvtár bővítmény feltöltésekhez és kicsomagoláshoz                                                  |
 | `PLUGIN_FILE_MAX_BYTES`    | Nem      | `10485760`           | A bővítmények által tárolt fájlok (`file_access`) mérethatára bájtban. Nem lehet nagyobb a `BODY_SIZE_LIMIT`-nél |
 
 A `file_access` jogú bővítmények fájljai az `uploads/plugin-files/` mappába kerülnek. A mentésbe a teljes `uploads` mappát vedd fel: ebben vannak ezek a fájlok, a hátterek, az avatarok és a telepített bővítmények is.
@@ -273,7 +273,7 @@ A bővítmények a manifestjükben ütemezett feladatokat deklarálhatnak (`sche
 
 ### Minimális Telepítés (Docker)
 
-Az ElyOS futtatásának leggyorsabb módja a Docker Compose. Ez elindítja az ElyOS-t és a PostgreSQL-t ésszerű alapértelmezésekkel.
+A Racona futtatásának leggyorsabb módja a Docker Compose. Ez elindítja a Raconát és a PostgreSQL-t ésszerű alapértelmezésekkel.
 
 1. Klónozd a tárolót:
 
@@ -311,18 +311,18 @@ Ennyi az egész. A Docker Compose automatikusan kezeli az adatbázis beállítá
 # Szerver
 NODE_ENV=production
 RACONA_PORT=3000
-APP_URL=https://elyos.yourdomain.com
+APP_URL=https://racona.yourdomain.com
 
 # Adatbázis
-POSTGRES_USER=elyos
+POSTGRES_USER=racona
 POSTGRES_PASSWORD=egy-erős-véletlenszerű-jelszó
 POSTGRES_HOST=postgres
-POSTGRES_DB=elyos
+POSTGRES_DB=racona
 POSTGRES_PORT=5432
 
 # Hitelesítés
 BETTER_AUTH_SECRET=generáld-openssl-rand-base64-32-vel
-BETTER_AUTH_URL=https://elyos.yourdomain.com
+BETTER_AUTH_URL=https://racona.yourdomain.com
 REGISTRATION_ENABLED=true
 
 # E-mail (válassz egy szolgáltatót)
@@ -334,7 +334,7 @@ SMTP_USERNAME=noreply@yourdomain.com
 SMTP_PASSWORD=az-smtp-jelszavad
 
 # Arculat
-APP_NAME=Az Én ElyOS Példányom
+APP_NAME=Az Én Racona Példányom
 
 # Adminisztrátor
 ADMIN_USER_EMAIL=admin@yourdomain.com
@@ -354,7 +354,7 @@ Ezután indítsd el Docker Compose-zal:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-Helyezz egy reverse proxy-t (nginx, Caddy, Traefik) az ElyOS elé a TLS lezárás kezeléséhez.
+Helyezz egy reverse proxy-t (nginx, Caddy, Traefik) a Racona elé a TLS lezárás kezeléséhez.
 
 ---
 
@@ -366,7 +366,7 @@ A `docker/docker-compose.yml` két szolgáltatást definiál:
 
 | Szolgáltatás | Kép                            | Alapértelmezett Port | Leírás               |
 | ------------ | ------------------------------ | -------------------- | -------------------- |
-| `elyos`      | A `docker/Dockerfile`-ból épül | `3000`               | ElyOS webalkalmazás  |
+| `racona`     | A `docker/Dockerfile`-ból épül | `3000`               | Racona webalkalmazás |
 | `postgres`   | `postgres:16-alpine`           | `5432`               | PostgreSQL adatbázis |
 
 ### Docker-Specifikus Változók
@@ -375,15 +375,15 @@ Ezeket a változókat a Docker Compose használja, és alapértelmezett érték�
 
 | Változó                | Alapértelmezett           | Leírás                                        |
 | ---------------------- | ------------------------- | --------------------------------------------- |
-| `RACONA_PORT`           | `3000`                    | Az ElyOS konténerhez leképezett host port     |
+| `RACONA_PORT`          | `3000`                    | A Racona konténerhez leképezett host port     |
 | `POSTGRES_PORT`        | `5432`                    | A PostgreSQL konténerhez leképezett host port |
-| `POSTGRES_USER`        | `elyos`                   | PostgreSQL szuperfelhasználó neve             |
-| `POSTGRES_PASSWORD`    | `elyos123`                | PostgreSQL szuperfelhasználó jelszava         |
+| `POSTGRES_USER`        | `racona`                  | PostgreSQL szuperfelhasználó neve             |
+| `POSTGRES_PASSWORD`    | `racona123`               | PostgreSQL szuperfelhasználó jelszava         |
 | `POSTGRES_HOST`        | `postgres`                | PostgreSQL szerver címe (szolgáltatás neve)   |
-| `POSTGRES_DB`          | `elyos`                   | PostgreSQL adatbázis neve                     |
+| `POSTGRES_DB`          | `racona`                  | PostgreSQL adatbázis neve                     |
 | `NODE_ENV`             | `production`              | Alkalmazás környezet a konténeren belül       |
 | `DEV_MODE`             | `false`                   | Fejlesztői bővítmény betöltés engedélyezése   |
-| `APP_NAME`             | `ElyOS`                   | Alkalmazás megjelenített neve                 |
+| `APP_NAME`             | `Racona`                  | Alkalmazás megjelenített neve                 |
 | `BETTER_AUTH_URL`      | `http://localhost:3000`   | Auth visszahívás alap URL                     |
 | `BETTER_AUTH_SECRET`   | `change-me-in-production` | Auth aláíró titok                             |
 | `PUBLIC_SITE_ENABLED`  | `false`                   | Publikus oldal kapcsoló                       |
@@ -397,7 +397,7 @@ Ezeket a változókat a Docker Compose használja, és alapértelmezett érték�
 
 ### Adatmegőrzés
 
-A PostgreSQL adatok egy elnevezett Docker kötetben (`elyos-data`) tárolódnak. Ez megmarad a konténer újraindítások és a `docker compose down` után is. Az adatbázis teljes visszaállításához:
+A PostgreSQL adatok egy elnevezett Docker kötetben (`racona-data`) tárolódnak. Ez megmarad a konténer újraindítások és a `docker compose down` után is. Az adatbázis teljes visszaállításához:
 
 ```bash
 docker compose -f docker/docker-compose.yml down -v
@@ -410,7 +410,7 @@ Hozz létre egy `docker-compose.override.yml` fájlt a testreszabáshoz az erede
 ```yaml
 # docker-compose.override.yml
 services:
-  elyos:
+  racona:
     environment:
       - DEV_MODE=true
     ports:
@@ -421,7 +421,7 @@ services:
 
 ## E-mail Szolgáltató Beállítása
 
-Az ElyOS négy e-mail szolgáltatót támogat. Állítsd be az `EMAIL_PROVIDER`-t és konfiguráld a megfelelő változókat.
+A Racona négy e-mail szolgáltatót támogat. Állítsd be az `EMAIL_PROVIDER`-t és konfiguráld a megfelelő változókat.
 
 ### SMTP
 
@@ -483,7 +483,7 @@ Soha ne használd újra a titkokat különböző környezetekben. A titok cseré
 
 ### Kétfaktoros Hitelesítés (2FA)
 
-Az ElyOS támogatja a TOTP-alapú 2FA-t biztonsági kódokkal. Ez felhasználónként a Beállítások alkalmazásban konfigurálható — nincs szükség környezeti változókra.
+A Racona támogatja a TOTP-alapú 2FA-t biztonsági kódokkal. Ez felhasználónként a Beállítások alkalmazásban konfigurálható — nincs szükség környezeti változókra.
 
 ### Regisztráció Szabályozása
 

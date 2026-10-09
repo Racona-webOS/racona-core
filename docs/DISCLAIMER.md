@@ -1,6 +1,6 @@
 # Disclaimer
 
-ElyOS is provided **"as is"**, without warranty of any kind, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+Racona is provided **"as is"**, without warranty of any kind, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
 
 ## General Disclaimer
 

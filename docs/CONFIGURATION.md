@@ -1,6 +1,6 @@
-# ElyOS Configuration Guide
+# Racona Configuration Guide
 
-This guide covers all environment variables and configuration options for self-hosting ElyOS.
+This guide covers all environment variables and configuration options for self-hosting Racona.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ This guide covers all environment variables and configuration options for self-h
 
 ## Environment Variable Management
 
-ElyOS uses **Varlock** for typesafe environment variable management. Varlock validates all configuration at startup, ensuring misconfiguration is caught immediately.
+Racona uses **Varlock** for typesafe environment variable management. Varlock validates all configuration at startup, ensuring misconfiguration is caught immediately.
 
 For detailed Varlock documentation, see the [developer documentation](https://docs-dev.racona.hu/en/environment/).
 
@@ -54,7 +54,7 @@ For offline development or without Infisical:
 ```dotenv
 VARLOCK_FALLBACK=local
 NODE_ENV=development
-DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
 BETTER_AUTH_SECRET=your-local-secret
 # ... all other variables
 ```
@@ -84,7 +84,7 @@ BETTER_AUTH_SECRET=your-local-secret
    ```bash
    # Set VARLOCK_FALLBACK=local and provide all variables
    VARLOCK_FALLBACK=local
-   DATABASE_URL=postgresql://elyos:elyos123@localhost:5432/elyos
+   DATABASE_URL=postgresql://racona:racona123@localhost:5432/racona
    NODE_ENV=development
    BETTER_AUTH_SECRET=generate-a-random-secret
    BETTER_AUTH_URL=http://localhost:3000
@@ -110,12 +110,12 @@ BETTER_AUTH_SECRET=your-local-secret
 
 ### Server Configuration
 
-| Variable          | Required   | Default    | Description                                                         |
-| ----------------- | ---------- | ---------- | ------------------------------------------------------------------- |
-| `NODE_ENV`        | Yes        | —          | Application environment: `development`, `production`, or `test`     |
-| `BODY_SIZE_LIMIT` | No         | `10485760` | Maximum request body size in bytes (10 MB)                          |
-| `RACONA_PORT`      | No         | `3000`     | Port for the ElyOS application (Docker host port mapping)           |
-| `APP_URL`         | Production | —          | Base URL of your ElyOS instance (e.g., `https://elyos.example.com`) |
+| Variable          | Required   | Default    | Description                                                           |
+| ----------------- | ---------- | ---------- | --------------------------------------------------------------------- |
+| `NODE_ENV`        | Yes        | —          | Application environment: `development`, `production`, or `test`       |
+| `BODY_SIZE_LIMIT` | No         | `10485760` | Maximum request body size in bytes (10 MB)                            |
+| `RACONA_PORT`     | No         | `3000`     | Port for the Racona application (Docker host port mapping)            |
+| `APP_URL`         | Production | —          | Base URL of your Racona instance (e.g., `https://racona.example.com`) |
 
 ### Database
 
@@ -132,23 +132,23 @@ BETTER_AUTH_SECRET=your-local-secret
 
 ### Application Branding
 
-| Variable         | Required | Default | Description                                                         |
-| ---------------- | -------- | ------- | ------------------------------------------------------------------- |
-| `APP_NAME`       | No       | `ElyOS` | Application display name shown in the UI and emails                 |
-| `APP_LOGO_URL`   | No       | —       | Logo URL — absolute (`https://...`) or relative (`/logo-small.png`) |
-| `EMAIL_USE_LOGO` | No       | `false` | Use logo image in emails instead of text                            |
+| Variable         | Required | Default  | Description                                                         |
+| ---------------- | -------- | -------- | ------------------------------------------------------------------- |
+| `APP_NAME`       | No       | `Racona` | Application display name shown in the UI and emails                 |
+| `APP_LOGO_URL`   | No       | —        | Logo URL — absolute (`https://...`) or relative (`/logo-small.png`) |
+| `EMAIL_USE_LOGO` | No       | `false`  | Use logo image in emails instead of text                            |
 
 ### Authentication
 
-| Variable               | Required   | Default | Description                                                                                                                                                                                         |
-| ---------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | Production | —       | Secret key for signing auth tokens. Generate with `openssl rand -base64 32`                                                                                                                         |
-| `BETTER_AUTH_URL`      | Yes        | —       | Base URL for auth callbacks. Must match `APP_URL`                                                                                                                                                   |
-| `ORIGIN`               | Production | —       | Public URL of the application — required for SvelteKit's CSRF protection. Must match `APP_URL` (e.g., `https://elyos.example.com`). Without this, remote function calls will fail with a 403 error. |
-| `REGISTRATION_ENABLED` | No         | `true`  | Allow new user registration                                                                                                                                                                         |
-| `SOCIAL_LOGIN_ENABLED` | No         | `true`  | Enable social login providers (Google)                                                                                                                                                              |
-| `GOOGLE_CLIENT_ID`     | No         | —       | Google OAuth 2.0 client ID                                                                                                                                                                          |
-| `GOOGLE_CLIENT_SECRET` | No         | —       | Google OAuth 2.0 client secret                                                                                                                                                                      |
+| Variable               | Required   | Default | Description                                                                                                                                                                                          |
+| ---------------------- | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`   | Production | —       | Secret key for signing auth tokens. Generate with `openssl rand -base64 32`                                                                                                                          |
+| `BETTER_AUTH_URL`      | Yes        | —       | Base URL for auth callbacks. Must match `APP_URL`                                                                                                                                                    |
+| `ORIGIN`               | Production | —       | Public URL of the application — required for SvelteKit's CSRF protection. Must match `APP_URL` (e.g., `https://racona.example.com`). Without this, remote function calls will fail with a 403 error. |
+| `REGISTRATION_ENABLED` | No         | `true`  | Allow new user registration                                                                                                                                                                          |
+| `SOCIAL_LOGIN_ENABLED` | No         | `true`  | Enable social login providers (Google)                                                                                                                                                               |
+| `GOOGLE_CLIENT_ID`     | No         | —       | Google OAuth 2.0 client ID                                                                                                                                                                           |
+| `GOOGLE_CLIENT_SECRET` | No         | —       | Google OAuth 2.0 client secret                                                                                                                                                                       |
 
 ### Email
 
@@ -253,12 +253,12 @@ BETTER_AUTH_SECRET=your-local-secret
 
 ### Plugin System
 
-| Variable                   | Required | Default              | Description                                           |
-| -------------------------- | -------- | -------------------- | ----------------------------------------------------- |
-| `PLUGIN_PACKAGE_EXTENSION` | No       | `elyospkg`           | Plugin package file extension (without dot)           |
-| `PLUGIN_MAX_SIZE`          | No       | `10485760`           | Maximum plugin package size in bytes (max: 100 MB)    |
-| `PLUGIN_STORAGE_DIR`       | No       | `/var/webos/plugins` | Directory for installed plugin files                  |
-| `PLUGIN_TEMP_DIR`          | No       | `/tmp/webos-plugins` | Temporary directory for plugin uploads and extraction |
+| Variable                   | Required | Default              | Description                                                                                            |
+| -------------------------- | -------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| `PLUGIN_PACKAGE_EXTENSION` | No       | `raconapkg`          | Plugin package file extension (without dot)                                                            |
+| `PLUGIN_MAX_SIZE`          | No       | `10485760`           | Maximum plugin package size in bytes (max: 100 MB)                                                     |
+| `PLUGIN_STORAGE_DIR`       | No       | `/var/webos/plugins` | Directory for installed plugin files                                                                   |
+| `PLUGIN_TEMP_DIR`          | No       | `/tmp/webos-plugins` | Temporary directory for plugin uploads and extraction                                                  |
 | `PLUGIN_FILE_MAX_BYTES`    | No       | `10485760`           | Maximum size of a file stored by a plugin (`file_access`), in bytes. Must not exceed `BODY_SIZE_LIMIT` |
 
 Plugins with the `file_access` permission store files under `uploads/plugin-files/`. Include the whole `uploads` folder in your backups: it holds these files as well as backgrounds, avatars and the installed plugins.
@@ -284,7 +284,7 @@ Plugins can declare scheduled jobs in their manifest (`scheduledJobs`, `schedule
 
 ### Minimal Setup (Docker)
 
-The fastest way to run ElyOS is with Docker Compose. This starts both ElyOS and PostgreSQL with sensible defaults.
+The fastest way to run Racona is with Docker Compose. This starts both Racona and PostgreSQL with sensible defaults.
 
 1. Clone the repository:
 
@@ -322,18 +322,18 @@ For production deployments, configure all security-relevant variables:
 # Server
 NODE_ENV=production
 RACONA_PORT=3000
-APP_URL=https://elyos.yourdomain.com
+APP_URL=https://racona.yourdomain.com
 
 # Database
-POSTGRES_USER=elyos
+POSTGRES_USER=racona
 POSTGRES_PASSWORD=a-strong-random-password
 POSTGRES_HOST=postgres
-POSTGRES_DB=elyos
+POSTGRES_DB=racona
 POSTGRES_PORT=5432
 
 # Authentication
 BETTER_AUTH_SECRET=generate-with-openssl-rand-base64-32
-BETTER_AUTH_URL=https://elyos.yourdomain.com
+BETTER_AUTH_URL=https://racona.yourdomain.com
 REGISTRATION_ENABLED=true
 
 # Email (pick one provider)
@@ -345,7 +345,7 @@ SMTP_USERNAME=noreply@yourdomain.com
 SMTP_PASSWORD=your-smtp-password
 
 # Branding
-APP_NAME=My ElyOS Instance
+APP_NAME=My Racona Instance
 
 # Admin
 ADMIN_USER_EMAIL=admin@yourdomain.com
@@ -365,7 +365,7 @@ Then start with Docker Compose:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-Place a reverse proxy (nginx, Caddy, Traefik) in front of ElyOS to handle TLS termination.
+Place a reverse proxy (nginx, Caddy, Traefik) in front of Racona to handle TLS termination.
 
 ---
 
@@ -373,7 +373,7 @@ Place a reverse proxy (nginx, Caddy, Traefik) in front of ElyOS to handle TLS te
 
 ### Deployment modes
 
-ElyOS supports three Docker deployment modes:
+Racona supports three Docker deployment modes:
 
 | Mode       | Compose file                       | Script                 | Description                                                        |
 | ---------- | ---------------------------------- | ---------------------- | ------------------------------------------------------------------ |
@@ -392,10 +392,10 @@ bun docker:up:bundle
 
 The `docker/docker-compose.yml` defines two services:
 
-| Service    | Image                          | Default Port | Description           |
-| ---------- | ------------------------------ | ------------ | --------------------- |
-| `elyos`    | Built from `docker/Dockerfile` | `3000`       | ElyOS web application |
-| `postgres` | `postgres:16-alpine`           | `5432`       | PostgreSQL database   |
+| Service    | Image                          | Default Port | Description            |
+| ---------- | ------------------------------ | ------------ | ---------------------- |
+| `racona`   | Built from `docker/Dockerfile` | `3000`       | Racona web application |
+| `postgres` | `postgres:16-alpine`           | `5432`       | PostgreSQL database    |
 
 ### Docker-Specific Variables
 
@@ -403,15 +403,15 @@ These variables are used by Docker Compose and have defaults in the compose file
 
 | Variable               | Default                   | Description                                  |
 | ---------------------- | ------------------------- | -------------------------------------------- |
-| `RACONA_PORT`           | `3000`                    | Host port mapped to the ElyOS container      |
+| `RACONA_PORT`          | `3000`                    | Host port mapped to the Racona container     |
 | `POSTGRES_PORT`        | `5432`                    | Host port mapped to the PostgreSQL container |
-| `POSTGRES_USER`        | `elyos`                   | PostgreSQL superuser name                    |
-| `POSTGRES_PASSWORD`    | `elyos123`                | PostgreSQL superuser password                |
+| `POSTGRES_USER`        | `racona`                  | PostgreSQL superuser name                    |
+| `POSTGRES_PASSWORD`    | `racona123`               | PostgreSQL superuser password                |
 | `POSTGRES_HOST`        | `postgres`                | PostgreSQL server address (service name)     |
-| `POSTGRES_DB`          | `elyos`                   | PostgreSQL database name                     |
+| `POSTGRES_DB`          | `racona`                  | PostgreSQL database name                     |
 | `NODE_ENV`             | `production`              | Application environment inside the container |
 | `DEV_MODE`             | `false`                   | Enable dev plugin loading                    |
-| `APP_NAME`             | `ElyOS`                   | Application display name                     |
+| `APP_NAME`             | `Racona`                  | Application display name                     |
 | `BETTER_AUTH_URL`      | `http://localhost:3000`   | Auth callback base URL                       |
 | `BETTER_AUTH_SECRET`   | `change-me-in-production` | Auth signing secret                          |
 | `PUBLIC_SITE_ENABLED`  | `false`                   | Public site toggle                           |
@@ -425,7 +425,7 @@ These variables are used by Docker Compose and have defaults in the compose file
 
 ### Data Persistence
 
-PostgreSQL data is stored in a named Docker volume (`elyos-data`). This persists across container restarts and `docker compose down`. To completely reset the database:
+PostgreSQL data is stored in a named Docker volume (`racona-data`). This persists across container restarts and `docker compose down`. To completely reset the database:
 
 ```bash
 docker compose -f docker/docker-compose.yml down -v
@@ -438,7 +438,7 @@ Create a `docker-compose.override.yml` to customize without modifying the origin
 ```yaml
 # docker-compose.override.yml
 services:
-  elyos:
+  racona:
     environment:
       - DEV_MODE=true
     ports:
@@ -449,7 +449,7 @@ services:
 
 ## Email Provider Setup
 
-ElyOS supports four email providers. Set `EMAIL_PROVIDER` and configure the corresponding variables.
+Racona supports four email providers. Set `EMAIL_PROVIDER` and configure the corresponding variables.
 
 ### SMTP
 
@@ -511,7 +511,7 @@ Never reuse secrets across environments. Rotating the secret will invalidate all
 
 ### Two-Factor Authentication (2FA)
 
-ElyOS supports TOTP-based 2FA with backup codes. This is configured per-user through the Settings app — no environment variables needed.
+Racona supports TOTP-based 2FA with backup codes. This is configured per-user through the Settings app — no environment variables needed.
 
 ### Registration Control
 
