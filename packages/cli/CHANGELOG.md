@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-10-09
+
+### Added
+
+- The generated `build-package.js` also packages the `help/` folder (plugin user guide for the Racona Help app)
+
+### Changed
+
+- The repository moved to `github.com/szigetidev/racona-core`
+
 ## [0.5.3] - 2026-10-07
 
 ### Added

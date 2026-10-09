@@ -203,9 +203,10 @@ MIT
 
 ## Changelog
 
-### [Unreleased]
+### [0.5.4] - 2026-10-09
 
 - **Added**: `build-package.js` packages the `help/` folder (plugin user guide for the Racona Help app)
+- **Changed**: the repository moved to `github.com/szigetidev/racona-core`
 
 ### [0.5.3] - 2026-10-07
 
