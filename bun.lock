@@ -152,7 +152,7 @@
       },
     },
     "packages/ai-avatar": {
-      "name": "@webos/ai-avatar",
+      "name": "@racona/ai-avatar",
       "version": "0.1.0",
       "bin": {
         "pack-avatar": "./src/index.ts",
@@ -167,7 +167,7 @@
     },
     "packages/cli": {
       "name": "@racona/cli",
-      "version": "0.5.3",
+      "version": "0.5.4",
       "bin": {
         "create-racona-app": "./dist/cli.js",
       },
@@ -205,7 +205,7 @@
     },
     "packages/sdk": {
       "name": "@racona/sdk",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "devDependencies": {
         "typescript": "^5.7.0",
         "vitest": "^3.1.0",
@@ -577,6 +577,8 @@
 
     "@prisma/instrumentation": ["@prisma/instrumentation@7.6.0", "", { "dependencies": { "@opentelemetry/instrumentation": "^0.207.0" }, "peerDependencies": { "@opentelemetry/api": "^1.8" } }, "sha512-ZPW2gRiwpPzEfgeZgaekhqXrbW+Y2RJKHVqUmlhZhKzRNCcvR6DykzylDrynpArKKRQtLxoZy36fK7U0p3pdgQ=="],
 
+    "@racona/ai-avatar": ["@racona/ai-avatar@workspace:packages/ai-avatar"],
+
     "@racona/cli": ["@racona/cli@workspace:packages/cli"],
 
     "@racona/core": ["@racona/core@workspace:apps/web"],
@@ -868,8 +870,6 @@
     "@vitest/utils": ["@vitest/utils@3.2.4", "", { "dependencies": { "@vitest/pretty-format": "3.2.4", "loupe": "^3.1.4", "tinyrainbow": "^2.0.0" } }, "sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA=="],
 
     "@webgpu/types": ["@webgpu/types@0.1.69", "", {}, "sha512-RPmm6kgRbI8e98zSD3RVACvnuktIja5+yLgDAkTmxLr90BEwdTXRQWNLF3ETTTyH/8mKhznZuN5AveXYFEsMGQ=="],
-
-    "@webos/ai-avatar": ["@webos/ai-avatar@workspace:packages/ai-avatar"],
 
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 

@@ -26,7 +26,7 @@ import {
 import type { AiAvatarSelectModel, UserAvatarConfigSelectModel } from '@racona/database/schemas';
 
 // ============================================================================
-// Manifest validátor (inline — a @webos/ai-avatar csomag CLI eszköz, nem importálható)
+// Manifest validátor (inline — a @racona/ai-avatar csomag CLI eszköz, nem importálható)
 // ============================================================================
 
 type Quality = 'sd' | 'hd';

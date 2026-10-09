@@ -1,5 +1,5 @@
 {
-	"name": "@webos/ai-avatar",
+	"name": "@racona/ai-avatar",
 	"version": "0.1.0",
 	"description": "Avatar packager tool — bundles AI avatar assets into a .raconapkg archive",
 	"type": "module",
