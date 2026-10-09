@@ -70,7 +70,7 @@ BETTER_AUTH_URL=http://localhost:3000
 **Fix:** Either stop the conflicting process, or change the port:
 
 ```bash
-ELYOS_PORT=3001
+RACONA_PORT=3001
 ```
 
 ---

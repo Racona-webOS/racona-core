@@ -54,7 +54,7 @@ services:
       dockerfile: docker/Dockerfile.app
     container_name: racona-bundle-app
     ports:
-      - '${ELYOS_PORT:-3000}:3000'
+      - '${RACONA_PORT:-${ELYOS_PORT:-3000}}:3000'
     env_file:
       - ../.env.local
     environment:

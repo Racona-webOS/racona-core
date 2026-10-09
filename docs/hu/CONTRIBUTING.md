@@ -64,9 +64,9 @@ Mielőtt elkezdenéd, győződj meg róla, hogy a következők telepítve vannak
 
 ```bash
 # Forkold a repót GitHub-on, majd:
-git clone https://github.com/<your-username>/elyos-core.git
-cd elyos-core
-git remote add upstream https://github.com/ElyOS-webOS/elyos-core.git
+git clone https://github.com/<your-username>/racona-core.git
+cd racona-core
+git remote add upstream https://github.com/szigetidev/racona-core.git
 ```
 
 ### 2. Függőségek telepítése

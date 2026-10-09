@@ -34,7 +34,7 @@ This guide covers all environment variables and configuration options for self-h
 
 ElyOS uses **Varlock** for typesafe environment variable management. Varlock validates all configuration at startup, ensuring misconfiguration is caught immediately.
 
-For detailed Varlock documentation, see the [developer documentation](https://docs.elyos.dev/en/varlock).
+For detailed Varlock documentation, see the [developer documentation](https://docs-dev.racona.hu/en/environment/).
 
 ### Bootstrap credentials
 
@@ -114,7 +114,7 @@ BETTER_AUTH_SECRET=your-local-secret
 | ----------------- | ---------- | ---------- | ------------------------------------------------------------------- |
 | `NODE_ENV`        | Yes        | —          | Application environment: `development`, `production`, or `test`     |
 | `BODY_SIZE_LIMIT` | No         | `10485760` | Maximum request body size in bytes (10 MB)                          |
-| `ELYOS_PORT`      | No         | `3000`     | Port for the ElyOS application (Docker host port mapping)           |
+| `RACONA_PORT`      | No         | `3000`     | Port for the ElyOS application (Docker host port mapping)           |
 | `APP_URL`         | Production | —          | Base URL of your ElyOS instance (e.g., `https://elyos.example.com`) |
 
 ### Database
@@ -289,8 +289,8 @@ The fastest way to run ElyOS is with Docker Compose. This starts both ElyOS and 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/elyos/elyos-core.git
-   cd elyos-core
+   git clone https://github.com/szigetidev/racona-core.git
+   cd racona-core
    ```
 
 2. Create a minimal `.env` file:
@@ -321,7 +321,7 @@ For production deployments, configure all security-relevant variables:
 
 # Server
 NODE_ENV=production
-ELYOS_PORT=3000
+RACONA_PORT=3000
 APP_URL=https://elyos.yourdomain.com
 
 # Database
@@ -403,7 +403,7 @@ These variables are used by Docker Compose and have defaults in the compose file
 
 | Variable               | Default                   | Description                                  |
 | ---------------------- | ------------------------- | -------------------------------------------- |
-| `ELYOS_PORT`           | `3000`                    | Host port mapped to the ElyOS container      |
+| `RACONA_PORT`           | `3000`                    | Host port mapped to the ElyOS container      |
 | `POSTGRES_PORT`        | `5432`                    | Host port mapped to the PostgreSQL container |
 | `POSTGRES_USER`        | `elyos`                   | PostgreSQL superuser name                    |
 | `POSTGRES_PASSWORD`    | `elyos123`                | PostgreSQL superuser password                |

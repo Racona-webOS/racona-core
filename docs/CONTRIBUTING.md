@@ -65,9 +65,9 @@ Before you begin, make sure you have the following installed:
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/<your-username>/elyos-core.git
-cd elyos-core
-git remote add upstream https://github.com/ElyOS-webOS/elyos-core.git
+git clone https://github.com/<your-username>/racona-core.git
+cd racona-core
+git remote add upstream https://github.com/szigetidev/racona-core.git
 ```
 
 ### 2. Install Dependencies
@@ -470,7 +470,7 @@ When you push a tag matching `v*` (e.g., `v0.2.0`), a GitHub Actions workflow au
 - Generates release notes from commits since the last tag
 - Publishes the release
 
-You can view the release on the [Releases page](https://github.com/ElyOS-webOS/elyos-core/releases).
+You can view the release on the [Releases page](https://github.com/szigetidev/racona-core/releases).
 
 ### Release Checklist
 

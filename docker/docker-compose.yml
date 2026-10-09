@@ -75,7 +75,7 @@ services:
       dockerfile: docker/Dockerfile
     container_name: racona-app
     ports:
-      - '${ELYOS_PORT:-3000}:3000'
+      - '${RACONA_PORT:-${ELYOS_PORT:-3000}}:3000'
     env_file:
       # Csak a bootstrap credentials — minden más secret Infisical-ból érkezik Varlock-on keresztül
       - ../.env.local

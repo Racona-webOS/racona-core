@@ -34,7 +34,7 @@ Ez az útmutató az ElyOS saját üzemeltetéséhez szükséges összes környez
 
 Az ElyOS **Varlock**-ot használ a typesafe környezeti változók kezeléséhez. A Varlock az alkalmazás indításakor validálja az összes konfigurációt, így a hibás beállítások azonnal kiderülnek.
 
-A részletes Varlock dokumentációért lásd a [fejlesztői dokumentációt](https://docs.elyos.dev/hu/varlock).
+A részletes Varlock dokumentációért lásd a [fejlesztői dokumentációt](https://docs-dev.racona.hu/hu/environment/).
 
 ### Bootstrap credentials
 
@@ -103,7 +103,7 @@ BETTER_AUTH_SECRET=lokalis-titok
 | ----------------- | -------- | --------------- | -------------------------------------------------------------- |
 | `NODE_ENV`        | Igen     | —               | Alkalmazás környezet: `development`, `production` vagy `test`  |
 | `BODY_SIZE_LIMIT` | Nem      | `10485760`      | Maximális kérés méret bájtban (10 MB)                          |
-| `ELYOS_PORT`      | Nem      | `3000`          | Az ElyOS alkalmazás portja (Docker host port leképezés)        |
+| `RACONA_PORT`      | Nem      | `3000`          | Az ElyOS alkalmazás portja (Docker host port leképezés)        |
 | `APP_URL`         | Éles     | —               | Az ElyOS példány alap URL-je (pl. `https://elyos.example.com`) |
 
 ### Adatbázis
@@ -278,8 +278,8 @@ Az ElyOS futtatásának leggyorsabb módja a Docker Compose. Ez elindítja az El
 1. Klónozd a tárolót:
 
    ```bash
-   git clone https://github.com/elyos/elyos-core.git
-   cd elyos-core
+   git clone https://github.com/szigetidev/racona-core.git
+   cd racona-core
    ```
 
 2. Hozz létre egy minimális `.env` fájlt:
@@ -310,7 +310,7 @@ Ennyi az egész. A Docker Compose automatikusan kezeli az adatbázis beállítá
 
 # Szerver
 NODE_ENV=production
-ELYOS_PORT=3000
+RACONA_PORT=3000
 APP_URL=https://elyos.yourdomain.com
 
 # Adatbázis
@@ -375,7 +375,7 @@ Ezeket a változókat a Docker Compose használja, és alapértelmezett érték�
 
 | Változó                | Alapértelmezett           | Leírás                                        |
 | ---------------------- | ------------------------- | --------------------------------------------- |
-| `ELYOS_PORT`           | `3000`                    | Az ElyOS konténerhez leképezett host port     |
+| `RACONA_PORT`           | `3000`                    | Az ElyOS konténerhez leképezett host port     |
 | `POSTGRES_PORT`        | `5432`                    | A PostgreSQL konténerhez leképezett host port |
 | `POSTGRES_USER`        | `elyos`                   | PostgreSQL szuperfelhasználó neve             |
 | `POSTGRES_PASSWORD`    | `elyos123`                | PostgreSQL szuperfelhasználó jelszava         |
