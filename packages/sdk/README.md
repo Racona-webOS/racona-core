@@ -220,6 +220,10 @@ MIT
 
 ## Changelog
 
+### [0.8.1] - 2026-10-09
+
+- **Changed**: the repository moved to `github.com/szigetidev/racona-core`. No code changes
+
 ### [0.8.0] - 2026-10-06
 
 - **Added**: `sdk.context.shell` (`'desktop' | 'mobile'`) and the `ShellMode` type — which interface the app runs in. Needs a Racona version with the mobile shell; older versions always report `desktop`. Set it in standalone mode with `MockSDKConfig.context.shell`
