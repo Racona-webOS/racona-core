@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/Racona-webOS/racona-core/releases"><img src="https://img.shields.io/github/package-json/v/Racona-webOS/racona-core" alt="Version" /></a>
+<a href="https://github.com/szigetidev/racona-core/releases"><img src="https://img.shields.io/github/package-json/v/szigetidev/racona-core" alt="Version" /></a>
   <a href="https://www.npmjs.com/package/@racona/sdk"><img src="https://img.shields.io/npm/v/@racona/sdk?label=%40racona%2Fsdk&color=blue" alt="SDK npm version" /></a>
   <a href="https://www.npmjs.com/package/@racona/cli"><img src="https://img.shields.io/npm/v/@racona/cli?label=%40racona%2Fcli&color=blue" alt="CLI npm version" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
@@ -170,7 +170,7 @@ This method creates a fully self-contained, runnable system in Docker containers
 
 ```bash
 # Clone the repository
-git clone https://github.com/Racona-webOS/racona-core
+git clone https://github.com/szigetidev/racona-core
 cd racona-core
 
 # Copy and configure environment variables (see section above)
@@ -187,7 +187,7 @@ open http://localhost:3000
 
 ```bash
 # Clone the repository
-git clone https://github.com/Racona-webOS/racona-core
+git clone https://github.com/szigetidev/racona-core
 cd racona-core
 
 # Copy and configure environment variables (see section above)

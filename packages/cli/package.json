@@ -30,7 +30,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Racona-webOS/racona-core.git",
+		"url": "git+https://github.com/szigetidev/racona-core.git",
 		"directory": "packages/cli"
 	},
 	"homepage": "https://racona.hu",

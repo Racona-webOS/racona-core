@@ -49,6 +49,7 @@ jobs:
           fi
 
       - name: Publish to JSR
+        continue-on-error: true
         working-directory: packages/sdk
         run: npx jsr publish --allow-dirty --allow-slow-types
 
